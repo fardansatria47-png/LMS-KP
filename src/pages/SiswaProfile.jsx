@@ -1,0 +1,332 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getSiswaProfile, updateSiswaPassword, getCurrentUser } from "../services/authService";
+import { confirmDialog } from "../utils/notify";
+
+const SISWA_NAV = [
+  { label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6", path: "/dashboard" },
+  { label: "Kelas Saya", icon: "M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z", path: "/mata-pelajaran" },
+  { label: "Profil", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", path: "/profile" },
+];
+
+export default function SiswaProfile() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [msg, setMsg] = useState({ type: "", text: "" });
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    setLoading(true);
+    try {
+      const res = await getSiswaProfile();
+      setUser(res.data?.data || res.data);
+    } catch (err) {
+      console.error("Gagal ambil profil siswa:", err);
+      try {
+        const resMe = await getCurrentUser();
+        setUser(resMe.data?.data || resMe.data);
+      } catch (err2) {
+        setError("Gagal memuat data profil");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdatePassword = async (e) => {
+    e.preventDefault();
+    if (!oldPassword || !newPassword || !confirmPassword) return;
+
+    if (newPassword !== confirmPassword) {
+      setMsg({ type: "error", text: "Konfirmasi password tidak cocok" });
+      return;
+    }
+    
+    setUpdating(true);
+    setMsg({ type: "", text: "" });
+    try {
+      await updateSiswaPassword({ 
+        current_password: oldPassword,
+        password: newPassword,
+        password_confirmation: confirmPassword
+      });
+      setMsg({ type: "success", text: "Password berhasil diperbarui" });
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err) {
+      const errorData = err?.response?.data;
+      let errorMessage = errorData?.message || errorData?.error || "Gagal memperbarui password";
+
+      if (errorData?.errors) {
+        const firstError = Object.values(errorData.errors)[0];
+        if (Array.isArray(firstError)) {
+          errorMessage = firstError[0];
+        } else if (typeof firstError === "string") {
+          errorMessage = firstError;
+        }
+      }
+
+      setMsg({ type: "error", text: errorMessage });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    const ok = await confirmDialog("Yakin ingin keluar?", { isDanger: true, title: "Keluar" });
+    if (ok) {
+      localStorage.removeItem("token");
+      navigate("/login");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent mx-auto"></div>
+          <p className="mt-4 text-slate-500 font-medium">Memuat profil...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen bg-[#f8fafc]">
+      {/* Sidebar Sederhana - menggunakan format 56 seperti di dashboard siswa, atau 44 seperti guru */}
+      <aside className="fixed left-0 top-0 flex h-full w-56 flex-col bg-white border-r border-slate-100 shadow-sm z-20">
+        <div className="px-6 pt-8 pb-6">
+          <p className="text-sm font-black text-blue-700 tracking-widest">LMS</p>
+          <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-wider">SMK - YAPSIPA TASIKMALAYA</p>
+        </div>
+        <nav className="flex-1 px-4 py-4 space-y-1.5">
+          {SISWA_NAV.map((item) => {
+            const isActive = window.location.pathname === item.path;
+            return (
+              <a
+                key={item.label}
+                href={item.path}
+                className={`flex items-center gap-3.5 rounded-xl px-4 py-3 text-xs font-bold transition ${
+                  isActive
+                    ? "bg-blue-50 text-blue-700 shadow-sm"
+                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+                }`}
+              >
+                <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
+                </svg>
+                {item.label}
+              </a>
+            );
+          })}
+        </nav>
+        {/* Tombol logout HANYA MUNCUL DI HALAMAN PROFIL */}
+        <div className="p-4 border-t border-slate-100">
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3.5 rounded-xl px-4 py-3 text-xs font-bold text-rose-600 transition hover:bg-rose-50"
+          >
+            <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+            </svg>
+            LOGOUT
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="ml-56 flex-1 p-10">
+        <header className="mb-8">
+          <h1 className="text-2xl font-bold text-slate-900">Profil Siswa</h1>
+          <p className="text-sm text-slate-500">Informasi akun Anda</p>
+        </header>
+
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Info Akun Card */}
+          <div className="flex-1 rounded-[32px] bg-white p-8 shadow-sm border border-slate-100 relative overflow-hidden">
+            {/* Dekorasi background */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 opacity-50"></div>
+            
+            <div className="relative z-10">
+              <div className="flex items-center gap-6 mb-10">
+                <div className="h-20 w-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                  <svg className="h-10 w-10" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900">{user?.nama || user?.name || "Nama Siswa"}</h2>
+                  <span className="mt-1 inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-bold text-blue-600 uppercase tracking-wider">
+                    <svg className="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
+                    SISWA
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-2">NAMA LENGKAP</label>
+                  <div className="flex items-center gap-3 rounded-xl bg-slate-50 border border-slate-100 px-4 py-3">
+                    <svg className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <span className="text-sm font-semibold text-slate-700">{user?.nama || user?.name || "-"}</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-2">NIS</label>
+                  <div className="flex items-center gap-3 rounded-xl bg-slate-50 border border-slate-100 px-4 py-3">
+                    <svg className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    <span className="text-sm font-semibold text-slate-700 font-mono">{user?.nis || user?.nisn || "-"}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Update Password Card */}
+          <div className="w-full lg:w-96 rounded-[32px] bg-white p-8 shadow-sm border border-slate-100 flex flex-col">
+            <div className="flex items-center gap-3 mb-2">
+               <div className="p-2 bg-blue-50 rounded-lg">
+                  <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+               </div>
+               <h3 className="text-lg font-bold text-slate-900">Ubah Kata Sandi</h3>
+            </div>
+            <p className="text-xs text-slate-500 mb-6 leading-relaxed">
+              Pastikan kata sandi baru Anda aman dan mudah diingat.
+            </p>
+
+            <form onSubmit={handleUpdatePassword} className="space-y-6">
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-2">KATA SANDI LAMA</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                    <svg className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <input
+                    type={showOldPassword ? "text" : "password"}
+                    value={oldPassword}
+                    onChange={(e) => setOldPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full rounded-xl bg-blue-50/50 border border-blue-100 pl-11 pr-12 py-3 text-sm text-slate-700 placeholder-slate-400 outline-none focus:border-blue-400 transition"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowOldPassword(!showOldPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600 transition"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      {showOldPassword ? (
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                      ) : (
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      )}
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-2">KATA SANDI BARU</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                    <svg className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 11-7.743-5.743L11 7l-1 1H9v1H8v1H7v1H4a1 1 0 01-1-1V7a1 1 0 01.293-.707l1.414-1.414A1 1 0 015.414 5h1.586A1 1 0 018 5.414L10.586 8H12" />
+                    </svg>
+                  </div>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full rounded-xl bg-blue-50/50 border border-blue-100 pl-11 pr-12 py-3 text-sm text-slate-700 placeholder-slate-400 outline-none focus:border-blue-400 transition"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600 transition"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      {showPassword ? (
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                      ) : (
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      )}
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-2">KONFIRMASI KATA SANDI BARU</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                    <svg className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  </div>
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full rounded-xl bg-blue-50/50 border border-blue-100 pl-11 pr-12 py-3 text-sm text-slate-700 placeholder-slate-400 outline-none focus:border-blue-400 transition"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600 transition"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      {showConfirmPassword ? (
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                      ) : (
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      )}
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {msg.text && (
+                <div className={`rounded-xl p-3 text-xs font-semibold ${msg.type === "success" ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"}`}>
+                  {msg.text}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={updating || !oldPassword || !newPassword || !confirmPassword}
+                className="w-full rounded-xl bg-blue-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {updating ? "Memproses..." : "Ubah Kata Sandi"}
+              </button>
+            </form>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
