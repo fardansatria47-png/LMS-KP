@@ -227,7 +227,7 @@ export default function DataPengguna() {
             </button>
           )}
         </div>
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/60">
@@ -250,7 +250,7 @@ export default function DataPengguna() {
 
   // ── Flat table for guru ──────────────────────────────────────────
   const FlatTable = ({ data }) => (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
       <table className="w-full text-left">
         <thead>
           <tr className="border-b border-slate-100 bg-slate-50/60">
@@ -274,7 +274,7 @@ export default function DataPengguna() {
   return (
     <main className="min-h-screen bg-slate-50">
       <Sidebar />
-      <div className="ml-64 px-8 py-10">
+      <div className="lg:ml-64 px-4 sm:px-6 lg:px-8 pt-16 pb-24 lg:pt-10 lg:pb-10">
 
         {/* Header */}
         {selectedKelas ? (
@@ -301,9 +301,9 @@ export default function DataPengguna() {
             <button onClick={() => { setTab("siswa"); setSelectedKelas(null); }} className={`px-6 py-3 text-sm font-semibold transition ${tab === "siswa" ? "bg-blue-600 text-white" : "text-slate-600 hover:bg-slate-50"}`}>Daftar Siswa</button>
             <button onClick={() => { setTab("guru"); setSelectedKelas(null); }} className={`px-6 py-3 text-sm font-semibold transition ${tab === "guru" ? "bg-blue-600 text-white" : "text-slate-600 hover:bg-slate-50"}`}>Daftar Guru</button>
           </div>
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari nama atau NIS/NIP…" className="w-64 rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm text-slate-700 shadow-sm transition focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari nama atau NIS/NIP…" className="w-full sm:w-64 rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm text-slate-700 shadow-sm transition focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
           </div>
         </div>
 

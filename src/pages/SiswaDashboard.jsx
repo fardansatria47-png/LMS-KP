@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { confirmDialog } from "../utils/notify";
 import CalendarWidget from "../components/CalendarWidget";
+import SiswaLayout from "../components/SiswaLayout";
 
 const SISWA_NAV = [
   { label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6", path: "/dashboard" },
@@ -54,46 +55,16 @@ export default function SiswaDashboard({ user, summary }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      {/* Sidebar Siswa */}
-      <aside className="fixed left-0 top-0 flex h-full w-56 flex-col bg-white border-r border-slate-100 shadow-sm z-20">
-        <div className="px-6 pt-8 pb-6">
-          <p className="text-sm font-black text-blue-700 tracking-widest">LMS</p>
-          <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-wider">SMK - YAPSIPA TASIKMALAYA</p>
-        </div>
-        <nav className="flex-1 px-4 py-4 space-y-1.5">
-          {SISWA_NAV.map((item) => {
-            const isActive = window.location.pathname === item.path;
-            return (
-              <a
-                key={item.label}
-                href={item.path}
-                className={`flex items-center gap-3.5 rounded-xl px-4 py-3 text-xs font-bold transition ${
-                  isActive
-                    ? "bg-blue-50 text-blue-700"
-                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
-                }`}
-              >
-                <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
-                </svg>
-                {item.label}
-              </a>
-            );
-          })}
-        </nav>
-      </aside>
-
-      {/* Main Content */}
-      <main className="ml-56 flex-1 px-10 py-12">
+    <SiswaLayout title="Dashboard">
+      <div className="px-4 sm:px-6 lg:px-10 py-6 lg:py-12">
         {/* Header */}
-        <div className="mb-10 border-b border-slate-200 pb-8">
-          <h1 className="text-4xl font-extrabold text-[#0f172a] tracking-tight">Halo, {nama}</h1>
+        <div className="mb-8 border-b border-slate-200 pb-6">
+          <h1 className="text-2xl sm:text-4xl font-extrabold text-[#0f172a] tracking-tight">Halo, {nama}</h1>
           <p className="mt-2 text-sm font-medium text-slate-500">Lanjutkan aktivitas pembelajaran Anda hari ini.</p>
         </div>
 
         {/* Stat Cards */}
-        <div className="mb-8 grid grid-cols-3 gap-6">
+        <div className="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
           <div className="rounded-2xl bg-white p-6 shadow-sm flex items-center justify-between border border-slate-100">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">TOTAL MATA PELAJARAN</p>
@@ -179,7 +150,7 @@ export default function SiswaDashboard({ user, summary }) {
             </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </SiswaLayout>
   );
 }

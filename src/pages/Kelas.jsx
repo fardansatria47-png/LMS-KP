@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getKelasGuru } from "../services/authService";
+import GuruLayout from "../components/GuruLayout";
 
 const GURU_NAV = [
   { label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6", path: "/dashboard" },
@@ -49,39 +50,8 @@ export default function Kelas() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      {/* Sidebar Guru */}
-      <aside className="fixed left-0 top-0 flex h-full w-44 flex-col bg-white border-r border-slate-100 shadow-sm z-20">
-        <div className="px-5 pt-6 pb-4 border-b border-slate-100">
-          <p className="text-xs font-bold text-blue-700 tracking-widest">LMS</p>
-          <p className="text-[10px] font-semibold text-slate-500 mt-0.5">SMK - YAPSIPA TASIKMALAYA</p>
-        </div>
-        <nav className="flex-1 px-3 py-5 space-y-1">
-          {GURU_NAV.map((item) => {
-            const isActive = window.location.pathname === item.path;
-            return (
-              <a
-                key={item.label}
-                href={item.path}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
-                  isActive
-                    ? "bg-blue-600 text-white shadow"
-                    : "text-slate-600 hover:bg-slate-100"
-                }`}
-              >
-                <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
-                </svg>
-                {item.label}
-              </a>
-            );
-          })}
-        </nav>
-
-      </aside>
-
-      {/* Main Content */}
-      <main className="ml-44 flex-1 px-10 py-12 bg-slate-50">
+    <GuruLayout title="Kelas Saya">
+      <main className="px-4 sm:px-6 lg:px-10 py-6 lg:py-12 bg-slate-50 min-h-screen">
         <div className="mb-6 max-w-4xl">
           <h1 className="text-[32px] font-bold text-slate-900 tracking-tight">Mata Pelajaran</h1>
           <p className="mt-2 text-slate-500 text-[15px] leading-relaxed">
@@ -215,6 +185,6 @@ export default function Kelas() {
           );
         })()}
       </main>
-    </div>
+    </GuruLayout>
   );
 }

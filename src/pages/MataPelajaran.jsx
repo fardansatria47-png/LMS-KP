@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { getMapel, deleteMapel, getGuru, getGuruByMapelRoute, getCurrentUser, getMataPelajaranSiswa } from "../services/authService";
 import { toast, confirmDialog } from "../utils/notify";
+import SiswaLayout from "../components/SiswaLayout";
 
 const PER_PAGE = 2; // Grouping pagination
 
@@ -209,7 +210,7 @@ export default function MataPelajaran() {
     <main className="min-h-screen bg-[#F8FAFC]">
       <Sidebar />
 
-      <div className="ml-64 px-10 py-12">
+      <div className="lg:ml-64 px-4 sm:px-6 lg:px-10 pt-12 lg:pt-12 pb-24 lg:pb-12">
         {/* Header */}
         <div className="mb-10 flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -262,7 +263,7 @@ export default function MataPelajaran() {
               </div>
 
               {/* Table */}
-              <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
+              <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b border-slate-100">
@@ -401,55 +402,9 @@ function SiswaMataPelajaran({ user }) {
     fetchSiswaMapel();
   }, []);
 
-  const handleLogout = async () => {
-    const ok = await confirmDialog("Yakin ingin logout?", { isDanger: true, title: "Logout" });
-    if (ok) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
-    }
-  };
-
-  const SISWA_NAV = [
-    { label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6", path: "/dashboard" },
-    { label: "Kelas Saya", icon: "M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z", path: "/mata-pelajaran" },
-    { label: "Profil", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", path: "/profile" },
-  ];
-
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      {/* Sidebar Siswa */}
-      <aside className="fixed left-0 top-0 flex h-full w-56 flex-col bg-white border-r border-slate-100 shadow-sm z-20">
-        <div className="px-6 pt-8 pb-6">
-          <p className="text-sm font-black text-blue-700 tracking-widest">LMS</p>
-          <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-wider">SMK - YAPSIPA TASIKMALAYA</p>
-        </div>
-        <nav className="flex-1 px-4 py-4 space-y-1.5">
-          {SISWA_NAV.map((item) => {
-            const isActive = window.location.pathname === item.path;
-            return (
-              <a
-                key={item.label}
-                href={item.path}
-                className={`flex items-center gap-3.5 rounded-xl px-4 py-3 text-xs font-bold transition ${
-                  isActive
-                    ? "bg-blue-50 text-blue-700"
-                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
-                }`}
-              >
-                <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
-                </svg>
-                {item.label}
-              </a>
-            );
-          })}
-        </nav>
-        
-
-      </aside>
-
-      {/* Main Content */}
-      <main className="ml-56 flex-1 px-10 py-12">
+    <SiswaLayout title="Kelas Saya">
+      <div className="px-4 sm:px-6 lg:px-10 py-6 lg:py-10">
         {/* Header */}
         <div className="mb-10">
           <h1 className="text-3xl font-extrabold text-[#0f172a] tracking-tight">Mata Pelajaran</h1>
@@ -462,25 +417,19 @@ function SiswaMataPelajaran({ user }) {
              <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"></div>
           </div>
         ) : (
-          <div className="space-y-6 max-w-4xl">
+          <div className="space-y-4 max-w-4xl">
             {mapelList.length > 0 ? (
               mapelList.map((m, idx) => {
                 const mapelName = m.nama_mapel || "Mata Pelajaran";
-                
-                // Pada respons JSON, m.guru dan m.kelas dikembalikan langsung sebagai string
                 const guruName = typeof m.guru === "string" ? m.guru : (m.guru?.nama || "Guru Pengajar");
-                const className = typeof m.kelas === "string" ? m.kelas : (m.kelas?.nama_kelas || "Kelas");
+                const kelasName = typeof m.kelas === "string" ? m.kelas : (m.kelas?.nama_kelas || "Kelas");
 
                 return (
-                  <div key={m.id || idx} className="rounded-[20px] bg-white p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.08)] border border-slate-100 flex items-center justify-between transition hover:shadow-md">
-                    <div className="flex items-start gap-5">
+                  <div key={m.id || idx} className="rounded-[20px] bg-white p-5 sm:p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.08)] border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition hover:shadow-md">
+                    <div className="flex items-start gap-4">
                       <div>
-                        <div className="text-[13px] font-semibold text-[#64748B] mb-0.5">
-                          {className}
-                        </div>
-                        <h2 className="text-[19px] font-bold text-[#0F172A] leading-snug">
-                          {mapelName}
-                        </h2>
+                        <div className="text-[13px] font-semibold text-[#64748B] mb-0.5">{kelasName}</div>
+                        <h2 className="text-[17px] font-bold text-[#0F172A] leading-snug">{mapelName}</h2>
                         <div className="flex items-center gap-1.5 text-[13px] font-medium text-[#64748B] mt-1.5">
                           <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
@@ -489,9 +438,9 @@ function SiswaMataPelajaran({ user }) {
                         </div>
                       </div>
                     </div>
-                    <button 
+                    <button
                       onClick={() => navigate(`/ruang-belajar/${m.id || m.kelas_id}`)}
-                      className="shrink-0 flex items-center gap-2 rounded-lg bg-[#0B57D0] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-blue-800"
+                      className="shrink-0 flex items-center gap-2 rounded-lg bg-[#0B57D0] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-blue-800 self-end sm:self-auto"
                     >
                       Masuk Kelas
                       <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -502,68 +451,17 @@ function SiswaMataPelajaran({ user }) {
                 );
               })
             ) : (
-              // Mock items based on the provided screenshot if the list is empty
-              <>
-                 <div className="rounded-[20px] bg-white p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.08)] border border-slate-100 flex items-center justify-between transition hover:shadow-md">
-                    <div className="flex items-start gap-5">
-                      <div>
-                        <div className="text-[13px] font-semibold text-[#64748B] mb-0.5">
-                          X Pemasaran
-                        </div>
-                        <h2 className="text-[19px] font-bold text-[#0F172A] leading-snug">
-                          Pemrograman Web<br/>& Perangkat Bergerak
-                        </h2>
-                        <div className="flex items-center gap-1.5 text-[13px] font-medium text-[#64748B] mt-1.5">
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                          </svg>
-                          Bpk. Ahmad Dahlan, S.Kom
-                        </div>
-                      </div>
-                    </div>
-                    <button 
-                      onClick={() => navigate('/ruang-belajar/1')}
-                      className="shrink-0 flex items-center gap-2 rounded-lg bg-[#0B57D0] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-blue-800"
-                    >
-                      Masuk Kelas
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                      </svg>
-                    </button>
-                  </div>
-
-                  <div className="rounded-[20px] bg-white p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.08)] border border-slate-100 flex items-center justify-between transition hover:shadow-md">
-                    <div className="flex items-start gap-5">
-                      <div>
-                        <div className="text-[13px] font-semibold text-[#64748B] mb-0.5">
-                          X Pemasaran
-                        </div>
-                        <h2 className="text-[19px] font-bold text-[#0F172A] leading-snug">
-                          Basis Data<br/>Lanjut
-                        </h2>
-                        <div className="flex items-center gap-1.5 text-[13px] font-medium text-[#64748B] mt-1.5">
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                          </svg>
-                          Ibu Siti Aminah, M.T
-                        </div>
-                      </div>
-                    </div>
-                    <button 
-                      onClick={() => navigate('/ruang-belajar/2')}
-                      className="shrink-0 flex items-center gap-2 rounded-lg bg-[#0B57D0] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-blue-800"
-                    >
-                      Masuk Kelas
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                      </svg>
-                    </button>
-                  </div>
-              </>
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-20 text-center">
+                <svg className="mx-auto h-12 w-12 text-slate-300 mb-3" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
+                </svg>
+                <p className="font-semibold text-slate-500">Belum ada mata pelajaran</p>
+                <p className="mt-1 text-sm text-slate-400">Anda belum terdaftar di kelas manapun.</p>
+              </div>
             )}
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </SiswaLayout>
   );
 }

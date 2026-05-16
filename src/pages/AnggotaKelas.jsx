@@ -234,7 +234,7 @@ export default function AnggotaKelas() {
     return (
       <main className="min-h-screen bg-[#F8FAFC]">
         <Sidebar />
-        <div className="ml-64 px-10 py-12">
+        <div className="lg:ml-64 px-4 sm:px-6 lg:px-10 pt-12 lg:pt-12 pb-24 lg:pb-12">
           <div className="mb-10 flex flex-wrap items-start justify-between gap-4">
             <div>
               <button
@@ -288,7 +288,7 @@ export default function AnggotaKelas() {
                 Belum ada siswa terdaftar di kelas ini.
               </div>
             ) : (
-              <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
+              <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b border-slate-100 bg-slate-50/50">
@@ -351,7 +351,7 @@ export default function AnggotaKelas() {
                 <p className="mt-1 text-sm">Klik "TAMBAH MAPEL" untuk menambahkan mata pelajaran.</p>
               </div>
             ) : (
-              <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
+              <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b border-slate-100 bg-slate-50/50">
@@ -433,7 +433,7 @@ export default function AnggotaKelas() {
     <main className="min-h-screen bg-[#F8FAFC]">
       <Sidebar />
 
-      <div className="ml-64 px-10 py-12">
+      <div className="lg:ml-64 px-4 sm:px-6 lg:px-10 pt-16 pb-24 lg:pt-12 lg:pb-12">
         {/* Header */}
         <div className="mb-10 flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -485,7 +485,7 @@ export default function AnggotaKelas() {
             </button>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
+          <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50/50">

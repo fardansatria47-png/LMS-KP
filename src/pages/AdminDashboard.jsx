@@ -81,7 +81,7 @@ export default function AdminDashboard({ summary, navigate }) {
   return (
     <>
       <Sidebar />
-      <div className="ml-64 px-8 py-10">
+      <div className="lg:ml-64 px-4 sm:px-6 lg:px-8 pt-16 pb-24 lg:py-10">
         {/* Header */}
         <div className="mb-10 flex items-center justify-between">
           <div>
@@ -92,14 +92,14 @@ export default function AdminDashboard({ summary, navigate }) {
         </div>
 
         {/* Stats */}
-        <div className="mb-10 grid gap-6 sm:grid-cols-3">
+        <div className="mb-8 lg:mb-10 grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-3">
           <StatCard label="Total Siswa" value={summary?.total_siswa || 0} />
           <StatCard label="Total Guru" value={summary?.total_guru || 0} />
           <StatCard label="Mata Pelajaran" value={summary?.total_mapel || 0} />
         </div>
 
         {/* Calendar and Actions */}
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
           {/* Calendar */}
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <h3 className="text-lg font-bold text-blue-600">Kalender</h3>

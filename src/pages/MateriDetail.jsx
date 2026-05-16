@@ -1,12 +1,8 @@
 import { useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+import GuruLayout from "../components/GuruLayout";
 
-const GURU_NAV = [
-  { label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6", path: "/dashboard" },
-  { label: "Kelas", icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4", path: "/kelas" },
-  { label: "Penilaian", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z", path: "/penilaian" },
-  { label: "Profil", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", path: "/profile" },
-];
+
 
 function MateriIcon({ tipe }) {
   if (tipe === "Video") {
@@ -52,37 +48,8 @@ export default function MateriDetail() {
   if (!materi) return null;
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans text-slate-800">
-      {/* Sidebar (simplified logic from KelasDetail) */}
-      <aside className="fixed left-0 top-0 h-screen w-44 border-r border-slate-200 bg-white">
-        <div className="flex flex-col py-6">
-          <div className="mb-10 px-6">
-            <h1 className="text-xl font-bold tracking-tight text-blue-600">LMS</h1>
-            <p className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">SMK - YAPSIPA<br />TASIKMALAYA</p>
-          </div>
-          <nav className="flex flex-col gap-1 px-3">
-            {GURU_NAV.map((item) => {
-              const active = item.path === "/kelas";
-              return (
-                <button
-                  key={item.label}
-                  onClick={() => navigate(item.path)}
-                  className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition ${active ? "bg-blue-600 text-white shadow-md shadow-blue-200" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
-                    }`}
-                >
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
-                  </svg>
-                  {item.label}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-      </aside>
-
-      {/* Main */}
-      <main className="ml-44 flex-1 px-10 py-10">
+    <GuruLayout title={materi.judul}>
+      <div className="px-4 sm:px-6 lg:px-10 py-6 lg:py-10">
         <button
           onClick={() => navigate(`/kelas/${id}`)}
           className="mb-8 flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-blue-600 transition"
@@ -187,7 +154,7 @@ export default function MateriDetail() {
             )}
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </GuruLayout>
   );
 }

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { getKelasGuru, getMateri, deleteMateri, getTugas, deleteTugas, getPengumuman, deletePengumuman, getSiswaGuru } from "../services/authService";
 import DiskusiMapel from "../components/DiskusiMapel";
+import GuruLayout from "../components/GuruLayout";
 import echo from "../utils/echo";
 import { toast } from "../utils/notify";
 
@@ -261,38 +262,8 @@ export default function KelasDetail() {
   const tahunAjaran = kelasInfo?.tahun_ajaran || "";
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex">
-      {/* Sidebar */}
-      <aside className="fixed left-0 top-0 flex h-full w-44 flex-col bg-white border-r border-slate-100 shadow-sm z-20">
-        <div className="px-5 pt-6 pb-4 border-b border-slate-100">
-          <p className="text-xs font-bold text-blue-700 tracking-widest">LMS</p>
-          <p className="text-[10px] font-semibold text-slate-500 mt-0.5">SMK - YAPSIPA TASIKMALAYA</p>
-        </div>
-        <nav className="flex-1 px-3 py-5 space-y-1">
-          {GURU_NAV.map((item) => {
-            const isActive = item.path === "/kelas"
-              ? window.location.pathname.startsWith("/kelas")
-              : window.location.pathname === item.path;
-            return (
-              <a
-                key={item.label}
-                href={item.path}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${isActive ? "bg-blue-600 text-white shadow" : "text-slate-600 hover:bg-slate-100"
-                  }`}
-              >
-                <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
-                </svg>
-                {item.label}
-              </a>
-            );
-          })}
-        </nav>
-
-      </aside>
-
-      {/* Main */}
-      <main className="ml-44 flex-1 px-10 py-10">
+    <GuruLayout title={mapelName}>
+      <div className="px-4 sm:px-6 lg:px-10 py-6 lg:py-10">
         {/* Back */}
         <button
           onClick={() => navigate("/kelas")}
@@ -353,14 +324,15 @@ export default function KelasDetail() {
               )}
             </div>
 
-            {/* Tabs + Upload Button */}
-            <div className="mt-6 flex items-center justify-between border-b border-slate-200">
-              <div className="flex gap-1">
+            {/* Tabs bar */}
+            <div className="mt-6 border-b border-slate-200">
+              {/* Tabs row */}
+              <div className="flex items-center gap-1 overflow-x-auto">
                 {TABS.map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`px-5 py-3 text-sm font-semibold transition border-b-2 -mb-px ${activeTab === tab
+                    className={`flex-shrink-0 px-4 py-3 text-sm font-semibold transition border-b-2 -mb-px ${activeTab === tab
                       ? "border-blue-600 text-blue-600 bg-blue-50 rounded-t-lg"
                       : "border-transparent text-slate-500 hover:text-slate-700"
                       }`}
@@ -369,53 +341,56 @@ export default function KelasDetail() {
                   </button>
                 ))}
               </div>
-              {activeTab === "Materi" && (
-                <button
-                  onClick={() => navigate(`/kelas/${id}/upload-materi`, {
-                    state: {
-                      actualMapelId: kelasInfo?.mapel_id || kelasInfo?.mata_pelajaran_id || id,
-                    }
-                  })}
-                  className="mb-1 flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-blue-700 transition"
-                >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                  </svg>
-                   Upload Materi
-                </button>
-              )}
-              {activeTab === "Tugas" && (
-                <button
-                  onClick={() => navigate(`/kelas/${id}/buat-tugas`, {
-                    state: {
-                      actualMapelId: kelasInfo?.mapel_id || kelasInfo?.mata_pelajaran_id || id,
-                    }
-                  })}
-                  className="mb-1 flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-blue-700 transition"
-                >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                  </svg>
-                  Buat Tugas
-                </button>
-              )}
-              {activeTab === "Pengumuman" && (
-                <button
-                  onClick={() => navigate(`/kelas/${id}/buat-pengumuman`, {
-                    state: {
-                      actualMapelId: kelasInfo?.mapel_id || kelasInfo?.mata_pelajaran_id || id,
-                      rombelId: kelasInfo?.rombel_id || kelasInfo?.kelas_id || kelasInfo?.rombel?.id || null,
-                      anggotaKelasId: kelasInfo?.anggota_kelas_id || kelasInfo?.anggota_id || (String(kelasInfo?.id) === String(id) ? id : null),
-                    }
-                  })}
-                  className="mb-1 flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-blue-700 transition"
-                >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-                  </svg>
-                  Buat Pengumuman
-                </button>
-              )}
+              {/* Action button — below tabs on mobile, right-aligned on desktop */}
+              <div className="flex justify-end py-2">
+                {activeTab === "Materi" && (
+                  <button
+                    onClick={() => navigate(`/kelas/${id}/upload-materi`, {
+                      state: {
+                        actualMapelId: kelasInfo?.mapel_id || kelasInfo?.mata_pelajaran_id || id,
+                      }
+                    })}
+                    className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-blue-700 transition"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                    </svg>
+                    Upload Materi
+                  </button>
+                )}
+                {activeTab === "Tugas" && (
+                  <button
+                    onClick={() => navigate(`/kelas/${id}/buat-tugas`, {
+                      state: {
+                        actualMapelId: kelasInfo?.mapel_id || kelasInfo?.mata_pelajaran_id || id,
+                      }
+                    })}
+                    className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-blue-700 transition"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    Buat Tugas
+                  </button>
+                )}
+                {activeTab === "Pengumuman" && (
+                  <button
+                    onClick={() => navigate(`/kelas/${id}/buat-pengumuman`, {
+                      state: {
+                        actualMapelId: kelasInfo?.mapel_id || kelasInfo?.mata_pelajaran_id || id,
+                        rombelId: kelasInfo?.rombel_id || kelasInfo?.kelas_id || kelasInfo?.rombel?.id || null,
+                        anggotaKelasId: kelasInfo?.anggota_kelas_id || kelasInfo?.anggota_id || (String(kelasInfo?.id) === String(id) ? id : null),
+                      }
+                    })}
+                    className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-blue-700 transition"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                    </svg>
+                    Buat Pengumuman
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Tab Content */}
@@ -484,7 +459,7 @@ export default function KelasDetail() {
               {activeTab === "Tugas" && (
                 <div>
                   <h2 className="mb-4 text-lg font-bold text-slate-800">Daftar Tugas</h2>
-                  
+
                   {tugasList.length === 0 ? (
                     <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-20 text-center">
                       <svg className="mx-auto h-12 w-12 text-slate-300 mb-3" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
@@ -494,102 +469,66 @@ export default function KelasDetail() {
                       <p className="mt-1 text-sm text-slate-400">Klik "Buat Tugas" untuk memberikan penugasan baru.</p>
                     </div>
                   ) : (
-                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                      <table className="w-full border-collapse">
-                        <colgroup>
-                          <col style={{ width: "25%" }} />
-                          <col style={{ width: "35%" }} />
-                          <col style={{ width: "22%" }} />
-                          <col />
-                        </colgroup>
-                        <thead>
-                          <tr className="bg-slate-50 border-b border-slate-100">
-                            <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Judul Tugas</th>
-                            <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Deskripsi / Instruksi</th>
-                            <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Tenggat Waktu</th>
-                            <th className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Aksi</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {tugasList.map((tugas, idx) => (
-                            <tr
-                              key={tugas.id}
-                              onClick={() => navigate(`/kelas/${id}/edit-tugas/${tugas.id}`, { state: { tugas } })}
-                              className={`group cursor-pointer transition hover:bg-blue-50 ${idx !== tugasList.length - 1 ? "border-b border-slate-100" : ""}`}
-                            >
-                              {/* Judul */}
-                              <td className="px-5 py-4">
-                                <div className="flex items-center gap-3">
-                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600 transition group-hover:bg-blue-600 group-hover:text-white">
-                                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                                      <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
-                                    </svg>
-                                  </div>
-                                  <span className="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition leading-tight">{tugas.judul}</span>
-                                </div>
-                              </td>
+                    <div className="flex flex-col gap-3">
+                      {tugasList.map((tugas, idx) => (
+                        <div
+                          key={tugas.id}
+                          onClick={() => navigate(`/kelas/${id}/edit-tugas/${tugas.id}`, { state: { tugas } })}
+                          className="group cursor-pointer rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md"
+                        >
+                          {/* Row 1: icon + title + action buttons */}
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600 transition group-hover:bg-blue-600 group-hover:text-white">
+                                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+                                </svg>
+                              </div>
+                              <span className="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition leading-tight">{tugas.judul}</span>
+                            </div>
+                            {/* Action buttons */}
+                            <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); navigate(`/kelas/${id}/tugas/${tugas.id}/pengumpulan`); }}
+                                className="rounded-lg bg-blue-100 px-2.5 py-1.5 text-xs font-bold text-blue-700 hover:bg-blue-200 transition whitespace-nowrap"
+                              >
+                                Nilai
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); navigate(`/kelas/${id}/edit-tugas/${tugas.id}`, { state: { tugas } }); }}
+                                className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition"
+                                title="Edit"
+                              >
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setDeleteTugasConfirm(tugas); }}
+                                className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition"
+                                title="Hapus"
+                              >
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
 
-                              {/* Deskripsi */}
-                              <td className="px-5 py-4">
-                                {tugas.deskripsi ? (
-                                  <p className="text-sm text-slate-500 line-clamp-2 leading-snug">{tugas.deskripsi}</p>
-                                ) : (
-                                  <span className="text-xs italic text-slate-300">Tidak ada deskripsi</span>
-                                )}
-                              </td>
-
-                              {/* Tenggat */}
-                              <td className="px-5 py-4">
-                                <div className="flex items-center gap-1.5">
-                                  <svg className="h-4 w-4 text-blue-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-                                  </svg>
-                                  <span className="text-sm text-slate-600 font-medium">{formatDeadline(tugas.deadline)}</span>
-                                </div>
-                              </td>
-
-                              {/* Aksi */}
-                              <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      navigate(`/kelas/${id}/tugas/${tugas.id}/pengumpulan`);
-                                    }}
-                                    className="rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-bold text-blue-700 hover:bg-blue-200 transition whitespace-nowrap"
-                                  >
-                                    Pengumpulan
-                                  </button>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      navigate(`/kelas/${id}/edit-tugas/${tugas.id}`, { state: { tugas } });
-                                    }}
-                                    className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition"
-                                    title="Edit"
-                                  >
-                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                    </svg>
-                                  </button>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setDeleteTugasConfirm(tugas);
-                                    }}
-                                    className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition"
-                                    title="Hapus"
-                                  >
-                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          {/* Row 2: desc + deadline */}
+                          <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 pl-12">
+                            {tugas.deskripsi && (
+                              <p className="text-xs text-slate-500 line-clamp-1 flex-1 min-w-0">{tugas.deskripsi}</p>
+                            )}
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <svg className="h-3.5 w-3.5 text-amber-400 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span className="text-xs font-semibold text-amber-600">{formatDeadline(tugas.deadline)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -782,7 +721,7 @@ export default function KelasDetail() {
             </div>
           </>
         )}
-      </main>
+      </div>
 
       {/* Delete Confirm */}
       {deleteConfirm && (
@@ -863,6 +802,6 @@ export default function KelasDetail() {
           </div>
         </div>
       )}
-    </div>
+    </GuruLayout>
   );
 }

@@ -2,12 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getSiswaProfile, updateSiswaPassword, getCurrentUser } from "../services/authService";
 import { confirmDialog } from "../utils/notify";
+import SiswaLayout from "../components/SiswaLayout";
 
-const SISWA_NAV = [
-  { label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6", path: "/dashboard" },
-  { label: "Kelas Saya", icon: "M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z", path: "/mata-pelajaran" },
-  { label: "Profil", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", path: "/profile" },
-];
+
 
 export default function SiswaProfile() {
   const [user, setUser] = useState(null);
@@ -107,50 +104,8 @@ export default function SiswaProfile() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#f8fafc]">
-      {/* Sidebar Sederhana - menggunakan format 56 seperti di dashboard siswa, atau 44 seperti guru */}
-      <aside className="fixed left-0 top-0 flex h-full w-56 flex-col bg-white border-r border-slate-100 shadow-sm z-20">
-        <div className="px-6 pt-8 pb-6">
-          <p className="text-sm font-black text-blue-700 tracking-widest">LMS</p>
-          <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-wider">SMK - YAPSIPA TASIKMALAYA</p>
-        </div>
-        <nav className="flex-1 px-4 py-4 space-y-1.5">
-          {SISWA_NAV.map((item) => {
-            const isActive = window.location.pathname === item.path;
-            return (
-              <a
-                key={item.label}
-                href={item.path}
-                className={`flex items-center gap-3.5 rounded-xl px-4 py-3 text-xs font-bold transition ${
-                  isActive
-                    ? "bg-blue-50 text-blue-700 shadow-sm"
-                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
-                }`}
-              >
-                <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
-                </svg>
-                {item.label}
-              </a>
-            );
-          })}
-        </nav>
-        {/* Tombol logout HANYA MUNCUL DI HALAMAN PROFIL */}
-        <div className="p-4 border-t border-slate-100">
-          <button
-            onClick={handleLogout}
-            className="flex w-full items-center gap-3.5 rounded-xl px-4 py-3 text-xs font-bold text-rose-600 transition hover:bg-rose-50"
-          >
-            <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-            </svg>
-            LOGOUT
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="ml-56 flex-1 p-10">
+    <SiswaLayout title="Profil">
+      <div className="px-4 sm:px-6 lg:px-10 py-6 lg:py-10">
         <header className="mb-8">
           <h1 className="text-2xl font-bold text-slate-900">Profil Siswa</h1>
           <p className="text-sm text-slate-500">Informasi akun Anda</p>
@@ -326,7 +281,7 @@ export default function SiswaProfile() {
             </form>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </SiswaLayout>
   );
 }

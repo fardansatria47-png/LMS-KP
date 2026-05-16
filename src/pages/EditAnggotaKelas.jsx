@@ -132,7 +132,7 @@ export default function EditAnggotaKelas() {
   return (
     <main className="min-h-screen bg-[#F8FAFC]">
       <Sidebar />
-      <div className="ml-64 px-10 py-12">
+      <div className="lg:ml-64 px-4 sm:px-6 lg:px-10 pt-16 pb-24 lg:py-12">
         <div className="mb-10">
           <h1 className="text-[28px] font-bold text-blue-600 uppercase tracking-wide">EDIT ROMBEL / KELAS</h1>
           <p className="mt-1 text-sm font-medium text-slate-400">Ubah data rombongan belajar</p>

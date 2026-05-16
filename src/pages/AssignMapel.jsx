@@ -209,7 +209,7 @@ export default function AssignMapel() {
     <main className="min-h-screen bg-[#F8FAFC]">
       <Sidebar />
 
-      <div className="ml-64 px-10 py-12">
+      <div className="lg:ml-64 px-4 sm:px-6 lg:px-10 pt-16 pb-24 lg:py-12">
         {/* ── Header ──────────────────────────────────────────────────── */}
         <div className="mb-10 flex flex-wrap items-start justify-between gap-4">
           <div>

@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import CalendarWidget from "../components/CalendarWidget";
+import GuruLayout from "../components/GuruLayout";
 
 const GURU_NAV = [
   { label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6", path: "/dashboard" },
@@ -68,46 +69,16 @@ export default function GuruDashboard({ user, summary }) {
   ];
 
   return (
-    <div className="min-h-screen bg-white flex">
-      {/* Sidebar Guru */}
-      <aside className="fixed left-0 top-0 flex h-full w-44 flex-col bg-white border-r border-slate-100 shadow-sm z-20">
-        <div className="px-5 pt-6 pb-4 border-b border-slate-100">
-          <p className="text-xs font-bold text-blue-700 tracking-widest">LMS</p>
-          <p className="text-[10px] font-semibold text-slate-500 mt-0.5">SMK - YAPSIPA TASIKMALAYA</p>
-        </div>
-        <nav className="flex-1 px-3 py-5 space-y-1">
-          {GURU_NAV.map((item) => {
-            const isActive = window.location.pathname === item.path;
-            return (
-              <a
-                key={item.label}
-                href={item.path}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${isActive
-                    ? "bg-blue-600 text-white shadow"
-                    : "text-slate-600 hover:bg-slate-100"
-                  }`}
-              >
-                <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
-                </svg>
-                {item.label}
-              </a>
-            );
-          })}
-        </nav>
-
-      </aside>
-
-      {/* Main Content */}
-      <main className="ml-44 flex-1 px-8 py-10 bg-white">
+    <GuruLayout title="Dashboard">
+      <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-10 bg-white min-h-screen">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">Halo, {nama}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Halo, {nama}</h1>
           <p className="mt-1 text-sm text-slate-500">Ringkasan aktivitas pembelajaran Anda</p>
         </div>
 
         {/* Stat Cards */}
-        <div className="mb-8 grid grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="mb-8 grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
           {statItems.map((s, i) => (
             <div
               key={i}
@@ -171,7 +142,7 @@ export default function GuruDashboard({ user, summary }) {
             )}
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </GuruLayout>
   );
 }

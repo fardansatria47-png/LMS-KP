@@ -111,7 +111,7 @@ export default function Register() {
     <div className="min-h-screen bg-[#F8FAFC] flex">
       <Sidebar />
 
-      <main className="ml-64 flex-1 p-10 flex flex-col items-center">
+      <main className="lg:ml-64 flex-1 px-4 sm:px-6 lg:px-10 py-6 lg:py-10 flex flex-col items-center">
         <div className="w-full max-w-3xl">
           {/* Header Section */}
           <div className="mb-10">
