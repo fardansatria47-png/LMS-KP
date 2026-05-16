@@ -295,3 +295,16 @@ export const getDiskusi = async (mapelId) => {
 export const sendDiskusi = async (mapelId, pesan) => {
   return await API.post(`/diskusi/${mapelId}`, { pesan });
 };
+
+// ── AI Generate Soal ────────────────────────────────────────────────────────
+export const generateDeskripsiAI = async (data) => {
+  return await API.post("/ai/generate-deskripsi", data);
+};
+
+export const generateSoalAI = async (data) => {
+  return await API.post("/bank-soal/generate", data);
+};
+
+export const getSoalAIStatus = async (logId) => {
+  return await API.get(`/bank-soal/status/${logId}`);
+};
