@@ -19,10 +19,15 @@ export default function GuruLayout({ children, title }) {
     window.location.href = "/login";
   };
 
-  const isActive = (item) =>
-    item.path === "/kelas"
-      ? location.pathname.startsWith("/kelas")
-      : location.pathname === item.path;
+  const isActive = (item) => {
+    if (item.path === "/kelas") {
+      return location.pathname.startsWith("/kelas");
+    }
+    if (item.path === "/pengumuman") {
+      return location.pathname === "/pengumuman";
+    }
+    return location.pathname === item.path;
+  };
 
   return (
     <div className="min-h-screen bg-[#F0F4FF]">

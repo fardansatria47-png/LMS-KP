@@ -108,9 +108,19 @@ export default function SiswaDashboard({ user, summary }) {
           <CalendarWidget />
 
           {/* Pengumuman */}
-          <div>
-            <h2 className="mb-4 text-sm font-bold text-slate-800">Pengumuman</h2>
-            <div className="space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="mb-4 text-sm font-bold text-slate-800">Pengumuman</h2>
+              <p className="text-xs text-slate-500">Lihat pengumuman terbaru dari mata pelajaran Anda.</p>
+            </div>
+            <button
+              onClick={() => navigate('/siswa-pengumuman')}
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              Lihat Semua Pengumuman
+            </button>
+          </div>
+          <div className="space-y-4">
               {pengumumanList.length > 0 ? (
                 pengumumanList.map((p, idx) => (
                   <div key={p.id || idx} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex gap-5 items-start">

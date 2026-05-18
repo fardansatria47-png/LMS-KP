@@ -26,6 +26,7 @@ import BuatPengumuman from "./pages/BuatPengumuman";
 import EditPengumuman from "./pages/EditPengumuman";
 
 import SiswaRuangBelajar from "./pages/SiswaRuangBelajar";
+import SiswaPengumuman from "./pages/SiswaPengumuman";
 import SiswaMateriDetail from "./pages/SiswaMateriDetail";
 import SiswaTugasDetail from "./pages/SiswaTugasDetail";
 
@@ -69,6 +70,7 @@ function App() {
         <Route path="/kelas/:id/edit-tugas/:tugasId" element={token ? <EditTugas /> : <Navigate to="/login" />} />
         <Route path="/kelas/:id/buat-pengumuman" element={token ? <BuatPengumuman /> : <Navigate to="/login" />} />
         <Route path="/kelas/:id/edit-pengumuman/:pengumumanId" element={token ? <EditPengumuman /> : <Navigate to="/login" />} />
+        <Route path="/siswa-pengumuman" element={token ? <SiswaPengumuman /> : <Navigate to="/login" />} />
         <Route path="/profile" element={token ? <Profile /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
