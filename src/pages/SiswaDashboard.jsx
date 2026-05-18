@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { confirmDialog } from "../utils/notify";
+import { getMataPelajaranSiswa } from "../services/authService";
 import CalendarWidget from "../components/CalendarWidget";
 import SiswaLayout from "../components/SiswaLayout";
 
@@ -12,10 +13,46 @@ const SISWA_NAV = [
 
 export default function SiswaDashboard({ user, summary }) {
   const navigate = useNavigate();
+  const [mataPelajaranList, setMataPelajaranList] = useState([]);
 
   const nama = summary?.siswa_name || user?.nama || user?.name || "Siswa";
   const stats = summary?.summary || {};
   const pengumumanList = summary?.pengumuman || [];
+
+  // Fetch mata pelajaran siswa untuk resolve nama mapel di pengumuman
+  useEffect(() => {
+    getMataPelajaranSiswa()
+      .then((res) => {
+        const data = res.data?.data || res.data || [];
+        setMataPelajaranList(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Helper: ambil nama mapel dari mapel_id
+  const getNamaMapel = (p) => {
+    // Coba langsung dari field pengumuman itu sendiri
+    const direct = p.nama_mapel
+      || p.mapel?.nama
+      || p.mapel?.nama_mapel
+      || p.mata_pelajaran?.nama
+      || p.mata_pelajaran?.nama_mapel
+      || p.mata_pelajaran?.nama_pelajaran
+      || (typeof p.mata_pelajaran === 'string' ? p.mata_pelajaran : null)
+      || p.subject_name
+      || p.mapel_name;
+    if (direct) return direct;
+
+    // Lookup dari daftar mata pelajaran siswa
+    const mapelId = p.mapel_id || p.mata_pelajaran_id;
+    if (mapelId && mataPelajaranList.length > 0) {
+      const found = mataPelajaranList.find(
+        (m) => String(m.mapel_id || m.mata_pelajaran_id || m.id) === String(mapelId)
+      );
+      if (found) return found.nama_mapel || found.mata_pelajaran || found.nama;
+    }
+    return "Mata Pelajaran";
+  };
 
   // Realtime WebSocket (Reverb) listener
   useEffect(() => {
@@ -108,24 +145,30 @@ export default function SiswaDashboard({ user, summary }) {
           <CalendarWidget />
 
           {/* Pengumuman */}
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2 className="mb-4 text-sm font-bold text-slate-800">Pengumuman</h2>
-              <p className="text-xs text-slate-500">Lihat pengumuman terbaru dari mata pelajaran Anda.</p>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-sm font-bold text-slate-800">Pengumuman</h2>
+                <p className="text-xs text-slate-500">Lihat pengumuman terbaru dari mata pelajaran Anda.</p>
+              </div>
+              <button
+                onClick={() => navigate('/siswa-pengumuman')}
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Lihat Semua Pengumuman
+              </button>
             </div>
-            <button
-              onClick={() => navigate('/siswa-pengumuman')}
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
-            >
-              Lihat Semua Pengumuman
-            </button>
-          </div>
-          <div className="space-y-4">
+            <div className="space-y-4">
               {pengumumanList.length > 0 ? (
                 pengumumanList.map((p, idx) => (
                   <div key={p.id || idx} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex gap-5 items-start">
-                    <div>
-                      <h3 className="font-bold text-sm text-slate-800">{p.judul || p.title || "Pengumuman"}</h3>
+                    <div className="w-full">
+                      <div className="flex items-start justify-between gap-4">
+                        <h3 className="font-bold text-sm text-slate-800">{p.judul || p.title || "Pengumuman"}</h3>
+                        <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-700 whitespace-nowrap">
+                          {getNamaMapel(p)}
+                        </span>
+                      </div>
                       <p className="mt-2 text-xs font-medium text-slate-500 leading-relaxed">
                         {p.deskripsi || p.konten || p.content || "Tidak ada deskripsi."}
                       </p>
