@@ -83,7 +83,7 @@ export default function Login({ onLogin }) {
             <span className="text-blue-200">Learning Management<br />System</span>
           </h1>
           <p className="mt-5 text-base text-blue-100/80 leading-relaxed">
-            SMK YAPSIPA Tasikmalaya Platform Pembelajaran Digital Untuk Guru dan Siswa.
+            SMK YAPSIPA Tasikmalaya Platform Pembelajaran Digital untuk Guru dan Siswa.
           </p>
         </div>
       </section>
