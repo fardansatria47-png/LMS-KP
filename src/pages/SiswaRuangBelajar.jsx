@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { getMataPelajaranSiswaDetail, getTugasSiswa } from "../services/authService";
+import { getMataPelajaranSiswaDetail, getTugasSiswa, getPengumuman } from "../services/authService";
 import DiskusiMapel from "../components/DiskusiMapel";
 import SiswaLayout from "../components/SiswaLayout";
 import { fixFileUrl } from "../api/api";
@@ -8,7 +8,7 @@ import echo from "../utils/echo";
 import { toast, confirmDialog } from "../utils/notify";
 
 
-const TABS = ["Materi", "Tugas", "Diskusi"];
+const TABS = ["Materi", "Tugas", "Diskusi", "Pengumuman"];
 
 export default function SiswaRuangBelajar() {
   const { id } = useParams();
@@ -25,6 +25,9 @@ export default function SiswaRuangBelajar() {
   const [hasFetchedTugas, setHasFetchedTugas] = useState(false);
   const [errorTugas, setErrorTugas] = useState("");
 
+  const [pengumumanList, setPengumumanList] = useState([]);
+  const [loadingPengumuman, setLoadingPengumuman] = useState(false);
+  const [errorPengumuman, setErrorPengumuman] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -43,27 +46,30 @@ export default function SiswaRuangBelajar() {
   }, [id]);
 
   useEffect(() => {
-    if (activeTab === "Tugas" && !hasFetchedTugas) {
+    if ((activeTab === "Tugas" || activeTab === "Pengumuman") && data) {
+      if (activeTab === "Tugas" && hasFetchedTugas) {
+        return;
+      }
+
       const fetchTugas = async () => {
         try {
           setLoadingTugas(true);
           const mapelId = data?.mapel_id || data?.mata_pelajaran_id || id;
           const res = await getTugasSiswa(mapelId);
           
-          // Debugging: ekstrak data dengan lebih aman
           let rawData = res.data;
           let list = [];
           
           if (rawData?.success && Array.isArray(rawData.data)) {
             list = rawData.data;
           } else if (rawData?.data?.tugas && Array.isArray(rawData.data.tugas)) {
-            list = rawData.data.tugas; // Sesuai format API terbaru
+            list = rawData.data.tugas;
           } else if (Array.isArray(rawData)) {
             list = rawData;
           } else if (rawData?.data?.data && Array.isArray(rawData.data.data)) {
-            list = rawData.data.data; // Paginated
+            list = rawData.data.data;
           } else if (rawData?.tugas && Array.isArray(rawData.tugas)) {
-            list = rawData.tugas; // Jika dibungkus object "tugas" langsung
+            list = rawData.tugas;
           }
           
           setTugasList(list);
@@ -75,10 +81,66 @@ export default function SiswaRuangBelajar() {
           setLoadingTugas(false);
         }
       };
-      fetchTugas();
+
+      if (activeTab === "Tugas") {
+        fetchTugas();
+      }
     }
   }, [activeTab, data, id, hasFetchedTugas]);
 
+  useEffect(() => {
+    if (activeTab !== "Pengumuman" || !data) {
+      return;
+    }
+
+    const fetchPengumuman = async () => {
+      try {
+        setLoadingPengumuman(true);
+        const mapelId = data?.mapel_id || data?.mata_pelajaran_id || id;
+        const res = await getPengumuman({ mapel_id: mapelId });
+        const rawData = res.data;
+        let list = [];
+
+        if (rawData?.success && Array.isArray(rawData.data)) {
+          list = rawData.data;
+        } else if (Array.isArray(rawData)) {
+          list = rawData;
+        } else if (rawData?.data && Array.isArray(rawData.data)) {
+          list = rawData.data;
+        } else if (rawData?.pengumuman && Array.isArray(rawData.pengumuman)) {
+          list = rawData.pengumuman;
+        }
+
+        setPengumumanList(list);
+      } catch (err) {
+        console.error("Gagal memuat pengumuman:", err);
+        setErrorPengumuman("Gagal memuat pengumuman. Pastikan endpoint sudah benar.");
+      } finally {
+        setLoadingPengumuman(false);
+      }
+    };
+
+    fetchPengumuman();
+  }, [activeTab, data, id]);
+
+  useEffect(() => {
+    if (!data) return;
+
+    const mapelId = data?.mapel_id || data?.mata_pelajaran_id || id;
+    const channelName = `pengumuman.mapel.${mapelId}`;
+
+    const channel = echo.channel(channelName);
+    channel.listen("PengumumanCreated", (event) => {
+      if (event?.pengumuman) {
+        setPengumumanList((current) => [event.pengumuman, ...current]);
+      }
+    });
+
+    return () => {
+      channel.stopListening("PengumumanCreated");
+      echo.leaveChannel(channelName);
+    };
+  }, [data, id]);
 
   const handleLogout = async () => {
     const ok = await confirmDialog("Yakin ingin logout?", { isDanger: true, title: "Logout" });
@@ -276,6 +338,60 @@ export default function SiswaRuangBelajar() {
             {activeTab === "Diskusi" && (
               <div className="mt-2">
                 <DiskusiMapel mapelId={data?.mapel_id || data?.mata_pelajaran_id || id} />
+              </div>
+            )}
+
+            {activeTab === "Pengumuman" && (
+              <div>
+                <h2 className="text-lg font-bold text-[#0F172A] mb-4">Pengumuman {mapelName}</h2>
+
+                {loadingPengumuman ? (
+                  <div className="flex justify-center p-10">
+                    <div className="h-6 w-6 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"></div>
+                  </div>
+                ) : errorPengumuman ? (
+                  <div className="rounded-xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
+                    {errorPengumuman}
+                  </div>
+                ) : pengumumanList.length === 0 ? (
+                  <div className="rounded-[20px] border border-slate-200 bg-white p-10 text-center">
+                    <p className="text-slate-500 font-medium">Belum ada pengumuman untuk mata pelajaran ini.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {pengumumanList.map((pengumuman, idx) => {
+                      const publishedAt = pengumuman.created_at
+                        ? new Date(pengumuman.created_at).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : "Baru saja";
+
+                      return (
+                        <div key={pengumuman.id || idx} className="rounded-[20px] bg-white p-6 shadow-sm border border-slate-100">
+                          <div className="flex flex-col gap-3">
+                            <div className="flex items-center justify-between gap-4">
+                              <div>
+                                <h3 className="text-[17px] font-bold text-[#0F172A] leading-snug">
+                                  {pengumuman.judul || pengumuman.title || "Pengumuman"
+                                  }
+                                </h3>
+                                <p className="text-[13px] text-[#64748B] mt-1">
+                                  {pengumuman.penulis || pengumuman.user_name || guruName}
+                                </p>
+                              </div>
+                              <span className="text-[12px] text-slate-400">{publishedAt}</span>
+                            </div>
+                            <p className="text-[14px] text-[#334155] leading-relaxed whitespace-pre-line">
+                              {pengumuman.deskripsi || pengumuman.body || "Tidak ada keterangan."}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -184,9 +184,6 @@ export default function DataPengguna() {
               : user.jurusan?.nama || user.jurusan?.nama_jurusan
               || user.nama_jurusan || "-"}
           </td>
-          <td className="px-3 py-4 text-center text-sm font-medium text-slate-600">
-            {user._kelasLabel || user.tingkat || user.kelas?.nama || "-"}
-          </td>
         </>
       )}
       <td className="px-4 py-4 pr-8">
@@ -235,7 +232,6 @@ export default function DataPengguna() {
                 <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">NIS</th>
                 <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Jenis Kelamin</th>
                 <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Jurusan</th>
-                <th className="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Kelas</th>
                 <th className="px-3 py-3 pr-6 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Aksi</th>
               </tr>
             </thead>
