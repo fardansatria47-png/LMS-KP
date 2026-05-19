@@ -18,6 +18,7 @@ export default function SiswaDashboard({ user, summary }) {
   const nama = summary?.siswa_name || user?.nama || user?.name || "Siswa";
   const stats = summary?.summary || {};
   const pengumumanList = summary?.pengumuman || [];
+  const notifikasiTugas = summary?.notifikasi_tugas || null;
 
   // Fetch mata pelajaran siswa untuk resolve nama mapel di pengumuman
   useEffect(() => {
@@ -52,6 +53,27 @@ export default function SiswaDashboard({ user, summary }) {
       if (found) return found.nama_mapel || found.mata_pelajaran || found.nama;
     }
     return "Mata Pelajaran";
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "Baru saja";
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Baru saja";
+    if (diffMins < 60) return `${diffMins} menit lalu`;
+    if (diffHours < 24) return `${diffHours} jam lalu`;
+    if (diffDays < 7) return `${diffDays} hari lalu`;
+
+    return date.toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
   };
 
   // Realtime WebSocket (Reverb) listener
@@ -95,7 +117,7 @@ export default function SiswaDashboard({ user, summary }) {
     <SiswaLayout title="Dashboard">
       <div className="px-4 sm:px-6 lg:px-10 py-6 lg:py-12">
         {/* Header */}
-        <div className="mb-8 border-b border-slate-200 pb-6">
+        <div className="mb-6">
           <h1 className="text-2xl sm:text-4xl font-extrabold text-[#0f172a] tracking-tight">Halo, {nama}</h1>
           <p className="mt-2 text-sm font-medium text-slate-500">Lanjutkan aktivitas pembelajaran Anda hari ini.</p>
         </div>
@@ -172,8 +194,11 @@ export default function SiswaDashboard({ user, summary }) {
                       <p className="mt-2 text-xs font-medium text-slate-500 leading-relaxed">
                         {p.deskripsi || p.konten || p.content || "Tidak ada deskripsi."}
                       </p>
-                      <p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                        {p.waktu || (p.created_at ? new Date(p.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : "Baru Saja")}
+                      <p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {p.waktu || formatDate(p.created_at)}
                       </p>
                     </div>
                   </div>

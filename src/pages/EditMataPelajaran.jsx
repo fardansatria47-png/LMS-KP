@@ -243,32 +243,6 @@ export default function EditMataPelajaran() {
                 />
               </div>
 
-              {/* Jurusan */}
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-600">Pilih Jurusan</label>
-                <SelectWrapper>
-                  <select name="jurusan_id" value={form.jurusan_id} onChange={handleChange} className="w-full appearance-none rounded-xl bg-blue-50/50 px-4 py-3.5 pr-10 text-sm text-slate-700 outline-none transition focus:bg-white focus:ring-2 focus:ring-blue-500">
-                    <option value="">Silakan pilih jurusan</option>
-                    {optionsJurusan.map((item) => (
-                      <option key={item.id} value={item.id}>{item.nama || item.nama_jurusan}</option>
-                    ))}
-                  </select>
-                </SelectWrapper>
-              </div>
-
-              {/* Kelas */}
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-600">Pilih Kelas</label>
-                <SelectWrapper>
-                  <select name="kelas_id" value={form.kelas_id} onChange={handleChange} className="w-full appearance-none rounded-xl bg-blue-50/50 px-4 py-3.5 pr-10 text-sm text-slate-700 outline-none transition focus:bg-white focus:ring-2 focus:ring-blue-500">
-                    <option value="">Silakan pilih kelas</option>
-                    {optionsKelas.map((item) => (
-                      <option key={item.id} value={item.id}>{item.nama || item.tingkat || item.nama_kelas}</option>
-                    ))}
-                  </select>
-                </SelectWrapper>
-              </div>
-
               {/* Guru */}
               <MultiSelectContainer
                 title="Guru Pengajar"

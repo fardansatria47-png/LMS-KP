@@ -259,7 +259,7 @@ export default function SiswaTugasDetail() {
 
                   {/* Tambahan catatan jika perlu (opsional berdasar screenshot) */}
                   <div className="rounded-xl bg-[#EFF6FF] p-4 text-[13px] text-blue-800 font-medium">
-                    <span className="font-bold">Catatan:</span> Pastikan jawaban dikumpulkan sesuai dengan instruksi yang diberikan oleh guru. Format file yang diizinkan biasanya berupa PDF, DOCX, ZIP, atau RAR.
+                    <span className="font-bold">Catatan:</span> Pastikan jawaban dikumpulkan sesuai dengan instruksi yang diberikan oleh guru begitu juga dengan format file nya
                   </div>
                 </div>
               </div>

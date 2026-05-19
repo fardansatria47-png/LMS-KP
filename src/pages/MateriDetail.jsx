@@ -137,16 +137,28 @@ export default function MateriDetail() {
                     <div className="grid grid-cols-1 gap-6">
                       {materi.files
                         .filter(f => f?.tipe?.toUpperCase() === "YOUTUBE")
-                        .map(file => (
-                          <div key={file.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ring-1 ring-slate-100">
-                            <iframe
-                              className="aspect-video w-full"
-                              src={file.url.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/")}
-                              frameBorder="0"
-                              allowFullScreen>
-                            </iframe>
-                          </div>
-                        ))}
+                        .map(file => {
+                          let embedUrl = file.url;
+                          if (embedUrl?.includes("watch?v=")) {
+                            const vId = new URL(embedUrl).searchParams.get("v");
+                            if (vId) embedUrl = `https://www.youtube.com/embed/${vId}`;
+                          } else if (embedUrl?.includes("youtu.be/")) {
+                            const vId = embedUrl.split("youtu.be/")[1]?.split("?")[0];
+                            if (vId) embedUrl = `https://www.youtube.com/embed/${vId}`;
+                          }
+
+                          return (
+                            <div key={file.id} className="relative z-0 aspect-video w-full overflow-hidden rounded-2xl border border-slate-200 bg-black shadow-sm ring-1 ring-slate-100">
+                              <iframe
+                                className="absolute left-0 top-0 z-10 h-full w-full"
+                                src={embedUrl}
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen>
+                              </iframe>
+                            </div>
+                          );
+                        })}
                     </div>
                   </div>
                 )}

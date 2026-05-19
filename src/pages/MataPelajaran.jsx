@@ -267,10 +267,8 @@ export default function MataPelajaran() {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b border-slate-100">
-                      <th className="py-4 pl-8 pr-4 text-xs font-bold uppercase tracking-wider text-slate-400">Mata Pelajaran</th>
+                      <th className="py-4 pl-8 pr-4 text-xs font-bold uppercase tracking-wider text-slate-400">Mata Pelajaran & Rombel</th>
                       <th className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-400">Kode Mapel</th>
-                      <th className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-400">Jurusan</th>
-                      <th className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-400">Kelas</th>
                       <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">Guru</th>
                       <th className="px-4 py-4 pr-8 text-right text-xs font-bold uppercase tracking-wider text-slate-400">Aksi</th>
                     </tr>
@@ -278,14 +276,11 @@ export default function MataPelajaran() {
                   <tbody className="divide-y divide-slate-50">
                     {items.map((item) => (
                       <tr key={item.id} className="transition hover:bg-slate-50/50">
-                        <td className="py-4 pl-8 pr-4 text-sm font-semibold text-slate-700">{item.nama_mapel}</td>
-                        <td className="px-4 py-4 text-center text-sm font-semibold text-slate-600">{item.kode_mapel}</td>
-                        <td className="px-4 py-4 text-center text-sm font-semibold text-slate-600">{item.nama_jurusan}</td>
-                        <td className="px-4 py-4 text-center text-sm font-semibold text-slate-600">
-                          <div className="flex flex-col items-center gap-1">
-                            <span>{item.tingkat || item.nama_kelas || item.kelas_id}</span>
+                        <td className="py-4 pl-8 pr-4">
+                          <div className="flex flex-col gap-1.5">
+                            <span className="text-sm font-semibold text-slate-700">{item.nama_mapel}</span>
                             {item.rombels && item.rombels.length > 0 && (
-                              <div className="flex flex-wrap justify-center gap-1">
+                              <div className="flex flex-wrap gap-1">
                                 {item.rombels.map((r, idx) => (
                                   <span key={idx} className="inline-flex items-center rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-bold text-violet-700">
                                     {r.nama_rombel || r.nama}
@@ -295,6 +290,7 @@ export default function MataPelajaran() {
                             )}
                           </div>
                         </td>
+                        <td className="px-4 py-4 text-center text-sm font-semibold text-slate-600">{item.kode_mapel}</td>
                         <td className="px-4 py-4 text-left text-sm font-semibold text-slate-600">
                           {item.gurus && item.gurus.length > 0 ? (
                             <div className="flex flex-wrap gap-1">

@@ -132,18 +132,30 @@ export default function SiswaMateriDetail() {
                 </div>
                 
                 <div className="space-y-6">
-                  {youtubeFiles.map((vid, idx) => (
-                    <div key={idx} className="rounded-[20px] overflow-hidden border border-slate-200 shadow-sm bg-black aspect-video w-full">
-                      <iframe 
-                        className="w-full h-full"
-                        src={vid.url} 
-                        title={vid.nama_file || "Video Pembelajaran"} 
-                        frameBorder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowFullScreen>
-                      </iframe>
-                    </div>
-                  ))}
+                  {youtubeFiles.map((vid, idx) => {
+                    // Pastikan URL-nya menggunakan format embed agar tidak diblok
+                    let embedUrl = vid.url;
+                    if (embedUrl?.includes("watch?v=")) {
+                      const vId = new URL(embedUrl).searchParams.get("v");
+                      if (vId) embedUrl = `https://www.youtube.com/embed/${vId}`;
+                    } else if (embedUrl?.includes("youtu.be/")) {
+                      const vId = embedUrl.split("youtu.be/")[1]?.split("?")[0];
+                      if (vId) embedUrl = `https://www.youtube.com/embed/${vId}`;
+                    }
+                    
+                    return (
+                      <div key={idx} className="rounded-[20px] overflow-hidden border border-slate-200 shadow-sm bg-black aspect-video w-full relative z-0">
+                        <iframe 
+                          className="absolute top-0 left-0 w-full h-full z-10"
+                          src={embedUrl} 
+                          title={vid.nama_file || "Video Pembelajaran"} 
+                          frameBorder="0" 
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                          allowFullScreen>
+                        </iframe>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -182,9 +194,9 @@ export default function SiswaMateriDetail() {
                           href={fixFileUrl(file.url)} 
                           target="_blank" 
                           rel="noreferrer"
-                          className="flex items-center justify-center rounded-lg bg-[#0B57D0] px-6 py-2.5 text-[13px] font-bold text-white transition hover:bg-blue-800 gap-2"
+                          className="flex shrink-0 items-center justify-center rounded-lg bg-[#0B57D0] px-4 py-2 sm:px-6 sm:py-2.5 text-[11px] sm:text-[13px] font-bold text-white transition hover:bg-blue-800 gap-1.5 sm:gap-2 whitespace-nowrap"
                         >
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                          <svg className="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                           </svg>
                           Unduh Materi

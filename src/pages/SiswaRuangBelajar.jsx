@@ -9,7 +9,7 @@ import echo from "../utils/echo";
 import { toast, confirmDialog } from "../utils/notify";
 
 
-const TABS = ["Materi", "Tugas", "Diskusi", "Pengumuman"];
+const TABS = ["Materi", "Tugas", "Diskusi"];
 
 export default function SiswaRuangBelajar() {
   const { id } = useParams();
@@ -154,6 +154,7 @@ export default function SiswaRuangBelajar() {
   const mapelDeskripsi = data?.deskripsi || "";
   const kelasName = data?.kelas || "Kelas";
   const guruName = data?.guru || "Guru Pengajar";
+  const tugasTertunda = data?.tugas_tertunda ?? 0;
   
   let materiList = data?.materi || [];
   if (materiList && materiList.data && Array.isArray(materiList.data)) {
@@ -213,13 +214,18 @@ export default function SiswaRuangBelajar() {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2.5 text-sm font-bold transition border-b-2 -mb-px whitespace-nowrap ${
+                  className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-bold transition border-b-2 -mb-px whitespace-nowrap ${
                     activeTab === tab
                       ? "border-blue-600 text-blue-600"
                       : "border-transparent text-slate-500 hover:text-slate-800"
                   }`}
                 >
                   {tab}
+                  {tab === "Tugas" && tugasTertunda > 0 && (
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white leading-none">
+                      {tugasTertunda > 9 ? "9+" : tugasTertunda}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>

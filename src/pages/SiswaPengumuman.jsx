@@ -44,16 +44,12 @@ export default function SiswaPengumuman() {
   }, []);
 
   useEffect(() => {
-    if (!selectedMapel) {
-      setPengumumanList([]);
-      return;
-    }
-
     const fetchPengumumanByMapel = async () => {
       setLoading(true);
       setError("");
       try {
-        const resPengumuman = await getPengumuman({ mapel_id: selectedMapel });
+        const payload = selectedMapel ? { mapel_id: selectedMapel } : {};
+        const resPengumuman = await getPengumuman(payload);
         const pengData = resPengumuman.data?.data || resPengumuman.data || [];
         setPengumumanList(Array.isArray(pengData) ? pengData : []);
       } catch (err) {
