@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { getMataPelajaranSiswaDetail, getTugasSiswa, getPengumuman } from "../services/authService";
+import { getErrorMessage } from "../utils/translateError";
 import DiskusiMapel from "../components/DiskusiMapel";
 import SiswaLayout from "../components/SiswaLayout";
 import { fixFileUrl } from "../api/api";
@@ -36,8 +37,7 @@ export default function SiswaRuangBelajar() {
         const res = await getMataPelajaranSiswaDetail(id);
         setData(res.data?.data || res.data);
       } catch (err) {
-        console.error("Gagal memuat ruang belajar:", err);
-        setError(err?.response?.data?.message || "Gagal memuat detail kelas.");
+        setError(getErrorMessage(err, "Gagal memuat detail kelas."));
       } finally {
         setLoading(false);
       }
@@ -208,7 +208,7 @@ export default function SiswaRuangBelajar() {
               </div>
             </div>
             {/* Tabs — di bawah header banner */}
-            <div className="flex gap-1 border-b border-slate-200 overflow-x-auto -mx-1 px-1">
+            <div className="flex gap-1 border-b border-slate-200 overflow-x-auto scrollbar-hide -mx-1 px-1">
               {TABS.map((tab) => (
                 <button
                   key={tab}

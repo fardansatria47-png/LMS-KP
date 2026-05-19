@@ -4,6 +4,7 @@ import Sidebar from "../components/Sidebar";
 import { getMapel, deleteMapel, getGuru, getGuruByMapelRoute, getCurrentUser, getMataPelajaranSiswa } from "../services/authService";
 import { toast, confirmDialog } from "../utils/notify";
 import SiswaLayout from "../components/SiswaLayout";
+import { getErrorMessage } from "../utils/translateError";
 
 const PER_PAGE = 2; // Grouping pagination
 
@@ -86,8 +87,7 @@ export default function MataPelajaran() {
 
       setMapel(mapelWithGurus);
     } catch (err) {
-      setError(err?.response?.data?.message || "Gagal memuat data mata pelajaran");
-      console.error("MataPelajaran error:", err);
+      setError(getErrorMessage(err, "Gagal memuat data mata pelajaran"));
     } finally {
       setLoading(false);
     }

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { updateTugas, getTugasById } from "../services/authService";
 import GuruLayout from "../components/GuruLayout";
+import { getErrorMessage } from "../utils/translateError";
 
 
 
@@ -69,7 +70,7 @@ export default function EditTugas() {
       await updateTugas(tugasId, fd);
       navigate(`/kelas/${id}`, { state: { successMsg: "Tugas berhasil diperbarui!" } });
     } catch (err) {
-      setError(err?.response?.data?.message || "Gagal memperbarui tugas.");
+      setError(getErrorMessage(err, "Gagal memperbarui tugas."));
     } finally {
       setLoading(false);
     }

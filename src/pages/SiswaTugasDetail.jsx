@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { getTugasSiswaDetail, submitTugasSiswa, batalkanPengumpulanSiswa } from "../services/authService";
 import { fixFileUrl } from "../api/api";
+import { getErrorMessage } from "../utils/translateError";
 import { toast, confirmDialog } from "../utils/notify";
 import SiswaLayout from "../components/SiswaLayout";
 
@@ -48,7 +49,7 @@ export default function SiswaTugasDetail() {
         
       } catch (err) {
         console.error("Gagal memuat detail tugas:", err);
-        setError(err?.response?.data?.message || "Gagal memuat detail tugas.");
+        setError(getErrorMessage(err, "Gagal memuat detail tugas."));
       } finally {
         setLoading(false);
       }

@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { getPengumuman, getKelasGuru, deletePengumuman } from "../services/authService";
+import { getErrorMessage } from "../utils/translateError";
 import GuruLayout from "../components/GuruLayout";
 import echo from "../utils/echo";
 import { toast } from "../utils/notify";
@@ -34,8 +35,7 @@ export default function GuruPengumuman() {
         setSelectedMapel(list[0].mapel_id || list[0].mata_pelajaran_id || list[0].id);
       }
     } catch (err) {
-      setError(err?.response?.data?.message || "Gagal memuat data pengumuman");
-      console.error("Fetch error:", err);
+      setError(getErrorMessage(err, "Gagal memuat data pengumuman"));
     } finally {
       setLoading(false);
     }
@@ -59,8 +59,7 @@ export default function GuruPengumuman() {
         const pengData = resPengumuman.data?.data || resPengumuman.data || [];
         setPengumumanList(Array.isArray(pengData) ? pengData : []);
       } catch (err) {
-        setError(err?.response?.data?.message || "Gagal memuat data pengumuman");
-        console.error("Fetch error:", err);
+        setError(getErrorMessage(err, "Gagal memuat data pengumuman"));
       } finally {
         setLoading(false);
       }

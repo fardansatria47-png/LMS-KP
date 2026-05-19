@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { registerUser, getRegisterForm } from "../services/authService";
 import Sidebar from "../components/Sidebar";
+import { getErrorMessage } from "../utils/translateError";
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -84,21 +85,7 @@ export default function Register() {
       const successMessage = res.data?.message || "Register berhasil!";
       navigate("/data-pengguna", { state: { successMessage } });
     } catch (err) {
-      let displayMessage = "Register gagal 😢";
-
-      if (err.response) {
-        const data = err.response.data;
-        if (err.response.status === 422 && data.errors) {
-          // Gabungkan semua pesan error validasi Laravel menjadi satu string
-          displayMessage = Object.values(data.errors).flat().join(" | ");
-        } else {
-          displayMessage = data.message || data.error || "Terjadi kesalahan pada data (422)";
-        }
-      } else if (err.message === "Network Error") {
-        displayMessage = "Network error: Periksa koneksi atau backend server.";
-      }
-
-      setMessage(displayMessage);
+      setMessage(getErrorMessage(err, "Register gagal. Periksa kembali data yang diisi."));
     } finally {
       setLoading(false);
     }

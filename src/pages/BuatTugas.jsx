@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { createTugas, generateDeskripsiAI } from "../services/authService";
 import GuruLayout from "../components/GuruLayout";
+import { getErrorMessage } from "../utils/translateError";
 
 
 function formatFileSize(bytes) {
@@ -44,7 +45,7 @@ export default function BuatTugas() {
       setShowAIModal(false);
       setAiPrompt("");
     } catch (err) {
-      setAiError(err?.response?.data?.message || err.message || "Gagal generate deskripsi.");
+      setAiError(getErrorMessage(err, "Gagal generate deskripsi."));
     } finally {
       setAiLoading(false);
     }
@@ -73,7 +74,7 @@ export default function BuatTugas() {
       await createTugas(fd);
       navigate(`/kelas/${id}`, { state: { successMsg: "Tugas berhasil dibuat!" } });
     } catch (err) {
-      setError(err?.response?.data?.message || "Gagal membuat tugas.");
+      setError(getErrorMessage(err, "Gagal membuat tugas."));
     } finally {
       setLoading(false);
     }

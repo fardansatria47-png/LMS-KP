@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { getMataPelajaranSiswa, getPengumuman, getCurrentUserProfile } from "../services/authService";
 import SiswaLayout from "../components/SiswaLayout";
+import { getErrorMessage } from "../utils/translateError";
 import echo from "../utils/echo";
 import { toast, confirmDialog } from "../utils/notify";
 
@@ -32,8 +33,7 @@ export default function SiswaPengumuman() {
         setSelectedMapel(mapelList[0].mapel_id || mapelList[0].mata_pelajaran_id || mapelList[0].id);
       }
     } catch (err) {
-      setError(err?.response?.data?.message || "Gagal memuat data pengumuman");
-      console.error("Fetch error:", err);
+      setError(getErrorMessage(err, "Gagal memuat data pengumuman"));
     } finally {
       setLoading(false);
     }
@@ -57,8 +57,7 @@ export default function SiswaPengumuman() {
         const pengData = resPengumuman.data?.data || resPengumuman.data || [];
         setPengumumanList(Array.isArray(pengData) ? pengData : []);
       } catch (err) {
-        setError(err?.response?.data?.message || "Gagal memuat data pengumuman");
-        console.error("Fetch error:", err);
+        setError(getErrorMessage(err, "Gagal memuat data pengumuman"));
       } finally {
         setLoading(false);
       }

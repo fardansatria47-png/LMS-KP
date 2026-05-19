@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getMapelById, updateMapel, getMapelFormData } from "../services/authService";
 import Sidebar from "../components/Sidebar";
+import { getErrorMessage } from "../utils/translateError";
 
 export default function EditMataPelajaran() {
   const { id } = useParams();
@@ -61,7 +62,7 @@ export default function EditMataPelajaran() {
         }
       } catch (err) {
         console.error("Gagal mengambil data:", err);
-        setMessage("Gagal memuat data.");
+        setMessage(getErrorMessage(err, "Gagal memuat data."));
       } finally {
         setFetching(false);
       }
@@ -101,8 +102,7 @@ export default function EditMataPelajaran() {
       });
       navigate("/mata-pelajaran");
     } catch (err) {
-      const data = err.response?.data;
-      setMessage(data?.message || data?.error || "Gagal memperbarui data.");
+      setMessage(getErrorMessage(err, "Gagal memperbarui data."));
     } finally {
       setLoading(false);
     }

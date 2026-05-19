@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { createMateri } from "../services/authService";
 import GuruLayout from "../components/GuruLayout";
+import { getErrorMessage } from "../utils/translateError";
 
 
 
@@ -117,7 +118,7 @@ export default function UploadMateri() {
       await createMateri(fd);
       navigate(`/kelas/${id}`, { state: { successMsg: "Materi berhasil diupload!" } });
     } catch (err) {
-      setError(err?.response?.data?.message || "Gagal mengupload materi.");
+      setError(getErrorMessage(err, "Gagal mengupload materi."));
     } finally {
       setLoading(false);
     }

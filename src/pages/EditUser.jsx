@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
 import { getSiswaById, getGuruById, updateSiswa, updateGuru, getRegisterForm } from "../services/authService";
 import Sidebar from "../components/Sidebar";
+import { getErrorMessage } from "../utils/translateError";
 
 export default function EditUser() {
   const { id } = useParams();
@@ -51,7 +52,7 @@ export default function EditUser() {
         }
       } catch (err) {
         console.error("Gagal mengambil data:", err);
-        setMessage("Gagal memuat data pengguna.");
+        setMessage(getErrorMessage(err, "Gagal memuat data pengguna."));
       }
     };
 
@@ -97,20 +98,7 @@ export default function EditUser() {
       const successMessage = res.data?.message || "Data berhasil diperbarui!";
       navigate("/data-pengguna", { state: { successMessage } });
     } catch (err) {
-      let displayMessage = "Gagal memperbarui data 😢";
-
-      if (err.response) {
-        const data = err.response.data;
-        if (err.response.status === 422 && data.errors) {
-          displayMessage = Object.values(data.errors).flat().join(" | ");
-        } else {
-          displayMessage = data.message || data.error || "Terjadi kesalahan pada data (422)";
-        }
-      } else if (err.message === "Network Error") {
-        displayMessage = "Network error: Periksa koneksi atau backend server.";
-      }
-
-      setMessage(displayMessage);
+      setMessage(getErrorMessage(err, "Gagal memperbarui data. Periksa kembali isian Anda."));
     } finally {
       setLoading(false);
     }

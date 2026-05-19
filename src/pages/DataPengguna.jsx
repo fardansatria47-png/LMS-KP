@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { getSiswa, getGuru, deleteSiswa, deleteGuru } from "../services/authService";
 import { toast } from "../utils/notify";
+import { getErrorMessage } from "../utils/translateError";
 
 // ── Constants ────────────────────────────────────────────────────────
 const PER_PAGE = 10;
@@ -69,7 +70,7 @@ export default function DataPengguna() {
 
       setUsers([...dataSiswa, ...dataGuru]);
     } catch (err) {
-      setError(err?.response?.data?.message || "Gagal memuat data pengguna");
+      setError(getErrorMessage(err, "Gagal memuat data pengguna"));
     } finally {
       setLoading(false);
     }

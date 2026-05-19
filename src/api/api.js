@@ -59,12 +59,14 @@ api.interceptors.response.use(
       });
 
       // 🔐 Token invalid / expired — skip broadcasting/auth endpoint
-      const isAuthEndpoint = error.config?.url?.includes('/broadcasting/auth');
+      const isAuthEndpoint = error.config?.url?.includes('/broadcasting/auth') || error.config?.url?.endsWith('/login');
       if (error.response.status === 401 && !isAuthEndpoint) {
         console.warn("Token expired / unauthorized");
         localStorage.removeItem("token");
         // optional redirect ke login
-        window.location.href = "/login";
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
       }
     }
 

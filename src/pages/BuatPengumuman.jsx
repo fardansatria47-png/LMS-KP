@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { createPengumuman } from "../services/authService";
 import GuruLayout from "../components/GuruLayout";
+import { getErrorMessage } from "../utils/translateError";
 
 
 
@@ -45,7 +46,7 @@ export default function BuatPengumuman() {
       await createPengumuman(payload);
       navigate(`/kelas/${id}`, { state: { successMsg: "Pengumuman berhasil dipublikasikan!", activeTab: "Pengumuman" } });
     } catch (err) {
-      setError(err?.response?.data?.message || "Gagal membuat pengumuman.");
+      setError(getErrorMessage(err, "Gagal membuat pengumuman."));
     } finally {
       setLoading(false);
     }

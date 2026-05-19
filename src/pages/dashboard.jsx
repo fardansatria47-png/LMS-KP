@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDashboardSummary, getCurrentUser, getDashboardGuru, getDashboardSiswa } from "../services/authService";
+import { getErrorMessage } from "../utils/translateError";
 import AdminDashboard from "./AdminDashboard";
 import GuruDashboard from "./GuruDashboard";
 import SiswaDashboard from "./SiswaDashboard";
@@ -41,7 +42,7 @@ export default function Dashboard() {
           setSummary(summaryData);
         }
       } catch (err) {
-        setError(err?.response?.data?.message || "Gagal memuat data dashboard");
+        setError(getErrorMessage(err, "Gagal memuat data dashboard"));
         console.error("Dashboard error:", err);
       } finally {
         setLoading(false);

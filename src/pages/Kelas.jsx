@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getKelasGuru } from "../services/authService";
 import GuruLayout from "../components/GuruLayout";
+import { getErrorMessage } from "../utils/translateError";
 
 const GURU_NAV = [
   { label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6", path: "/dashboard" },
@@ -35,11 +36,7 @@ export default function Kelas() {
         const data = res.data?.data || res.data || [];
         setKelasList(Array.isArray(data) ? data : []);
       } catch (err) {
-        if (err?.response?.status === 403) {
-          setError("Akses Ditolak: Role Anda tidak sesuai untuk halaman ini (403 Forbidden).");
-        } else {
-          setError(err?.response?.data?.message || "Gagal memuat data kelas.");
-        }
+        setError(getErrorMessage(err, "Gagal memuat data kelas."));
         console.error("Fetch kelas guru error:", err);
       } finally {
         setLoading(false);

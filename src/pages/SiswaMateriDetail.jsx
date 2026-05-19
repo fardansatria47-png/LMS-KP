@@ -3,6 +3,7 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { getMataPelajaranSiswaDetail } from "../services/authService";
 import { fixFileUrl } from "../api/api";
 import { confirmDialog } from "../utils/notify";
+import { getErrorMessage } from "../utils/translateError";
 import SiswaLayout from "../components/SiswaLayout";
 
 
@@ -36,8 +37,7 @@ export default function SiswaMateriDetail() {
             setError("Materi tidak ditemukan.");
           }
         } catch (err) {
-          console.error("Gagal memuat detail materi:", err);
-          setError(err?.response?.data?.message || "Gagal memuat detail materi.");
+          setError(getErrorMessage(err, "Gagal memuat detail materi."));
         } finally {
           setLoading(false);
         }

@@ -58,4 +58,13 @@
   .page-container {
     @apply px-4 sm:px-6 lg:px-8 py-5 lg:py-8;
   }
+
+  /* Utility untuk menyembunyikan scrollbar tapi tetap bisa di-scroll */
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
 }

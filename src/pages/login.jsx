@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { loginUser } from "../services/authService";
+import { getErrorMessage } from "../utils/translateError";
 
 export default function Login({ onLogin }) {
   const [username, setUsername]       = useState("");
@@ -40,18 +41,11 @@ export default function Login({ onLogin }) {
       onLogin?.(token);
       navigate("/dashboard");
     } catch (err) {
-      let displayMessage = "Login gagal";
-      if (err.response) {
-        const status = err.response?.status;
-        const data   = err.response?.data;
-        displayMessage = data?.message || data?.error || `Error ${status || "unknown"}`;
-        if (status === 502) displayMessage = "502 Bad Gateway: Backend tidak responsif.";
-      } else if (err.message === "Network Error") {
-        displayMessage = "Network error: Periksa koneksi atau backend server.";
-      } else {
-        displayMessage = err.message || displayMessage;
+      let msg = getErrorMessage(err, "Login gagal. Periksa username dan kata sandi Anda.");
+      if (err.response?.status === 401) {
+        msg = "Username atau kata sandi salah.";
       }
-      setMessage(displayMessage);
+      setMessage(msg);
     } finally {
       setLoading(false);
     }

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { getRombel, deleteRombel, kickSiswaFromRombel, getSiswa, getRombelById, getRombelMapel, getGuru, getGuruByMapelRoute } from "../services/authService";
 import { toast } from "../utils/notify";
+import { getErrorMessage } from "../utils/translateError";
 
 export default function AnggotaKelas() {
   const navigate = useNavigate();
@@ -36,8 +37,7 @@ export default function AnggotaKelas() {
       const dataRombel = resRombel.data?.data || resRombel.data || [];
       setRombelList(dataRombel);
     } catch (err) {
-      setError(err?.response?.data?.message || "Gagal memuat data rombel");
-      console.error("Rombel error:", err);
+      setError(getErrorMessage(err, "Gagal memuat data rombel"));
     } finally {
       setLoading(false);
     }

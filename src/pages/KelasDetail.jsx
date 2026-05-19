@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { getKelasGuru, getMateri, deleteMateri, getTugas, deleteTugas, getPengumuman, deletePengumuman, getSiswaGuru } from "../services/authService";
+import { getErrorMessage } from "../utils/translateError";
 import DiskusiMapel from "../components/DiskusiMapel";
 import GuruLayout from "../components/GuruLayout";
 import echo from "../utils/echo";
@@ -143,7 +144,7 @@ export default function KelasDetail() {
         navigate("/dashboard");
         return;
       }
-      setError(err?.response?.data?.message || "Gagal memuat data.");
+      setError(getErrorMessage(err, "Gagal memuat data."));
     } finally {
       setLoading(false);
     }
@@ -327,7 +328,7 @@ export default function KelasDetail() {
             {/* Tabs bar */}
             <div className="mt-6 border-b border-slate-200">
               {/* Tabs row */}
-              <div className="flex items-center gap-1 overflow-x-auto">
+              <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
                 {TABS.map((tab) => (
                   <button
                     key={tab}

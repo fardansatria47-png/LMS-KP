@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { updatePengumuman } from "../services/authService";
 import GuruLayout from "../components/GuruLayout";
+import { getErrorMessage } from "../utils/translateError";
 
 
 
@@ -37,7 +38,7 @@ export default function EditPengumuman() {
       });
       navigate(`/kelas/${id}`, { state: { successMsg: "Pengumuman berhasil diperbarui!", activeTab: "Pengumuman" } });
     } catch (err) {
-      setError(err?.response?.data?.message || "Gagal memperbarui pengumuman.");
+      setError(getErrorMessage(err, "Gagal memperbarui pengumuman."));
     } finally {
       setLoading(false);
     }
