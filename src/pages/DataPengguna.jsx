@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-import { getSiswa, getGuru, deleteSiswa, deleteGuru } from "../services/authService";
+import { getSiswa, getGuru, deleteSiswa, deleteGuru, importSiswa, importGuru } from "../services/authService";
 import { toast } from "../utils/notify";
 import { getErrorMessage } from "../utils/translateError";
 
@@ -21,6 +21,35 @@ export default function DataPengguna() {
   const [deleteModal, setDeleteModal] = useState({ open: false, user: null });
   const [deleting, setDeleting] = useState(false);
   const [selectedKelas, setSelectedKelas] = useState(null);
+
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importFile, setImportFile] = useState(null);
+  const [importing, setImporting] = useState(false);
+
+  const handleImport = async (e) => {
+    e.preventDefault();
+    if (!importFile) {
+      toast("Silakan pilih file terlebih dahulu", "error");
+      return;
+    }
+    setImporting(true);
+    try {
+      if (tab === "siswa") {
+        await importSiswa(importFile);
+        toast("Berhasil mengimpor data siswa", "success");
+      } else {
+        await importGuru(importFile);
+        toast("Berhasil mengimpor data guru", "success");
+      }
+      setIsImportModalOpen(false);
+      setImportFile(null);
+      fetchUsers();
+    } catch (err) {
+      toast(getErrorMessage(err, `Gagal mengimpor data ${tab}`), "error");
+    } finally {
+      setImporting(false);
+    }
+  };
 
   useEffect(() => {
     fetchUsers();
@@ -285,10 +314,21 @@ export default function DataPengguna() {
         ) : (
           <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
             <h1 className="text-[28px] font-bold text-blue-600 uppercase tracking-wide">Manajemen Data Pengguna</h1>
-            <button onClick={() => navigate("/register")} className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-blue-200 transition hover:bg-blue-700 hover:shadow-lg">
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
-              Buat Akun Pengguna
-            </button>
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => setIsImportModalOpen(true)}
+                className="flex items-center gap-2 rounded-xl border border-blue-200 bg-white px-5 py-3 text-sm font-semibold text-blue-600 shadow-sm transition hover:bg-blue-50"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Import Excel
+              </button>
+              <button onClick={() => navigate("/register")} className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-blue-200 transition hover:bg-blue-700 hover:shadow-lg">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                Buat Akun Pengguna
+              </button>
+            </div>
           </div>
         )}
 
@@ -357,6 +397,99 @@ export default function DataPengguna() {
                 {deleting ? "Menghapus…" : "Ya, Hapus"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Import Modal */}
+      {isImportModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg animate-[fadeIn_0.2s_ease] rounded-2xl bg-white p-6 sm:p-8 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-4">
+              <h3 className="text-xl font-bold text-slate-900">Import Data {tab === "siswa" ? "Siswa" : "Guru"}</h3>
+              <button
+                onClick={() => { setIsImportModalOpen(false); setImportFile(null); }}
+                className="rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <h4 className="text-sm font-semibold text-slate-700 mb-2">Format Kolom Excel (Mulai dari Kolom A):</h4>
+              <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
+                {tab === "siswa" ? (
+                  <ol className="list-decimal list-inside text-sm text-slate-600 space-y-1">
+                    <li><strong className="text-slate-800">NIS</strong> (sebagai Username)</li>
+                    <li><strong className="text-slate-800">Nama</strong> (Nama Lengkap)</li>
+                    <li><strong className="text-slate-800">Jenis Kelamin</strong> (Laki-laki / Perempuan / L / P)</li>
+                    <li><strong className="text-slate-800">Rombel</strong> (ID Rombel, misal: <code className="bg-slate-200 px-1 rounded">1</code> atau nama Rombel seperti <code className="bg-slate-200 px-1 rounded">X PPLG</code>)</li>
+                    <li><strong className="text-slate-800">Password</strong></li>
+                  </ol>
+                ) : (
+                  <ol className="list-decimal list-inside text-sm text-slate-600 space-y-1">
+                    <li><strong className="text-slate-800">NIK</strong> (sebagai Username)</li>
+                    <li><strong className="text-slate-800">Nama</strong> (Nama Lengkap)</li>
+                    <li><strong className="text-slate-800">Jenis Kelamin</strong> (Laki-laki / Perempuan / L / P)</li>
+                    <li><strong className="text-slate-800">Password</strong></li>
+                  </ol>
+                )}
+              </div>
+              <p className="mt-3 text-xs text-slate-400">Dukungan format file: .xlsx, .xls, .csv</p>
+            </div>
+
+            <form onSubmit={handleImport}>
+              <div className="mb-6">
+                <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-slate-300 rounded-2xl cursor-pointer hover:bg-slate-50 hover:border-blue-400 transition">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <svg className="w-8 h-8 mb-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <p className="mb-2 text-sm text-slate-500 font-medium">
+                      {importFile ? <span className="text-blue-600 font-bold">{importFile.name}</span> : <span>Pilih File Excel / CSV</span>}
+                    </p>
+                    <p className="text-xs text-slate-400">Klik untuk menjelajah file</p>
+                  </div>
+                  <input
+                    type="file"
+                    accept=".xlsx,.xls,.csv"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files.length > 0) {
+                        setImportFile(e.target.files[0]);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => { setIsImportModalOpen(false); setImportFile(null); }}
+                  disabled={importing}
+                  className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={importing || !importFile}
+                  className="flex-1 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {importing ? (
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      Memproses...
+                    </>
+                  ) : (
+                    "Unggah & Proses"
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

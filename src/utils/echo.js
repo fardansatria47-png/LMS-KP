@@ -8,7 +8,7 @@ Pusher.logToConsole = true;
 // Because we don't have .env setup here yet, we will define defaults
 // that can be customized easily if needed.
 const REVERB_APP_KEY = '34390549805146d697e1';
-const REVERB_HOST = '192.168.1.17'; 
+const REVERB_HOST = '192.168.1.32';
 const REVERB_PORT = 8080;
 const REVERB_SCHEME = 'http';
 
@@ -27,12 +27,12 @@ const echo = new Echo({
                     socket_id: socketId,
                     channel_name: channel.name
                 })
-                .then(response => {
-                    callback(false, response.data);
-                })
-                .catch(error => {
-                    callback(true, error);
-                });
+                    .then(response => {
+                        callback(false, response.data);
+                    })
+                    .catch(error => {
+                        callback(true, error);
+                    });
             }
         };
     },

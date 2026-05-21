@@ -127,6 +127,54 @@ export function translateErrorMessage(msg) {
   return msg; // Kembalikan apa adanya jika tidak ada terjemahan
 }
 
+const formatErrorItem = (item) => {
+  if (!item) return "";
+  if (typeof item === "string") {
+    return translateErrorMessage(item);
+  }
+  if (typeof item === "object") {
+    // Check if it matches Maatwebsite Excel failure object:
+    // { row: 2, attribute: "NIS", errors: ["The NIS field is required."] }
+    const row = item.row || item.line || item.baris;
+    const attribute = item.attribute || item.field || item.column || item.kolom;
+    const errors = item.errors || item.messages || item.message || item.error;
+
+    if (row !== undefined || attribute !== undefined || errors !== undefined) {
+      const rowText = row ? `Baris ${row}: ` : "";
+      
+      let errorText = "";
+      if (Array.isArray(errors)) {
+        errorText = errors.map(translateErrorMessage).join(", ");
+      } else if (typeof errors === "string") {
+        errorText = translateErrorMessage(errors);
+      } else if (typeof errors === "object" && errors !== null) {
+        errorText = Object.values(errors).flat().map(translateErrorMessage).join(", ");
+      }
+
+      if (!errorText && attribute) {
+        errorText = `${translateFieldName(attribute)} tidak valid.`;
+      }
+
+      if (rowText || errorText) {
+        return `${rowText}${errorText}`.trim();
+      }
+    }
+
+    // Fallback: search for any string values inside the object
+    const values = Object.values(item).flat().filter(v => typeof v === "string" || typeof v === "number");
+    if (values.length > 0) {
+      return values.map(v => translateErrorMessage(String(v))).join(" - ");
+    }
+
+    try {
+      return JSON.stringify(item);
+    } catch {
+      return "Format error tidak dikenal";
+    }
+  }
+  return String(item);
+};
+
 /**
  * Proses error dari Axios (response Laravel) dan kembalikan pesan Bahasa Indonesia.
  * Mendukung:
@@ -147,8 +195,8 @@ export function getErrorMessage(err, defaultMessage = "Terjadi kesalahan. Silaka
 
     // Validasi 422 dengan banyak field errors
     if (status === 422 && data?.errors) {
-      const messages = Object.values(data.errors).flat();
-      return messages.map(translateErrorMessage).join(" | ");
+      const errors = Array.isArray(data.errors) ? data.errors : Object.values(data.errors).flat();
+      return errors.map(formatErrorItem).join(" | ");
     }
 
     // Status 502 Bad Gateway

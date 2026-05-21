@@ -308,3 +308,24 @@ export const generateSoalAI = async (data) => {
 export const getSoalAIStatus = async (logId) => {
   return await API.get(`/bank-soal/status/${logId}`);
 };
+
+// ── Import Siswa & Guru ──────────────────────────────────────────
+export const importSiswa = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  return await API.post("/siswa/import", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const importGuru = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  return await API.post("/guru/import", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
