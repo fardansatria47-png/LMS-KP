@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getPengumpulanGuru, simpanNilaiGuru } from "../services/authService";
 import { fixFileUrl } from "../api/api";
-import { toast, confirmDialog } from "../utils/notify";
+import { toast } from "../utils/notify";
 import GuruLayout from "../components/GuruLayout";
 
 
@@ -18,6 +18,7 @@ export default function PengumpulanTugas() {
   const [error, setError] = useState("");
   const [modalNilai, setModalNilai] = useState({ isOpen: false, data: null, nilaiInput: "", catatanInput: "" });
   const [savingNilai, setSavingNilai] = useState(false);
+  const [modalLampiran, setModalLampiran] = useState({ isOpen: false, data: null });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,13 +65,6 @@ export default function PengumpulanTugas() {
     fetchData();
   }, [tugasId]);
 
-  const handleLogout = async () => {
-    const ok = await confirmDialog("Yakin ingin logout?", { isDanger: true, title: "Logout" });
-    if (ok) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
-    }
-  };
 
   const openModalNilai = (item) => {
     setModalNilai({
@@ -83,6 +77,14 @@ export default function PengumpulanTugas() {
 
   const closeModalNilai = () => {
     setModalNilai({ isOpen: false, data: null, nilaiInput: "", catatanInput: "" });
+  };
+
+  const openModalLampiran = (item) => {
+    setModalLampiran({ isOpen: true, data: item });
+  };
+
+  const closeModalLampiran = () => {
+    setModalLampiran({ isOpen: false, data: null });
   };
 
   const handleSimpanNilaiModal = async () => {
@@ -260,15 +262,19 @@ export default function PengumpulanTugas() {
                           }
                         </td>
                         <td className="px-6 py-5">
-                          {item.lampiran ? (
-                            <a href={fixFileUrl(item.lampiran)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 hover:underline transition max-w-[200px] truncate">
-                              <svg className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                          {item.file || item.lampiran || item.link ? (
+                            <button
+                              onClick={() => openModalLampiran(item)}
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition"
+                            >
+                              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                               </svg>
-                              <span className="truncate">{item.nama_file || "Lihat File"}</span>
-                            </a>
+                              Lihat Pengumpulan
+                            </button>
                           ) : (
-                            <span className="text-xs text-slate-400 font-medium bg-slate-50 px-2 py-1 rounded-md">{item.nama_file || "Belum ada file"}</span>
+                            <span className="text-xs text-slate-400 font-medium bg-slate-50 px-2 py-1 rounded-md max-w-max">Belum ada jawaban</span>
                           )}
                         </td>
                         <td className="px-6 py-5">
@@ -375,6 +381,73 @@ export default function PengumpulanTugas() {
                 ) : (
                   "Simpan Nilai"
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Lihat Pengumpulan */}
+      {modalLampiran.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-indigo-50/50">
+              <h3 className="font-extrabold text-slate-800 text-lg flex items-center gap-2">
+                <svg className="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                </svg>
+                Detail Pengumpulan
+              </h3>
+              <button onClick={closeModalLampiran} className="text-slate-400 hover:text-slate-600 transition p-1 rounded-full hover:bg-slate-100">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="mb-5 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Nama Siswa</p>
+                <p className="font-extrabold text-slate-800 text-lg">{modalLampiran.data?.nama_siswa}</p>
+              </div>
+              
+              <div className="space-y-4">
+                {(modalLampiran.data?.file || modalLampiran.data?.lampiran) && (
+                  <div>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">File Terlampir</p>
+                    <a href={fixFileUrl(modalLampiran.data.file || modalLampiran.data.lampiran)} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-xl border border-blue-100 bg-blue-50/50 p-3 text-sm font-semibold text-blue-700 hover:bg-blue-100 transition group">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600 group-hover:bg-blue-200 transition">
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <span className="truncate flex-1">{modalLampiran.data.nama_file || "Lihat Dokumen"}</span>
+                      <svg className="h-4 w-4 text-blue-400" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                    </a>
+                  </div>
+                )}
+                
+                {modalLampiran.data?.link && (
+                  <div>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tautan (Link)</p>
+                    <a href={modalLampiran.data.link} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50/50 p-3 text-sm font-semibold text-emerald-700 hover:bg-emerald-100 transition group" title={modalLampiran.data.link}>
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 group-hover:bg-emerald-200 transition">
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                        </svg>
+                      </div>
+                      <span className="truncate flex-1">{modalLampiran.data.link}</span>
+                      <svg className="h-4 w-4 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="px-6 py-5 bg-slate-50 border-t border-slate-100 flex justify-end">
+              <button
+                onClick={closeModalLampiran}
+                className="px-6 py-2.5 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition shadow-sm"
+              >
+                Tutup
               </button>
             </div>
           </div>

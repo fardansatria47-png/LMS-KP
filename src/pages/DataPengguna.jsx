@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-import { getSiswa, getGuru, deleteSiswa, deleteGuru, importSiswa, importGuru } from "../services/authService";
+import { getSiswa, getGuru, deleteSiswa, deleteGuru, importSiswa, importGuru, resetPasswordSiswa } from "../services/authService";
 import { toast } from "../utils/notify";
 import { getErrorMessage } from "../utils/translateError";
 
@@ -20,6 +20,8 @@ export default function DataPengguna() {
   const [page, setPage] = useState(1);
   const [deleteModal, setDeleteModal] = useState({ open: false, user: null });
   const [deleting, setDeleting] = useState(false);
+  const [resetModal, setResetModal] = useState({ open: false, user: null });
+  const [resetting, setResetting] = useState(false);
   const [selectedKelas, setSelectedKelas] = useState(null);
 
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -162,6 +164,20 @@ export default function DataPengguna() {
     }
   };
 
+  const handleResetPassword = async () => {
+    if (!resetModal.user) return;
+    setResetting(true);
+    try {
+      await resetPasswordSiswa(resetModal.user.id);
+      toast("Password berhasil direset ke '12345678'!", "success");
+      setResetModal({ open: false, user: null });
+    } catch (err) {
+      toast(err?.response?.data?.message || "Gagal mereset password", "error");
+    } finally {
+      setResetting(false);
+    }
+  };
+
   const renderPagination = () => {
     if (totalPages <= 1) return null;
     const pages = [];
@@ -218,6 +234,19 @@ export default function DataPengguna() {
       )}
       <td className="px-4 py-4 pr-8">
         <div className="flex items-center justify-end gap-3">
+          {tab === "siswa" && (
+            <button
+              onClick={() => setResetModal({ open: true, user })}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-amber-500 transition hover:bg-amber-50 hover:text-amber-700"
+              title="Reset Password ke Default (12345678)"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <circle cx="7.5" cy="15.5" r="5.5"/>
+                <path d="m21 2-9.6 9.6"/>
+                <path d="m15.5 7.5 3 3L22 7l-3-3"/>
+              </svg>
+            </button>
+          )}
           <button
             onClick={() => navigate(`/edit-user/${user.id}`, { state: { role: tab } })}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-blue-500 transition hover:bg-blue-50 hover:text-blue-700"
@@ -395,6 +424,31 @@ export default function DataPengguna() {
               <button onClick={cancelDelete} disabled={deleting} className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Batal</button>
               <button onClick={handleDelete} disabled={deleting} className="flex-1 rounded-xl bg-rose-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:opacity-50">
                 {deleting ? "Menghapus…" : "Ya, Hapus"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Password Modal */}
+      {resetModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-sm animate-[fadeIn_0.2s_ease] rounded-2xl bg-white p-8 shadow-2xl">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+              <svg className="h-6 w-6 text-amber-600" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <circle cx="7.5" cy="15.5" r="5.5"/>
+                <path d="m21 2-9.6 9.6"/>
+                <path d="m15.5 7.5 3 3L22 7l-3-3"/>
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold text-slate-900">Reset Password?</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              Yakin ingin mereset password siswa <span className="font-semibold text-slate-700">{resetModal.user?.nama_lengkap || resetModal.user?.nama}</span> menjadi password default <span className="font-semibold text-blue-600">"12345678"</span>?
+            </p>
+            <div className="mt-6 flex gap-3">
+              <button onClick={() => setResetModal({ open: false, user: null })} disabled={resetting} className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Batal</button>
+              <button onClick={handleResetPassword} disabled={resetting} className="flex-1 rounded-xl bg-amber-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-50">
+                {resetting ? "Mereset…" : "Ya, Reset"}
               </button>
             </div>
           </div>

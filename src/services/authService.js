@@ -329,3 +329,24 @@ export const importGuru = async (file) => {
     },
   });
 };
+
+// ── Reset Password Siswa oleh Admin ─────────────────────────────────
+export const resetPasswordSiswa = async (id) => {
+  return await API.post(`/siswa/${id}/reset-password`);
+};
+
+// ── Kenaikan Kelas Massal ───────────────────────────────────────────
+export const promoteRombel = async (sourceRombelId, targetRombelId) => {
+  return await API.post("/rombel/promote", {
+    source_rombel_id: sourceRombelId,
+    target_rombel_id: targetRombelId,
+  });
+};
+
+// ── Kelulusan Massal Kelas XII ──────────────────────────────────────
+export const graduateRombel = async (rombelId, action) => {
+  return await API.post("/rombel/graduate", {
+    rombel_id: rombelId,
+    action: action,
+  });
+};

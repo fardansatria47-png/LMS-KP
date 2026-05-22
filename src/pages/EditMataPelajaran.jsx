@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getMapelById, updateMapel, getMapelFormData } from "../services/authService";
+import { getMapelById, updateMapel, getMapelFormData, assignMapelToGuru, assignMapelToRombel, getGuruByMapelRoute, getRombelMapel } from "../services/authService";
 import Sidebar from "../components/Sidebar";
 import { getErrorMessage } from "../utils/translateError";
 
@@ -16,6 +16,8 @@ export default function EditMataPelajaran() {
     kelas_id: "",
   });
 
+  const [originalGuruIds, setOriginalGuruIds] = useState([]);
+  const [originalRombelIds, setOriginalRombelIds] = useState([]);
   const [selectedGuruIds, setSelectedGuruIds] = useState([]);
   const [selectedRombelIds, setSelectedRombelIds] = useState([]);
   const [message, setMessage] = useState("");
@@ -54,10 +56,14 @@ export default function EditMataPelajaran() {
             kelas_id: mapelData.kelas_id || "",
           });
           if (Array.isArray(mapelData.gurus)) {
-            setSelectedGuruIds(mapelData.gurus.map((g) => g.id));
+            const gIds = mapelData.gurus.map((g) => g.id);
+            setSelectedGuruIds(gIds);
+            setOriginalGuruIds(gIds);
           }
           if (Array.isArray(mapelData.rombels)) {
-            setSelectedRombelIds(mapelData.rombels.map((r) => r.id));
+            const rIds = mapelData.rombels.map((r) => r.id);
+            setSelectedRombelIds(rIds);
+            setOriginalRombelIds(rIds);
           }
         }
       } catch (err) {
@@ -100,6 +106,51 @@ export default function EditMataPelajaran() {
         guru_ids: selectedGuruIds,
         rombel_ids: selectedRombelIds,
       });
+
+      // Handle Guru differences
+      const addedGurus = selectedGuruIds.filter(gid => !originalGuruIds.includes(gid));
+      const removedGurus = originalGuruIds.filter(gid => !selectedGuruIds.includes(gid));
+      
+      for (const gid of [...addedGurus, ...removedGurus]) {
+        try {
+          const existingRes = await getGuruByMapelRoute(gid);
+          const existingMapels = existingRes.data?.data?.mapel || [];
+          let existingIds = existingMapels.map(m => m.id);
+          
+          if (addedGurus.includes(gid) && !existingIds.includes(Number(id))) {
+            existingIds.push(Number(id));
+            await assignMapelToGuru(gid, existingIds);
+          } else if (removedGurus.includes(gid) && existingIds.includes(Number(id))) {
+            existingIds = existingIds.filter(mId => mId !== Number(id));
+            await assignMapelToGuru(gid, existingIds);
+          }
+        } catch (err) {
+          console.error("Gagal update guru:", err);
+        }
+      }
+
+      // Handle Rombel differences
+      const addedRombels = selectedRombelIds.filter(rid => !originalRombelIds.includes(rid));
+      const removedRombels = originalRombelIds.filter(rid => !selectedRombelIds.includes(rid));
+      
+      for (const rid of [...addedRombels, ...removedRombels]) {
+        try {
+          const existingRes = await getRombelMapel(rid);
+          const existingMapels = existingRes.data?.data || existingRes.data || [];
+          let existingIds = Array.isArray(existingMapels) ? existingMapels.map(m => m.id) : [];
+          
+          if (addedRombels.includes(rid) && !existingIds.includes(Number(id))) {
+            existingIds.push(Number(id));
+            await assignMapelToRombel(rid, existingIds);
+          } else if (removedRombels.includes(rid) && existingIds.includes(Number(id))) {
+            existingIds = existingIds.filter(mId => mId !== Number(id));
+            await assignMapelToRombel(rid, existingIds);
+          }
+        } catch (err) {
+          console.error("Gagal update rombel:", err);
+        }
+      }
+
       navigate("/mata-pelajaran");
     } catch (err) {
       setMessage(getErrorMessage(err, "Gagal memperbarui data."));

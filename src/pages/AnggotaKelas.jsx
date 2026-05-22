@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-import { getRombel, deleteRombel, kickSiswaFromRombel, getSiswa, getRombelById, getRombelMapel, getGuru, getGuruByMapelRoute } from "../services/authService";
+import { getRombel, deleteRombel, kickSiswaFromRombel, getRombelById, getRombelMapel, getGuru, getGuruByMapelRoute, promoteRombel, graduateRombel } from "../services/authService";
 import { toast } from "../utils/notify";
 import { getErrorMessage } from "../utils/translateError";
 
@@ -14,6 +14,9 @@ export default function AnggotaKelas() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [promoteModal, setPromoteModal] = useState({ open: false, fromRombel: "", toRombel: "" });
+  const [graduateModal, setGraduateModal] = useState({ open: false, rombelId: "", action: "detach" });
+  const [submittingMass, setSubmittingMass] = useState(false);
 
   // Detail view state (Lihat Siswa)
   const [detailRombel, setDetailRombel] = useState(null);
@@ -111,6 +114,48 @@ export default function AnggotaKelas() {
       toast(err?.response?.data?.message || "Gagal menghapus siswa dari kelas", "error");
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handlePromoteSubmit = async (e) => {
+    e.preventDefault();
+    if (!promoteModal.fromRombel || !promoteModal.toRombel) {
+      toast("Harap pilih kelas asal dan tujuan!", "warning");
+      return;
+    }
+    if (promoteModal.fromRombel === promoteModal.toRombel) {
+      toast("Kelas asal dan kelas tujuan tidak boleh sama!", "warning");
+      return;
+    }
+    setSubmittingMass(true);
+    try {
+      await promoteRombel(promoteModal.fromRombel, promoteModal.toRombel);
+      toast("Berhasil memindahkan seluruh siswa secara massal!", "success");
+      setPromoteModal({ open: false, fromRombel: "", toRombel: "" });
+      fetchRombel(); // Reload data
+    } catch (err) {
+      toast(err?.response?.data?.message || "Gagal memproses kenaikan kelas", "error");
+    } finally {
+      setSubmittingMass(false);
+    }
+  };
+
+  const handleGraduateSubmit = async (e) => {
+    e.preventDefault();
+    if (!graduateModal.rombelId) {
+      toast("Harap pilih kelas XII yang lulus!", "warning");
+      return;
+    }
+    setSubmittingMass(true);
+    try {
+      await graduateRombel(graduateModal.rombelId, graduateModal.action);
+      toast("Kelulusan massal berhasil diproses!", "success");
+      setGraduateModal({ open: false, rombelId: "", action: "detach" });
+      fetchRombel(); // Reload data
+    } catch (err) {
+      toast(err?.response?.data?.message || "Gagal memproses kelulusan", "error");
+    } finally {
+      setSubmittingMass(false);
     }
   };
 
@@ -441,15 +486,35 @@ export default function AnggotaKelas() {
             <p className="mt-1 text-sm font-medium text-slate-400">Kelola data kelas dan rombongan belajar institusi Anda.</p>
           </div>
 
-          <button
-            onClick={() => navigate("/tambah-kelas")}
-            className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-blue-200 transition hover:bg-blue-700 hover:shadow-lg"
-          >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-            TAMBAH KELAS
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => setPromoteModal({ open: true, fromRombel: "", toRombel: "" })}
+              className="flex items-center gap-2 rounded-xl border border-amber-200 bg-white px-5 py-3 text-sm font-semibold text-amber-600 shadow-sm transition hover:bg-amber-50"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 19.5v-15m0 0l-6.75 6.75M12 4.5l6.75 6.75" />
+              </svg>
+              Kenaikan Kelas
+            </button>
+            <button
+              onClick={() => setGraduateModal({ open: true, rombelId: "", action: "detach" })}
+              className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-white px-5 py-3 text-sm font-semibold text-emerald-600 shadow-sm transition hover:bg-emerald-50"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
+              </svg>
+              Kelulusan Massal
+            </button>
+            <button
+              onClick={() => navigate("/tambah-kelas")}
+              className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-blue-200 transition hover:bg-blue-700 hover:shadow-lg"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              TAMBAH KELAS
+            </button>
+          </div>
         </div>
 
         {/* Search */}
@@ -594,6 +659,211 @@ export default function AnggotaKelas() {
                 )}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Promote (Kenaikan Kelas) Modal */}
+      {promoteModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg animate-[fadeIn_0.2s_ease] rounded-2xl bg-white p-6 sm:p-8 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 19.5v-15m0 0l-6.75 6.75M12 4.5l6.75 6.75" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-slate-900">Kenaikan Kelas Massal</h3>
+              </div>
+              <button
+                onClick={() => setPromoteModal({ open: false, fromRombel: "", toRombel: "" })}
+                className="rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handlePromoteSubmit}>
+              <div className="mb-6 space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Kelas Asal (Promosi Dari)</label>
+                  <select
+                    value={promoteModal.fromRombel}
+                    onChange={(e) => setPromoteModal({ ...promoteModal, fromRombel: e.target.value })}
+                    required
+                    className="w-full rounded-xl border border-slate-200 bg-white py-3 px-4 text-xs text-slate-700 shadow-sm focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-100"
+                  >
+                    <option value="">-- Pilih Kelas Asal --</option>
+                    {rombelList.map((r) => {
+                      const { jurusanNama, kelasNama } = getDisplayInfo(r);
+                      return (
+                        <option key={r.rombel_id || r.id} value={r.rombel_id || r.id}>
+                          {kelasNama} {jurusanNama} ({r.siswa ? r.siswa.length : r.total_siswa || 0} Siswa)
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Kelas Tujuan (Promosi Ke)</label>
+                  <select
+                    value={promoteModal.toRombel}
+                    onChange={(e) => setPromoteModal({ ...promoteModal, toRombel: e.target.value })}
+                    required
+                    className="w-full rounded-xl border border-slate-200 bg-white py-3 px-4 text-xs text-slate-700 shadow-sm focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-100"
+                  >
+                    <option value="">-- Pilih Kelas Tujuan --</option>
+                    {rombelList.map((r) => {
+                      const { jurusanNama, kelasNama } = getDisplayInfo(r);
+                      return (
+                        <option key={r.rombel_id || r.id} value={r.rombel_id || r.id}>
+                          {kelasNama} {jurusanNama} ({r.siswa ? r.siswa.length : r.total_siswa || 0} Siswa)
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              </div>
+
+              <div className="rounded-xl bg-amber-50 p-4 text-[13px] text-amber-800 font-medium mb-6">
+                <span className="font-bold">Perhatian:</span> Seluruh siswa pada kelas asal akan dipindahkan ke kelas tujuan secara langsung.
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPromoteModal({ open: false, fromRombel: "", toRombel: "" })}
+                  disabled={submittingMass}
+                  className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingMass || !promoteModal.fromRombel || !promoteModal.toRombel}
+                  className="flex-1 rounded-xl bg-amber-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-50 flex items-center justify-center gap-2 shadow-md shadow-amber-100"
+                >
+                  {submittingMass ? (
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      Memproses...
+                    </>
+                  ) : (
+                    "Proses Kenaikan"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Graduate (Kelulusan Massal) Modal */}
+      {graduateModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg animate-[fadeIn_0.2s_ease] rounded-2xl bg-white p-6 sm:p-8 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-slate-900">Kelulusan Massal Kelas XII</h3>
+              </div>
+              <button
+                onClick={() => setGraduateModal({ open: false, rombelId: "", action: "detach" })}
+                className="rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleGraduateSubmit}>
+              <div className="mb-6 space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Kelas Rombel Asal (Kelas XII)</label>
+                  <select
+                    value={graduateModal.rombelId}
+                    onChange={(e) => setGraduateModal({ ...graduateModal, rombelId: e.target.value })}
+                    required
+                    className="w-full rounded-xl border border-slate-200 bg-white py-3 px-4 text-xs text-slate-700 shadow-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                  >
+                    <option value="">-- Pilih Kelas XII --</option>
+                    {rombelList
+                      .filter((r) => {
+                        const { kelasNama } = getDisplayInfo(r);
+                        return kelasNama.includes("XII") || kelasNama.includes("12");
+                      })
+                      .map((r) => {
+                        const { jurusanNama, kelasNama } = getDisplayInfo(r);
+                        return (
+                          <option key={r.rombel_id || r.id} value={r.rombel_id || r.id}>
+                            {kelasNama} {jurusanNama} ({r.siswa ? r.siswa.length : r.total_siswa || 0} Siswa)
+                          </option>
+                        );
+                      })}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Metode Kelulusan</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setGraduateModal({ ...graduateModal, action: "detach" })}
+                      className={`rounded-xl p-4 border text-left transition ${graduateModal.action === "detach" ? "border-emerald-500 bg-emerald-50 text-emerald-800 font-bold" : "border-slate-200 bg-white text-slate-600"}`}
+                    >
+                      <span className="block text-sm">Jadikan Alumni</span>
+                      <span className="block text-[10px] text-slate-400 mt-1 font-normal">Hanya melepas rombel siswa. Akun &amp; histori tetap disimpan.</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setGraduateModal({ ...graduateModal, action: "delete" })}
+                      className={`rounded-xl p-4 border text-left transition ${graduateModal.action === "delete" ? "border-rose-500 bg-rose-50/50 text-rose-800 font-bold" : "border-slate-200 bg-white text-slate-600"}`}
+                    >
+                      <span className="block text-sm">Hapus Data &amp; Akun</span>
+                      <span className="block text-[10px] text-slate-400 mt-1 font-normal">Menghapus data siswa dan akun User secara permanen.</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-xl bg-emerald-50 p-4 text-[13px] text-emerald-800 font-medium mb-6">
+                <span className="font-bold">Info:</span> Siswa yang lulus akan dicatat sebagai alumni. Disarankan memilih opsi <strong>Jadikan Alumni</strong> agar histori nilai/tugas tetap terjaga.
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setGraduateModal({ open: false, rombelId: "", action: "detach" })}
+                  disabled={submittingMass}
+                  className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingMass || !graduateModal.rombelId}
+                  className="flex-1 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50 flex items-center justify-center gap-2 shadow-md shadow-emerald-100"
+                >
+                  {submittingMass ? (
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      Memproses...
+                    </>
+                  ) : (
+                    "Proses Kelulusan"
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

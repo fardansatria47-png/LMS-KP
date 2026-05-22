@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-import { createMapel, getMapelFormData } from "../services/authService";
+import { createMapel, getMapelFormData, assignMapelToGuru, assignMapelToRombel, getGuruByMapelRoute, getRombelMapel } from "../services/authService";
 import { toast } from "../utils/notify";
 
 export default function TambahMataPelajaran() {
@@ -81,13 +81,46 @@ export default function TambahMataPelajaran() {
 
     setIsSubmitting(true);
     try {
-      await createMapel({
+      const res = await createMapel({
         nama_mapel: formData.nama,
         kode_mapel: formData.kode,
         deskripsi: formData.deskripsi,
         guru_ids: selectedGuruIds,
         rombel_ids: selectedRombelIds,
       });
+
+      const newMapelId = res.data?.data?.id || res.data?.id;
+      if (newMapelId) {
+        if (selectedGuruIds && selectedGuruIds.length > 0) {
+          await Promise.all(selectedGuruIds.map(async (guruId) => {
+            try {
+              const existingRes = await getGuruByMapelRoute(guruId);
+              const existingMapels = existingRes.data?.data?.mapel || [];
+              const existingIds = existingMapels.map(m => m.id);
+              if (!existingIds.includes(newMapelId)) {
+                await assignMapelToGuru(guruId, [...existingIds, newMapelId]);
+              }
+            } catch (err) {
+              console.error("Gagal assign guru:", err);
+            }
+          }));
+        }
+        if (selectedRombelIds && selectedRombelIds.length > 0) {
+          await Promise.all(selectedRombelIds.map(async (rombelId) => {
+            try {
+              const existingRes = await getRombelMapel(rombelId);
+              const existingMapels = existingRes.data?.data || existingRes.data || [];
+              const existingIds = Array.isArray(existingMapels) ? existingMapels.map(m => m.id) : [];
+              if (!existingIds.includes(newMapelId)) {
+                await assignMapelToRombel(rombelId, [...existingIds, newMapelId]);
+              }
+            } catch (err) {
+              console.error("Gagal assign rombel:", err);
+            }
+          }));
+        }
+      }
+
       navigate("/mata-pelajaran");
     } catch (error) {
       toast(error?.response?.data?.message || "Gagal membuat mata pelajaran", "error");
