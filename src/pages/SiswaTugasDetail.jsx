@@ -180,20 +180,31 @@ export default function SiswaTugasDetail() {
   
   // Deteksi status dari backend
   const statusPengerjaan = tugas?.status_pengerjaan || "";
-  const isSubmitted = statusPengumpulan != null && statusPengumpulan.status !== "Belum"
+  const isSubmitted = statusPengumpulan != null && (statusPengumpulan.status !== "Belum" && statusPengumpulan.status !== "BELUM")
     || statusPengerjaan === "Sudah Mengumpulkan";
-  const isTerlambat = statusPengerjaan === "Terlambat";
-  
-  const statusBadgeColor = isSubmitted
-    ? "bg-[#A7F3D0] text-[#065F46]"
-    : isTerlambat
-    ? "bg-amber-100 text-amber-700"
-    : "bg-slate-200 text-slate-600";
+
+  const isSusulan = tugas?.tugas_susulan != null;
+  const now = new Date();
+  const deadlineDate = tugas?.deadline ? new Date(tugas.deadline) : null;
+  const isDeadlinePassed = deadlineDate ? now > deadlineDate : false;
+
+  const isTerlambat = isSusulan ? isDeadlinePassed : (statusPengerjaan === "Terlambat");
+
   const statusText = isSubmitted
     ? "Sudah Mengumpulkan"
+    : isSusulan
+    ? (isDeadlinePassed ? "Terlambat" : "Tugas Susulan")
     : isTerlambat
     ? "Terlambat"
     : "Belum Mengumpulkan";
+
+  const statusBadgeColor = isSubmitted
+    ? "bg-[#A7F3D0] text-[#065F46]"
+    : statusText === "Terlambat"
+    ? "bg-amber-100 text-amber-700"
+    : isSusulan
+    ? "bg-indigo-100 text-indigo-700"
+    : "bg-slate-200 text-slate-600";
 
   return (
     <SiswaLayout title={mapelName}>
@@ -226,6 +237,25 @@ export default function SiswaTugasDetail() {
         ) : (
           <div className="max-w-6xl">
             
+            {tugas.tugas_susulan && (
+              <div className="mb-6 rounded-[24px] border border-indigo-200 bg-indigo-50 p-6 text-indigo-800 flex items-start gap-4 shadow-sm animate-in slide-in-from-top-4 duration-300">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 111.063.852l-.708 2.836a.75.75 0 001.063.852l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-extrabold text-indigo-900 text-sm">Tugas Susulan Aktif</h4>
+                  <p className="text-xs text-indigo-700 mt-1 leading-relaxed">
+                    Catatan Guru: <span className="font-semibold italic">"{tugas.tugas_susulan.keterangan || 'Tidak ada catatan tambahan.'}"</span>
+                  </p>
+                  <p className="text-[11px] text-indigo-500 mt-2 font-medium">
+                    Batas pengumpulan diperbarui hingga: <span className="font-bold">{tugas.tugas_susulan.deadline || formatDateTime(tugas.deadline)}</span>
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Header Banner - Top Area */}
             <div className="mb-6 flex justify-between items-start">
               <div>
@@ -245,8 +275,10 @@ export default function SiswaTugasDetail() {
               
               <div className={`px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 ${statusBadgeColor}`}>
                 <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                  {isTerlambat ? (
+                  {statusText === "Terlambat" ? (
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                  ) : isSusulan && !isSubmitted ? (
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
                   ) : (
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                   )}

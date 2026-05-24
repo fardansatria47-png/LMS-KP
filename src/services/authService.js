@@ -90,6 +90,18 @@ export const simpanNilaiGuru = async (pengumpulanId, nilai, catatan = "") => {
   return await API.post(`/pengumpulan/${pengumpulanId}/nilai`, { nilai, catatan });
 };
 
+export const createTugasSusulan = async (data) => {
+  return await API.post("/tugas-susulan", data);
+};
+
+export const deleteTugasSusulan = async (id) => {
+  return await API.delete(`/tugas-susulan/${id}`);
+};
+
+export const getTugasSusulanGuru = async (params = {}) => {
+  return await API.get("/tugas-susulan", { params });
+};
+
 // ── Data Pengguna ────────────────────────────────────────────────────
 
 // Siswa
@@ -125,6 +137,15 @@ export const submitTugasSiswa = async (data) => {
 
 export const batalkanPengumpulanSiswa = async (pengumpulanId) => {
   return await API.delete(`/siswa/pengumpulan/${pengumpulanId}`);
+};
+
+// ── Tugas Susulan Siswa (endpoint baru) ──────────────────────────────
+export const getTugasSusulanSiswa = async () => {
+  return await API.get("/siswa/tugas-susulan");
+};
+
+export const getTugasSusulanSiswaDetail = async (id) => {
+  return await API.get(`/siswa/tugas-susulan/${id}`);
 };
 
 export const createSiswa = async (data) => {

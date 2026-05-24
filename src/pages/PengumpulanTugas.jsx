@@ -1,11 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getPengumpulanGuru, simpanNilaiGuru } from "../services/authService";
 import { fixFileUrl } from "../api/api";
-import { toast } from "../utils/notify";
+import { toast, confirmDialog } from "../utils/notify";
 import GuruLayout from "../components/GuruLayout";
+import { getPengumpulanGuru, simpanNilaiGuru, createTugasSusulan, deleteTugasSusulan, getTugasSusulanGuru } from "../services/authService";
 
-
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return "-";
+  const date = new Date(dateStr);
+  return date.toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }).replace(/\./g, ":");
+};
 
 export default function PengumpulanTugas() {
   const { id, tugasId } = useParams();
@@ -19,52 +23,136 @@ export default function PengumpulanTugas() {
   const [modalNilai, setModalNilai] = useState({ isOpen: false, data: null, nilaiInput: "", catatanInput: "" });
   const [savingNilai, setSavingNilai] = useState(false);
   const [modalLampiran, setModalLampiran] = useState({ isOpen: false, data: null });
+  const [modalSusulan, setModalSusulan] = useState({
+    isOpen: false,
+    siswaId: null,
+    namaSiswa: "",
+    deadline: "",
+    keterangan: "",
+    judul: "",
+    deskripsi: "",
+    saving: false,
+  });
+
+  const fetchData = async (showLoading = true) => {
+    try {
+      if (showLoading) setLoading(true);
+      const resPengumpulan = await getPengumpulanGuru(tugasId);
+      const rawData = resPengumpulan.data;
+      const resData = rawData?.data?.data || rawData?.data || rawData;
+
+      console.log("[PengumpulanTugas] Raw response:", rawData);
+
+      setTugas(resData?.tugas || rawData?.tugas || null);
+      setSummary(
+        resData?.summary ||
+        rawData?.summary ||
+        { total_siswa: 0, mengumpulkan: 0 }
+      );
+
+      const daftar =
+        resData?.daftar_pengumpulan ||
+        rawData?.daftar_pengumpulan ||
+        resData?.pengumpulan ||
+        rawData?.pengumpulan ||
+        resData?.data ||
+        (Array.isArray(resData) ? resData : []);
+
+      let daftarSusulan = [];
+      try {
+        const resSusulan = await getTugasSusulanGuru();
+        const rawSusulan = resSusulan.data?.data || resSusulan.data;
+        if (Array.isArray(rawSusulan)) {
+          daftarSusulan = rawSusulan.filter(s => String(s.tugas_id) === String(tugasId));
+        }
+      } catch (err) {
+        console.warn("Gagal memuat daftar susulan (endpoint terpisah):", err);
+      }
+
+      const mergedList = (Array.isArray(daftar) ? daftar : []).map(item => {
+        // Cari tugas_susulan untuk siswa ini
+        const susulan = daftarSusulan.find(s => String(s.siswa_id) === String(item.siswa_id));
+        return {
+          ...item,
+          tugas_susulan: susulan || item.tugas_susulan || null,
+        };
+      });
+
+      setPengumpulanList(mergedList);
+    } catch (err) {
+      console.error("Gagal memuat data pengumpulan:", err);
+      const msg = err?.response?.data?.message || err?.message || "Endpoint tidak tersedia";
+      setError(`Gagal memuat data pengumpulan: ${msg}`);
+    } finally {
+      if (showLoading) setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        // Fetch detail tugas + pengumpulan sekaligus dari satu endpoint
-        const resPengumpulan = await getPengumpulanGuru(tugasId);
-
-        // Tangani berbagai format response backend
-        const rawData = resPengumpulan.data;
-        const resData = rawData?.data?.data || rawData?.data || rawData;
-
-        console.log("[PengumpulanTugas] Raw response:", rawData);
-
-        // Ambil detail tugas dari response
-        setTugas(resData?.tugas || rawData?.tugas || null);
-
-        // Ambil summary
-        setSummary(
-          resData?.summary ||
-          rawData?.summary ||
-          { total_siswa: 0, mengumpulkan: 0 }
-        );
-
-        // Ambil daftar pengumpulan — coba semua kemungkinan field
-        const daftar =
-          resData?.daftar_pengumpulan ||
-          rawData?.daftar_pengumpulan ||
-          resData?.pengumpulan ||
-          rawData?.pengumpulan ||
-          resData?.data ||
-          (Array.isArray(resData) ? resData : []);
-
-        setPengumpulanList(Array.isArray(daftar) ? daftar : []);
-      } catch (err) {
-        console.error("Gagal memuat data pengumpulan:", err);
-        const msg = err?.response?.data?.message || err?.message || "Endpoint tidak tersedia";
-        setError(`Gagal memuat data pengumpulan: ${msg}`);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, [tugasId]);
 
+  const handleSimpanSusulan = async () => {
+    if (!modalSusulan.siswaId || !modalSusulan.deadline) {
+      toast("Harap tentukan tenggat waktu baru!", "warning");
+      return;
+    }
+
+    try {
+      setModalSusulan((prev) => ({ ...prev, saving: true }));
+      const formattedDeadline = `${modalSusulan.deadline.replace("T", " ")}:00`;
+
+      const payload = {
+        tugas_id: parseInt(tugasId),
+        siswa_id: modalSusulan.siswaId,
+        deadline: formattedDeadline,
+        keterangan: modalSusulan.keterangan || null,
+        judul: modalSusulan.judul.trim() || null,
+        deskripsi: modalSusulan.deskripsi.trim() || null,
+      };
+
+      await createTugasSusulan(payload);
+      toast("Tugas susulan berhasil diberikan.", "success");
+      
+      setModalSusulan({
+        isOpen: false,
+        siswaId: null,
+        namaSiswa: "",
+        deadline: "",
+        keterangan: "",
+        judul: "",
+        deskripsi: "",
+        saving: false,
+      });
+
+      fetchData(false);
+    } catch (err) {
+      console.error("Gagal memberikan tugas susulan:", err);
+      const msg = err?.response?.data?.message || err?.message || "Gagal memberikan tugas susulan";
+      toast(msg, "error");
+    } finally {
+      setModalSusulan((prev) => ({ ...prev, saving: false }));
+    }
+  };
+
+  const handleBatalkanSusulan = async (susulanId) => {
+    const ok = await confirmDialog(
+      "Apakah Anda yakin ingin membatalkan tugas susulan ini?",
+      { isDanger: true, title: "Batalkan Tugas Susulan", confirmText: "Ya, Batalkan" }
+    );
+    if (!ok) return;
+
+    try {
+      toast("Membatalkan tugas susulan...", "info");
+      await deleteTugasSusulan(susulanId);
+      toast("Tugas susulan berhasil dibatalkan.", "success");
+      fetchData(false);
+    } catch (err) {
+      console.error("Gagal membatalkan tugas susulan:", err);
+      const msg = err?.response?.data?.message || err?.message || "Gagal membatalkan tugas susulan";
+      toast(msg, "error");
+    }
+  };
 
   const openModalNilai = (item) => {
     setModalNilai({
@@ -212,6 +300,7 @@ export default function PengumpulanTugas() {
                   <th className="px-6 py-4 font-bold">SISWA</th>
                   <th className="px-6 py-4 font-bold">WAKTU</th>
                   <th className="px-6 py-4 font-bold">LAMPIRAN</th>
+                  <th className="px-6 py-4 font-bold">DEADLINE SUSULAN</th>
                   <th className="px-6 py-4 font-bold">STATUS</th>
                   <th className="px-6 py-4 font-bold">NILAI</th>
                   <th className="px-6 py-4 font-bold text-center">AKSI</th>
@@ -220,7 +309,7 @@ export default function PengumpulanTugas() {
               <tbody className="divide-y divide-slate-100">
                 {listData.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="px-6 py-10 text-center text-slate-500 font-medium">
+                    <td colSpan="7" className="px-6 py-10 text-center text-slate-500 font-medium">
                       Belum ada data pengumpulan untuk tugas ini.
                     </td>
                   </tr>
@@ -278,9 +367,16 @@ export default function PengumpulanTugas() {
                           )}
                         </td>
                         <td className="px-6 py-5">
-                          {isSubmitted ? (
+                          {formatDateTime(item.tugas_susulan?.deadline_susulan || item.tugas_susulan?.deadline)}
+                        </td>
+                        <td className="px-6 py-5">
+                          {item.status === "HADIR" ? (
                             <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-black tracking-wider text-emerald-700 uppercase">
                               HADIR
+                            </span>
+                          ) : item.status === "SUSULAN" ? (
+                            <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-black tracking-wider text-amber-700 uppercase">
+                              SUSULAN
                             </span>
                           ) : (
                             <span className="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-1 text-[10px] font-black tracking-wider text-rose-700 uppercase">
@@ -305,17 +401,50 @@ export default function PengumpulanTugas() {
                           </div>
                         </td>
                         <td className="px-6 py-5 text-center">
-                          {isSubmitted && (
-                            <button
-                              onClick={() => openModalNilai(item)}
-                              className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-600 hover:text-white transition"
-                            >
-                              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                              Nilai
-                            </button>
-                          )}
+                          <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+                            {item.status === "HADIR" && (
+                              <button
+                                onClick={() => openModalNilai(item)}
+                                className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-600 hover:text-white transition"
+                              >
+                                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Nilai
+                              </button>
+                            )}
+
+                            {item.status !== "HADIR" && !item.tugas_susulan && (
+                              <button
+                                onClick={() => setModalSusulan({
+                                  isOpen: true,
+                                  siswaId: item.siswa_id,
+                                  namaSiswa: item.nama_siswa,
+                                  deadline: "",
+                                  keterangan: "",
+                                  saving: false
+                                })}
+                                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-600 hover:text-white transition"
+                              >
+                                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Berikan Tugas Susulan
+                              </button>
+                            )}
+
+                            {item.status !== "HADIR" && item.tugas_susulan && (
+                              <button
+                                onClick={() => handleBatalkanSusulan(item.tugas_susulan.id)}
+                                className="inline-flex items-center gap-1.5 rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-600 hover:text-white transition"
+                              >
+                                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                Batalkan Susulan
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -448,6 +577,111 @@ export default function PengumpulanTugas() {
                 className="px-6 py-2.5 rounded-xl text-sm font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition shadow-sm"
               >
                 Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Berikan Tugas Susulan */}
+      {modalSusulan.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="font-extrabold text-slate-800 text-lg">Berikan Tugas Susulan</h3>
+              <button
+                onClick={() => setModalSusulan((prev) => ({ ...prev, isOpen: false }))}
+                className="text-slate-400 hover:text-slate-600 transition p-1 rounded-full hover:bg-slate-100"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+              <div className="bg-indigo-50 rounded-2xl p-4">
+                <p className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">Nama Siswa</p>
+                <p className="font-extrabold text-indigo-900 text-lg">{modalSusulan.namaSiswa}</p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tenggat Waktu Baru (Deadline) <span className="text-rose-500">*</span></label>
+                <input
+                  type="datetime-local"
+                  required
+                  value={modalSusulan.deadline}
+                  onChange={(e) => setModalSusulan({ ...modalSusulan, deadline: e.target.value })}
+                  className="w-full rounded-2xl border-2 border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition"
+                />
+              </div>
+
+              {/* Separator konten kustom */}
+              <div className="rounded-2xl border border-dashed border-indigo-200 bg-indigo-50/40 p-4 space-y-3">
+                <p className="text-xs font-bold text-indigo-500 uppercase tracking-wider flex items-center gap-1.5">
+                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                  Konten Kustom (Opsional)
+                </p>
+                <p className="text-[11px] text-indigo-400 leading-relaxed -mt-1">
+                  Kosongkan jika ingin menggunakan judul &amp; deskripsi tugas asli.
+                </p>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1.5">Judul Tugas Susulan</label>
+                  <input
+                    type="text"
+                    value={modalSusulan.judul}
+                    onChange={(e) => setModalSusulan({ ...modalSusulan, judul: e.target.value })}
+                    placeholder="Biarkan kosong untuk pakai judul asli"
+                    className="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-400/10 transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1.5">Deskripsi / Instruksi Khusus</label>
+                  <textarea
+                    rows="3"
+                    value={modalSusulan.deskripsi}
+                    onChange={(e) => setModalSusulan({ ...modalSusulan, deskripsi: e.target.value })}
+                    placeholder="Biarkan kosong untuk pakai deskripsi asli"
+                    className="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 focus:border-indigo-400 focus:outline-none focus:ring-4 focus:ring-indigo-400/10 transition resize-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Keterangan / Catatan Tambahan (Opsional)</label>
+                <textarea
+                  rows="2"
+                  value={modalSusulan.keterangan}
+                  onChange={(e) => setModalSusulan({ ...modalSusulan, keterangan: e.target.value })}
+                  placeholder="Silakan kumpulkan tugas remedial Anda di sini."
+                  className="w-full rounded-2xl border-2 border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition resize-none"
+                />
+              </div>
+            </div>
+            <div className="px-6 py-5 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+              <button
+                onClick={() => setModalSusulan((prev) => ({ ...prev, isOpen: false }))}
+                className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-200 transition"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleSimpanSusulan}
+                disabled={modalSusulan.saving || !modalSusulan.deadline}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-600 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-60 transition shadow-md hover:shadow-lg hover:-translate-y-0.5"
+              >
+                {modalSusulan.saving ? (
+                  <>
+                    <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                    </svg>
+                    Menyimpan...
+                  </>
+                ) : (
+                  "Berikan Tugas"
+                )}
               </button>
             </div>
           </div>

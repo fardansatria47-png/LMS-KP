@@ -29,6 +29,8 @@ import SiswaRuangBelajar from "./pages/SiswaRuangBelajar";
 import SiswaPengumuman from "./pages/SiswaPengumuman";
 import SiswaMateriDetail from "./pages/SiswaMateriDetail";
 import SiswaTugasDetail from "./pages/SiswaTugasDetail";
+import SiswaTugasSusulan from "./pages/SiswaTugasSusulan";
+import SiswaTugasSusulanDetail from "./pages/SiswaTugasSusulanDetail";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -71,6 +73,8 @@ function App() {
         <Route path="/kelas/:id/buat-pengumuman" element={token ? <BuatPengumuman /> : <Navigate to="/login" />} />
         <Route path="/kelas/:id/edit-pengumuman/:pengumumanId" element={token ? <EditPengumuman /> : <Navigate to="/login" />} />
         <Route path="/siswa-pengumuman" element={token ? <SiswaPengumuman /> : <Navigate to="/login" />} />
+        <Route path="/siswa/tugas-susulan" element={token ? <SiswaTugasSusulan /> : <Navigate to="/login" />} />
+        <Route path="/siswa/tugas-susulan/:id" element={token ? <SiswaTugasSusulanDetail /> : <Navigate to="/login" />} />
         <Route path="/profile" element={token ? <Profile /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>

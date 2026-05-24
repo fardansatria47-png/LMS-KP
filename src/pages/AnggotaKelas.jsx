@@ -497,7 +497,7 @@ export default function AnggotaKelas() {
               Kenaikan Kelas
             </button>
             <button
-              onClick={() => setGraduateModal({ open: true, rombelId: "", action: "detach" })}
+              onClick={() => setGraduateModal({ open: true, rombelId: "", action: "delete" })}
               className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-white px-5 py-3 text-sm font-semibold text-emerald-600 shadow-sm transition hover:bg-emerald-50"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -811,32 +811,10 @@ export default function AnggotaKelas() {
                       })}
                   </select>
                 </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Metode Kelulusan</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setGraduateModal({ ...graduateModal, action: "detach" })}
-                      className={`rounded-xl p-4 border text-left transition ${graduateModal.action === "detach" ? "border-emerald-500 bg-emerald-50 text-emerald-800 font-bold" : "border-slate-200 bg-white text-slate-600"}`}
-                    >
-                      <span className="block text-sm">Jadikan Alumni</span>
-                      <span className="block text-[10px] text-slate-400 mt-1 font-normal">Hanya melepas rombel siswa. Akun &amp; histori tetap disimpan.</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setGraduateModal({ ...graduateModal, action: "delete" })}
-                      className={`rounded-xl p-4 border text-left transition ${graduateModal.action === "delete" ? "border-rose-500 bg-rose-50/50 text-rose-800 font-bold" : "border-slate-200 bg-white text-slate-600"}`}
-                    >
-                      <span className="block text-sm">Hapus Data &amp; Akun</span>
-                      <span className="block text-[10px] text-slate-400 mt-1 font-normal">Menghapus data siswa dan akun User secara permanen.</span>
-                    </button>
-                  </div>
-                </div>
               </div>
 
-              <div className="rounded-xl bg-emerald-50 p-4 text-[13px] text-emerald-800 font-medium mb-6">
-                <span className="font-bold">Info:</span> Siswa yang lulus akan dicatat sebagai alumni. Disarankan memilih opsi <strong>Jadikan Alumni</strong> agar histori nilai/tugas tetap terjaga.
+              <div className="rounded-xl bg-rose-50 p-4 text-[13px] text-rose-800 font-medium mb-6">
+                <span className="font-bold">Peringatan:</span> Seluruh data siswa dan akun User pada kelas ini akan dihapus secara permanen. Tindakan ini tidak dapat dibatalkan.
               </div>
 
               <div className="flex gap-3">

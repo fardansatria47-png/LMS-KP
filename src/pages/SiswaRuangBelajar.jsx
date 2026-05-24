@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { getMataPelajaranSiswaDetail, getTugasSiswa, getPengumuman } from "../services/authService";
+import { getMataPelajaranSiswaDetail, getTugasSiswa, getTugasSusulanSiswa, getPengumuman } from "../services/authService";
 import { getErrorMessage } from "../utils/translateError";
 import DiskusiMapel from "../components/DiskusiMapel";
 import SiswaLayout from "../components/SiswaLayout";
@@ -9,7 +9,7 @@ import echo from "../utils/echo";
 import { toast, confirmDialog } from "../utils/notify";
 
 
-const TABS = ["Materi", "Tugas", "Diskusi"];
+const TABS = ["Materi", "Tugas", "Tugas Susulan", "Diskusi"];
 
 export default function SiswaRuangBelajar() {
   const { id } = useParams();
@@ -25,6 +25,13 @@ export default function SiswaRuangBelajar() {
   const [loadingTugas, setLoadingTugas] = useState(false);
   const [hasFetchedTugas, setHasFetchedTugas] = useState(false);
   const [errorTugas, setErrorTugas] = useState("");
+
+  // ── Tugas Susulan (endpoint terpisah) ──────────────────────────────
+  const [tugasSusulanList, setTugasSusulanList] = useState([]);
+  const [loadingTugasSusulan, setLoadingTugasSusulan] = useState(false);
+  const [hasFetchedTugasSusulan, setHasFetchedTugasSusulan] = useState(false);
+  const [errorTugasSusulan, setErrorTugasSusulan] = useState("");
+  const [rawTugasSusulanList, setRawTugasSusulanList] = useState([]);
 
   const [pengumumanList, setPengumumanList] = useState([]);
   const [loadingPengumuman, setLoadingPengumuman] = useState(false);
@@ -46,47 +53,81 @@ export default function SiswaRuangBelajar() {
   }, [id]);
 
   useEffect(() => {
-    if ((activeTab === "Tugas" || activeTab === "Pengumuman") && data) {
-      if (activeTab === "Tugas" && hasFetchedTugas) {
-        return;
-      }
+    if (!data) return;
 
-      const fetchTugas = async () => {
-        try {
-          setLoadingTugas(true);
-          const mapelId = data?.mapel_id || data?.mata_pelajaran_id || id;
-          const res = await getTugasSiswa(mapelId);
-          
-          let rawData = res.data;
-          let list = [];
-          
-          if (rawData?.success && Array.isArray(rawData.data)) {
-            list = rawData.data;
-          } else if (rawData?.data?.tugas && Array.isArray(rawData.data.tugas)) {
-            list = rawData.data.tugas;
-          } else if (Array.isArray(rawData)) {
-            list = rawData;
-          } else if (rawData?.data?.data && Array.isArray(rawData.data.data)) {
-            list = rawData.data.data;
-          } else if (rawData?.tugas && Array.isArray(rawData.tugas)) {
-            list = rawData.tugas;
-          }
-          
-          setTugasList(list);
-          setHasFetchedTugas(true);
-        } catch (err) {
-          console.error("Gagal memuat tugas:", err);
-          setErrorTugas("Gagal memuat daftar tugas. Pastikan endpoint sudah benar.");
-        } finally {
-          setLoadingTugas(false);
+    const fetchTugas = async () => {
+      try {
+        setLoadingTugas(true);
+        const mapelId = data?.mapel_id || data?.mata_pelajaran_id || id;
+        const res = await getTugasSiswa(mapelId);
+        
+        let rawData = res.data;
+        let list = [];
+        
+        if (rawData?.success && Array.isArray(rawData.data)) {
+          list = rawData.data;
+        } else if (rawData?.data?.tugas && Array.isArray(rawData.data.tugas)) {
+          list = rawData.data.tugas;
+        } else if (Array.isArray(rawData)) {
+          list = rawData;
+        } else if (rawData?.data?.data && Array.isArray(rawData.data.data)) {
+          list = rawData.data.data;
+        } else if (rawData?.tugas && Array.isArray(rawData.tugas)) {
+          list = rawData.tugas;
         }
-      };
-
-      if (activeTab === "Tugas") {
-        fetchTugas();
+        
+        setTugasList(list);
+        setHasFetchedTugas(true);
+      } catch (err) {
+        console.error("Gagal memuat tugas:", err);
+        setErrorTugas("Gagal memuat daftar tugas. Pastikan endpoint sudah benar.");
+      } finally {
+        setLoadingTugas(false);
       }
+    };
+
+    if (!hasFetchedTugas) {
+      fetchTugas();
     }
-  }, [activeTab, data, id, hasFetchedTugas]);
+  }, [data, id, hasFetchedTugas]);
+
+  // ── Fetch Tugas Susulan (endpoint terpisah, filter by mapel) ─────────
+  useEffect(() => {
+    if (!data || hasFetchedTugasSusulan) return;
+
+    const fetchTugasSusulan = async () => {
+      try {
+        setLoadingTugasSusulan(true);
+        const mapelId = data?.mapel_id || data?.mata_pelajaran_id || id;
+        const res = await getTugasSusulanSiswa();
+        const raw = res.data;
+
+        let list = [];
+        if (Array.isArray(raw)) list = raw;
+        else if (Array.isArray(raw?.data)) list = raw.data;
+        else if (Array.isArray(raw?.data?.data)) list = raw.data.data;
+
+        setRawTugasSusulanList(list);
+
+        // Filter tugas susulan berdasarkan nama_mapel (karena backend tidak mengirim mapel_id)
+        const mapelNameAPI = data?.nama_mapel?.toLowerCase();
+        
+        const filtered = list.filter((t) => {
+          return t.nama_mapel?.toLowerCase() === mapelNameAPI;
+        });
+
+        setTugasSusulanList(filtered);
+        setHasFetchedTugasSusulan(true);
+      } catch (err) {
+        console.error("Gagal memuat tugas susulan:", err);
+        setErrorTugasSusulan("Gagal memuat daftar tugas susulan.");
+      } finally {
+        setLoadingTugasSusulan(false);
+      }
+    };
+
+    fetchTugasSusulan();
+  }, [data, id, hasFetchedTugasSusulan]);
 
   useEffect(() => {
     if (activeTab !== "Pengumuman" || !data) {
@@ -210,24 +251,36 @@ export default function SiswaRuangBelajar() {
             </div>
             {/* Tabs — di bawah header banner */}
             <div className="flex gap-1 border-b border-slate-200 overflow-x-auto scrollbar-hide -mx-1 px-1">
-              {TABS.map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-bold transition border-b-2 -mb-px whitespace-nowrap ${
-                    activeTab === tab
-                      ? "border-blue-600 text-blue-600"
-                      : "border-transparent text-slate-500 hover:text-slate-800"
-                  }`}
-                >
-                  {tab}
-                  {tab === "Tugas" && tugasTertunda > 0 && (
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white leading-none">
-                      {tugasTertunda > 9 ? "9+" : tugasTertunda}
-                    </span>
-                  )}
-                </button>
-              ))}
+              {TABS.map((tab) => {
+                let badgeCount = 0;
+                if (tab === "Tugas") {
+                  badgeCount = tugasTertunda;
+                } else if (tab === "Tugas Susulan") {
+                  badgeCount = tugasSusulanList.filter((t) => {
+                    const s = (t.status || t.status_pengumpulan || "").toLowerCase();
+                    return !s || s.includes("belum");
+                  }).length;
+                }
+
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-bold transition border-b-2 -mb-px whitespace-nowrap ${
+                      activeTab === tab
+                        ? "border-blue-600 text-blue-600"
+                        : "border-transparent text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    {tab}
+                    {badgeCount > 0 && (
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white leading-none">
+                        {badgeCount > 9 ? "9+" : badgeCount}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Tab Content */}
@@ -304,21 +357,20 @@ export default function SiswaRuangBelajar() {
                       let deadlineStr = "Tidak ada tenggat";
                       if (tugas.deadline) {
                         const dateObj = new Date(tugas.deadline);
-                        // Using a simple format for now since "Besok, 23:59" requires complex relative time logic
                         deadlineStr = dateObj.toLocaleString("id-ID", { 
                           day: "numeric", month: "short", year: "numeric", 
                           hour: "2-digit", minute: "2-digit" 
-                        }).replace(/\./g, ":"); // replace . with : for time in some locales
+                        }).replace(/\./g, ":");
                       }
 
                       return (
                         <div key={tugas.id || idx} className="rounded-[20px] bg-white p-6 shadow-sm border border-slate-100 flex items-center justify-between transition hover:shadow-md">
                           <div className="flex-1 pr-6">
                             <h3 className="text-[17px] font-bold text-[#0F172A] leading-snug mb-1">
-                              {tugas.judul}
+                              {tugas.judul_tugas || tugas.judul}
                             </h3>
                             <p className="text-[13px] text-[#64748B] leading-relaxed mb-3 line-clamp-2">
-                              {tugas.deskripsi}
+                              {tugas.deskripsi_tugas || tugas.deskripsi}
                             </p>
                             <div className="flex items-center gap-1.5 text-[12px] font-bold text-[#D97706]">
                               <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -329,6 +381,64 @@ export default function SiswaRuangBelajar() {
                           </div>
                           <button 
                             onClick={() => navigate(`/ruang-belajar/${id}/tugas/${tugas.id}`, { state: { tugas, mapelName, guruName, kelasName } })}
+                            className="shrink-0 flex items-center justify-center rounded-lg bg-[#0B57D0] px-6 py-2.5 text-[13px] font-bold text-white transition hover:bg-blue-800"
+                          >
+                            Lihat Tugas
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === "Tugas Susulan" && (
+              <div>
+                <h2 className="text-lg font-bold text-[#0F172A] mb-4">Daftar Tugas Susulan</h2>
+                
+                {loadingTugasSusulan ? (
+                  <div className="flex justify-center p-10">
+                    <div className="h-6 w-6 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"></div>
+                  </div>
+                ) : errorTugasSusulan ? (
+                  <div className="rounded-xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
+                    {errorTugasSusulan}
+                  </div>
+                ) : tugasSusulanList.length === 0 ? (
+                  <div className="rounded-[20px] border border-slate-200 bg-white p-10 text-center">
+                    <p className="text-slate-500 font-medium">Belum ada tugas susulan untuk mata pelajaran ini.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {tugasSusulanList.map((tugas, idx) => {
+                      const deadlineRaw = tugas.deadline_susulan || tugas.deadline;
+                      let deadlineStr = "Tidak ada tenggat";
+                      if (deadlineRaw) {
+                        deadlineStr = new Date(deadlineRaw).toLocaleString("id-ID", {
+                          day: "numeric", month: "short", year: "numeric",
+                          hour: "2-digit", minute: "2-digit",
+                        }).replace(/\./g, ":");
+                      }
+
+                      return (
+                        <div key={tugas.id || idx} className="rounded-[20px] bg-white p-6 shadow-sm border border-slate-100 flex items-center justify-between transition hover:shadow-md">
+                          <div className="flex-1 pr-6">
+                            <h3 className="text-[17px] font-bold text-[#0F172A] leading-snug mb-1">
+                              {tugas.judul_tugas || tugas.judul}
+                            </h3>
+                            <p className="text-[13px] text-[#64748B] leading-relaxed mb-3 line-clamp-2">
+                              {tugas.deskripsi_tugas || tugas.deskripsi}
+                            </p>
+                            <div className="flex items-center gap-1.5 text-[12px] font-bold text-[#D97706]">
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              {deadlineStr}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => navigate(`/siswa/tugas-susulan/${tugas.id}`)}
                             className="shrink-0 flex items-center justify-center rounded-lg bg-[#0B57D0] px-6 py-2.5 text-[13px] font-bold text-white transition hover:bg-blue-800"
                           >
                             Lihat Tugas
