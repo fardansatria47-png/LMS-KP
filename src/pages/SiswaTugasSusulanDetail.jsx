@@ -191,13 +191,13 @@ export default function SiswaTugasSusulanDetail() {
         {/* Back button */}
         <div className="flex items-center mb-8">
           <button
-            onClick={() => navigate("/siswa/tugas-susulan")}
+            onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-[#1E293B] font-bold hover:text-indigo-600 transition"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
             </svg>
-            Tugas Susulan
+            Kembali
           </button>
         </div>
 
@@ -216,29 +216,7 @@ export default function SiswaTugasSusulanDetail() {
           </div>
         ) : (
           <div className="max-w-6xl">
-            {/* ── Banner Tugas Susulan ── */}
-            <div className="mb-6 rounded-[24px] border border-indigo-200 bg-gradient-to-br from-indigo-50 to-violet-50 p-6 flex items-start gap-4 shadow-sm">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600">
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 111.063.852l-.708 2.836a.75.75 0 001.063.852l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <h4 className="font-extrabold text-indigo-900 text-sm mb-1">Tugas Susulan Aktif</h4>
-                {susulanInfo?.keterangan && (
-                  <p className="text-xs text-indigo-700 leading-relaxed">
-                    Catatan Guru:{" "}
-                    <span className="font-semibold italic">
-                      "{susulanInfo.keterangan}"
-                    </span>
-                  </p>
-                )}
-                <p className="text-[11px] text-indigo-500 mt-2 font-medium">
-                  Batas pengumpulan baru:{" "}
-                  <span className="font-bold text-indigo-700">{deadlineStr}</span>
-                </p>
-              </div>
-            </div>
+
 
             {/* ── Header Tugas ── */}
             <div className="mb-6 flex flex-wrap justify-between items-start gap-4">

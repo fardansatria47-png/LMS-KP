@@ -29,7 +29,6 @@ export default function SiswaRuangBelajar() {
   // ── Tugas Susulan (endpoint terpisah) ──────────────────────────────
   const [tugasSusulanList, setTugasSusulanList] = useState([]);
   const [loadingTugasSusulan, setLoadingTugasSusulan] = useState(false);
-  const [hasFetchedTugasSusulan, setHasFetchedTugasSusulan] = useState(false);
   const [errorTugasSusulan, setErrorTugasSusulan] = useState("");
   const [rawTugasSusulanList, setRawTugasSusulanList] = useState([]);
 
@@ -93,7 +92,7 @@ export default function SiswaRuangBelajar() {
 
   // ── Fetch Tugas Susulan (endpoint terpisah, filter by mapel) ─────────
   useEffect(() => {
-    if (!data || hasFetchedTugasSusulan) return;
+    if (!data) return;
 
     const fetchTugasSusulan = async () => {
       try {
@@ -109,15 +108,21 @@ export default function SiswaRuangBelajar() {
 
         setRawTugasSusulanList(list);
 
-        // Filter tugas susulan berdasarkan nama_mapel (karena backend tidak mengirim mapel_id)
-        const mapelNameAPI = data?.nama_mapel?.toLowerCase();
-        
+        // Filter tugas susulan: cocokkan mapel_id dulu, fallback ke nama_mapel
+        const mapelNameAPI = data?.nama_mapel?.toLowerCase()?.trim();
         const filtered = list.filter((t) => {
-          return t.nama_mapel?.toLowerCase() === mapelNameAPI;
+          // Coba match lewat mapel_id / mata_pelajaran_id
+          if (mapelId && (t.mapel_id || t.mata_pelajaran_id)) {
+            return String(t.mapel_id || t.mata_pelajaran_id) === String(mapelId);
+          }
+          // Fallback: match nama_mapel (case insensitive, trimmed)
+          if (mapelNameAPI && t.nama_mapel) {
+            return t.nama_mapel.toLowerCase().trim() === mapelNameAPI;
+          }
+          return false;
         });
 
         setTugasSusulanList(filtered);
-        setHasFetchedTugasSusulan(true);
       } catch (err) {
         console.error("Gagal memuat tugas susulan:", err);
         setErrorTugasSusulan("Gagal memuat daftar tugas susulan.");
@@ -127,7 +132,7 @@ export default function SiswaRuangBelajar() {
     };
 
     fetchTugasSusulan();
-  }, [data, id, hasFetchedTugasSusulan]);
+  }, [data, id]);
 
   useEffect(() => {
     if (activeTab !== "Pengumuman" || !data) {
