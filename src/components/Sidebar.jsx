@@ -59,8 +59,8 @@ export default function Sidebar() {
       <div className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-slate-200 bg-white shadow-sm lg:flex">
         {/* Logo */}
         <div className="mb-6 px-6 pt-7 pb-5 border-b border-slate-100">
-          <p className="text-xs font-bold uppercase tracking-widest text-blue-600">LMS Admin</p>
-          <p className="text-[10px] text-slate-400 mt-0.5">SMK - YAPSIPA TASIKMALAYA</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 leading-tight">LMS SMK - Yapsipa Tasikmalaya</p>
+          <p className="text-[10px] text-slate-400 mt-1">Admin</p>
         </div>
 
         {/* Navigation */}
@@ -98,10 +98,10 @@ export default function Sidebar() {
       </div>
 
       {/* ── Mobile Top Bar (title only) ──────────────────── */}
-      <header className="fixed left-0 right-0 top-0 z-40 flex h-12 items-center border-b border-slate-200 bg-white/90 backdrop-blur-md px-4 shadow-sm lg:hidden">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 leading-none">LMS Admin</p>
-          <p className="text-[10px] text-slate-400 mt-0.5">SMK - YAPSIPA TASIKMALAYA</p>
+      <header className="fixed left-0 right-0 top-0 z-40 flex h-14 items-center border-b border-slate-200 bg-white/90 backdrop-blur-md px-4 shadow-sm lg:hidden">
+        <div className="py-1">
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 leading-tight">LMS SMK - Yapsipa Tasikmalaya</p>
+          <p className="text-[11px] text-slate-500 font-semibold mt-1">Admin</p>
         </div>
       </header>
 

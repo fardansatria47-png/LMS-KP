@@ -356,6 +356,11 @@ export const resetPasswordSiswa = async (id) => {
   return await API.post(`/siswa/${id}/reset-password`);
 };
 
+// ── Reset Password Guru oleh Admin ───────────────────────────────────
+export const resetPasswordGuru = async (id) => {
+  return await API.post(`/guru/${id}/reset-password`);
+};
+
 // ── Kenaikan Kelas Massal ───────────────────────────────────────────
 export const promoteRombel = async (sourceRombelId, targetRombelId) => {
   return await API.post("/rombel/promote", {

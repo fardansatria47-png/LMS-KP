@@ -8,7 +8,7 @@ Pusher.logToConsole = true;
 // Because we don't have .env setup here yet, we will define defaults
 // that can be customized easily if needed.
 const REVERB_APP_KEY = '34390549805146d697e1';
-const REVERB_HOST = '192.168.1.15';
+const REVERB_HOST = '192.168.1.26';
 const REVERB_PORT = 8080;
 const REVERB_SCHEME = 'http';
 

@@ -35,8 +35,7 @@ export default function GuruLayout({ children, title }) {
       {/* ── Desktop Sidebar ──────────────────────────────── */}
       <aside className="fixed left-0 top-0 hidden h-full w-44 flex-col bg-white border-r border-slate-100 shadow-sm z-20 lg:flex">
         <div className="px-5 pt-6 pb-4 border-b border-slate-100">
-          <p className="text-xs font-bold text-blue-700 tracking-widest">LMS</p>
-          <p className="text-[10px] font-semibold text-slate-500 mt-0.5">SMK - YAPSIPA</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-700 leading-tight">LMS SMK - Yapsipa Tasikmalaya</p>
         </div>
         <nav className="flex-1 px-3 py-5 space-y-1">
           {GURU_NAV.map((item) => (
@@ -65,10 +64,9 @@ export default function GuruLayout({ children, title }) {
       </aside>
 
       {/* ── Mobile Top Bar (title only) ───────────────────── */}
-      <header className="fixed left-0 right-0 top-0 z-40 flex h-12 items-center border-b border-slate-100 bg-white/90 backdrop-blur-md px-4 shadow-sm lg:hidden">
-        <div>
-          <p className="text-xs font-bold text-blue-700 tracking-widest leading-none">LMS</p>
-          <p className="text-[9px] font-semibold text-slate-400 mt-0.5">{title || "Portal Guru"}</p>
+      <header className="fixed left-0 right-0 top-0 z-40 flex h-14 items-center border-b border-slate-100 bg-white/90 backdrop-blur-md px-4 shadow-sm lg:hidden">
+        <div className="py-1">
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-700 leading-tight">LMS SMK - Yapsipa Tasikmalaya</p>
         </div>
       </header>
 

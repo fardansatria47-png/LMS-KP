@@ -36,8 +36,7 @@ export default function SiswaLayout({ children, title }) {
       {/* ── Desktop Sidebar ──────────────────────────────── */}
       <aside className="fixed left-0 top-0 hidden h-full w-56 flex-col bg-white border-r border-slate-100 shadow-sm z-20 lg:flex">
         <div className="px-6 pt-8 pb-6 border-b border-slate-100">
-          <p className="text-sm font-black text-blue-700 tracking-widest">LMS</p>
-          <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-wider">SMK - YAPSIPA TASIKMALAYA</p>
+          <p className="text-sm font-black uppercase tracking-widest text-blue-700 leading-tight">LMS SMK - Yapsipa Tasikmalaya</p>
         </div>
         <nav className="flex-1 px-4 py-4 space-y-1.5">
           {SISWA_NAV.map((item) => (
@@ -66,10 +65,9 @@ export default function SiswaLayout({ children, title }) {
       </aside>
 
       {/* ── Mobile Top Bar (title only) ───────────────────── */}
-      <header className="fixed left-0 right-0 top-0 z-40 flex h-12 items-center border-b border-slate-100 bg-white/90 backdrop-blur-md px-4 shadow-sm lg:hidden">
-        <div>
-          <p className="text-xs font-bold text-blue-700 tracking-widest leading-none">LMS</p>
-          <p className="text-[9px] font-semibold text-slate-400 mt-0.5">{title || "Portal Siswa"}</p>
+      <header className="fixed left-0 right-0 top-0 z-40 flex h-14 items-center border-b border-slate-100 bg-white/90 backdrop-blur-md px-4 shadow-sm lg:hidden">
+        <div className="py-1">
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-700 leading-tight">LMS SMK - Yapsipa Tasikmalaya</p>
         </div>
       </header>
 
