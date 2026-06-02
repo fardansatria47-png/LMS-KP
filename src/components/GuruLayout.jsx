@@ -34,7 +34,13 @@ export default function GuruLayout({ children, title }) {
 
       {/* ── Desktop Sidebar ──────────────────────────────── */}
       <aside className="fixed left-0 top-0 hidden h-full w-44 flex-col bg-white border-r border-slate-100 shadow-sm z-20 lg:flex">
-        <div className="px-5 pt-6 pb-4 border-b border-slate-100">
+        <div className="px-5 pt-6 pb-4 border-b border-slate-100 flex items-center gap-3">
+          <img 
+            src="/logo.png" 
+            alt="Logo" 
+            className="h-[42px] w-[42px] object-contain" 
+            style={{ imageRendering: "-webkit-optimize-contrast" }}
+          />
           <p className="text-xs font-bold uppercase tracking-widest text-blue-700 leading-tight">LMS SMK - Yapsipa Tasikmalaya</p>
         </div>
         <nav className="flex-1 px-3 py-5 space-y-1">
@@ -62,9 +68,15 @@ export default function GuruLayout({ children, title }) {
           </button>
         </div>
       </aside>
-
+ 
       {/* ── Mobile Top Bar (title only) ───────────────────── */}
-      <header className="fixed left-0 right-0 top-0 z-40 flex h-14 items-center border-b border-slate-100 bg-white/90 backdrop-blur-md px-4 shadow-sm lg:hidden">
+      <header className="fixed left-0 right-0 top-0 z-40 flex h-14 items-center gap-3 border-b border-slate-100 bg-white/90 backdrop-blur-md px-4 shadow-sm lg:hidden">
+        <img 
+          src="/logo.png" 
+          alt="Logo" 
+          className="h-[42px] w-[42px] object-contain" 
+          style={{ imageRendering: "-webkit-optimize-contrast" }}
+        />
         <div className="py-1">
           <p className="text-xs font-bold uppercase tracking-widest text-blue-700 leading-tight">LMS SMK - Yapsipa Tasikmalaya</p>
         </div>
