@@ -317,6 +317,10 @@ export const sendDiskusi = async (mapelId, pesan) => {
   return await API.post(`/diskusi/${mapelId}`, { pesan });
 };
 
+export const deleteDiskusi = async (pesanId) => {
+  return await API.delete(`/diskusi/${pesanId}`);
+};
+
 // ── AI Generate Soal ────────────────────────────────────────────────────────
 export const generateDeskripsiAI = async (data) => {
   return await API.post("/ai/generate-deskripsi", data);

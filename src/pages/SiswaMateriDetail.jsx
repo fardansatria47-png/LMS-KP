@@ -174,8 +174,8 @@ export default function SiswaMateriDetail() {
                   {dokumenFiles.map((file, idx) => {
                     const isPdf = file.url?.toLowerCase().endsWith(".pdf") || file.tipe?.toLowerCase() === "pdf";
                     return (
-                      <div key={idx} className="rounded-[16px] border border-slate-200 bg-white p-5 flex items-center justify-between transition hover:shadow-md">
-                        <div className="flex items-center gap-4">
+                      <div key={idx} className="rounded-[16px] border border-slate-200 bg-white p-4 sm:p-5 flex items-center justify-between gap-4 transition hover:shadow-md">
+                        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                           <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] ${isPdf ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-500'}`}>
                             {isPdf ? (
                               <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 16l-4-4h3V4h2v8h3l-4 4zm9-12h-6v2h6v14H3V6h6V4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z" /></svg>
@@ -183,9 +183,11 @@ export default function SiswaMateriDetail() {
                               <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z" /></svg>
                             )}
                           </div>
-                          <div>
-                            <h3 className="text-[15px] font-bold text-[#0F172A]">{file.nama_file || "Dokumen Materi"}</h3>
-                            <p className="text-[12px] font-medium text-slate-500">
+                          <div className="min-w-0">
+                            <h3 className="text-[14px] sm:text-[15px] font-bold text-[#0F172A] truncate" title={file.nama_file || "Dokumen Materi"}>
+                              {file.nama_file || "Dokumen Materi"}
+                            </h3>
+                            <p className="text-[11px] sm:text-[12px] font-medium text-slate-500">
                               {isPdf ? "Dokumen PDF" : "File Berkas"}
                             </p>
                           </div>
@@ -194,7 +196,7 @@ export default function SiswaMateriDetail() {
                           href={fixFileUrl(file.url)} 
                           target="_blank" 
                           rel="noreferrer"
-                          className="flex shrink-0 items-center justify-center rounded-lg bg-[#0B57D0] px-4 py-2 sm:px-6 sm:py-2.5 text-[11px] sm:text-[13px] font-bold text-white transition hover:bg-blue-800 gap-1.5 sm:gap-2 whitespace-nowrap"
+                          className="flex shrink-0 items-center justify-center rounded-lg bg-[#0B57D0] px-3 py-2 sm:px-6 sm:py-2.5 text-[11px] sm:text-[13px] font-bold text-white transition hover:bg-blue-800 gap-1.5 sm:gap-2 whitespace-nowrap"
                         >
                           <svg className="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />

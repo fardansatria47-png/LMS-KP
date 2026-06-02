@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import echo from "../utils/echo";
-import { getDiskusi, sendDiskusi, getCurrentUser } from "../services/authService";
+import { getDiskusi, sendDiskusi, deleteDiskusi, getCurrentUser } from "../services/authService";
 import { toast } from "../utils/notify";
 
 export default function DiskusiMapel({ mapelId, currentUser }) {
@@ -10,6 +10,11 @@ export default function DiskusiMapel({ mapelId, currentUser }) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const messagesEndRef = useRef(null);
+  
+  // State for Long Press Delete
+  const [showDeleteMenuId, setShowDeleteMenuId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+  const pressTimerRef = useRef(null);
 
   // Fallback if currentUser is not passed completely, try to fetch it
   const [user, setUser] = useState(currentUser);
@@ -52,36 +57,91 @@ export default function DiskusiMapel({ mapelId, currentUser }) {
 
     fetchMessages();
 
-    // Listen to broadcast
-    console.log(`[Echo] Mencoba subscribe ke channel: diskusi.${mapelId}`);
+    // ── Subscribe ke private channel ─────────────────────────────────
+    console.log(`[Echo] Subscribe ke channel: diskusi.${mapelId}`);
     const channel = echo.private(`diskusi.${mapelId}`);
-    
-    // Catch successful subscription
+
+    // bind_global ref untuk cleanup
+    let boundGlobalHandler = null;
+
     channel.subscribed(() => {
-        console.log(`[Echo] Berhasil subscribe ke channel: diskusi.${mapelId}`);
+      console.log(`[Echo] Berhasil subscribe ke channel: diskusi.${mapelId}`);
+
     });
 
-    // Catch subscription error
     channel.error((error) => {
-        console.error(`[Echo] Gagal subscribe ke channel: diskusi.${mapelId}`, error);
+      console.error(`[Echo] Gagal subscribe:`, error);
     });
 
+    // ── Handler pesan baru ────────────────────────────────────────────
     channel.listen(".message.sent", (e) => {
       console.log("[Echo] Menerima event .message.sent:", e);
-      // e.diskusi contains the broadcasted message data
       if (e.diskusi) {
         setMessages((prev) => {
-           // Prevent duplicates if it's our own message
-           const exists = prev.find(m => m.id === e.diskusi.id);
-           if (exists) return prev;
-           return [...prev, e.diskusi];
+          const exists = prev.find((m) => m.id === e.diskusi.id);
+          if (exists) return prev;
+          return [...prev, e.diskusi];
         });
       }
     });
 
+    // ── Handler hapus pesan (Fail-proof Global Listener) ──────────────
+    const handleGlobalEvent = (eventName, data) => {
+      // Hanya proses event yang berhubungan dengan "deleted"
+      const isDeleteEvent =
+        eventName.toLowerCase().includes("deleted") ||
+        eventName.toLowerCase().includes("messagedeleted");
+
+      if (!isDeleteEvent) return;
+
+      console.log(`[Pusher] Event hapus terdeteksi: "${eventName}"`, data);
+
+      const payload = typeof data === "string" ? JSON.parse(data) : data;
+      
+      // Ambil ID dari berbagai kemungkinan nama variabel yang dikirim backend
+      const deletedId =
+        payload.id ||
+        payload.pesan_id ||
+        payload.diskusi_id ||
+        payload.message_id ||
+        (payload.diskusi && payload.diskusi.id) ||
+        (payload.pesan && payload.pesan.id);
+
+      if (deletedId) {
+        console.log(`[Pusher] Menghapus pesan id=${deletedId}`);
+        setMessages((prev) =>
+          prev.filter((m) => String(m.id) !== String(deletedId))
+        );
+      }
+    };
+
+    // Pasang listener global di root Pusher agar menangkap event apapun
+    if (echo.connector && echo.connector.pusher) {
+      echo.connector.pusher.bind_global(handleGlobalEvent);
+    }
+
+    // Fallback normal listen
+    const deleteHandler = (e) => {
+      const deletedId = e.id || e.pesan_id || e.diskusi_id || e.message_id || (e.diskusi && e.diskusi.id);
+      if (deletedId) {
+        setMessages((prev) => prev.filter((m) => String(m.id) !== String(deletedId)));
+      }
+    };
+    channel.listen(".message.deleted", deleteHandler);
+    channel.listen(".MessageDeleted", deleteHandler);
+    channel.listen("MessageDeleted", deleteHandler);
+    channel.listen("message.deleted", deleteHandler);
+
     return () => {
       console.log(`[Echo] Unsubscribe dari channel: diskusi.${mapelId}`);
+      if (echo.connector && echo.connector.pusher) {
+        echo.connector.pusher.unbind_global(handleGlobalEvent);
+      }
       channel.stopListening(".message.sent");
+      channel.stopListening(".message.deleted");
+      channel.stopListening(".MessageDeleted");
+      channel.stopListening("message.deleted");
+      channel.stopListening("MessageDeleted");
       echo.leaveChannel(`diskusi.${mapelId}`);
     };
   }, [mapelId]);
@@ -130,6 +190,59 @@ export default function DiskusiMapel({ mapelId, currentUser }) {
       setSending(false);
     }
   };
+
+  const handleTouchStart = (msgId, isMe, isGuru) => {
+    // Hanya izinkan jika itu pesannya sendiri atau dia adalah guru
+    if (!isMe && !isGuru) return;
+    
+    // Tutup menu lain jika ada
+    setShowDeleteMenuId(null);
+    
+    pressTimerRef.current = setTimeout(() => {
+      setShowDeleteMenuId(msgId);
+      // Memicu getaran di HP jika didukung (50ms)
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+    }, 1000); // 1 detik long press
+  };
+
+  const handleTouchEnd = () => {
+    if (pressTimerRef.current) {
+      clearTimeout(pressTimerRef.current);
+      pressTimerRef.current = null;
+    }
+  };
+
+  const handleDeleteMessage = async (msgId) => {
+    try {
+      setDeletingId(msgId);
+      await deleteDiskusi(msgId);
+      setMessages((prev) => prev.filter((m) => String(m.id) !== String(msgId)));
+      toast("Pesan berhasil dihapus", "success");
+    } catch (err) {
+      console.error("Gagal menghapus pesan:", err);
+      toast("Gagal menghapus pesan", "error");
+    } finally {
+      setDeletingId(null);
+      setShowDeleteMenuId(null);
+    }
+  };
+
+  // Tutup popup delete saat klik di luar area pesan
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (showDeleteMenuId && !e.target.closest(".message-bubble-container")) {
+        setShowDeleteMenuId(null);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [showDeleteMenuId]);
 
   const getInitials = (name) => {
     if (!name) return "?";
@@ -210,12 +323,57 @@ export default function DiskusiMapel({ mapelId, currentUser }) {
                       <span className="text-[10px] text-slate-400 font-medium">{formatTime(msg.created_at)}</span>
                     </div>
                     
-                    <div className={`relative px-4 py-2.5 rounded-2xl text-[14px] leading-relaxed shadow-sm ${
-                      isMe 
-                        ? "bg-blue-600 text-white rounded-tr-sm" 
-                        : "bg-white text-slate-700 border border-slate-100 rounded-tl-sm"
-                    } ${msg.is_optimistic ? "opacity-70" : "opacity-100"}`}>
+                    
+                    <div 
+                      className={`message-bubble-container relative px-4 py-2.5 rounded-2xl text-[14px] leading-relaxed shadow-sm transition-all select-none ${
+                        isMe 
+                          ? "bg-blue-600 text-white rounded-tr-sm" 
+                          : "bg-white text-slate-700 border border-slate-100 rounded-tl-sm"
+                      } ${msg.is_optimistic ? "opacity-70" : "opacity-100"} ${
+                        showDeleteMenuId === msg.id ? "ring-2 ring-rose-400 scale-[0.98]" : ""
+                      }`}
+                      onTouchStart={() => handleTouchStart(msg.id, isMe, isGuru)}
+                      onTouchEnd={handleTouchEnd}
+                      onTouchMove={handleTouchEnd} // batal jika diswipe/scroll
+                      onMouseDown={() => handleTouchStart(msg.id, isMe, isGuru)}
+                      onMouseUp={handleTouchEnd}
+                      onMouseLeave={handleTouchEnd}
+                      onContextMenu={(e) => {
+                         // Cegah konteks menu default jika menekan lama di HP (mobile browsers)
+                         if (isMe || isGuru) e.preventDefault();
+                      }}
+                    >
                       {msg.pesan}
+                      
+                      {/* Delete Popup Menu */}
+                      {showDeleteMenuId === msg.id && (
+                        <div className={`absolute top-0 transform -translate-y-full mb-1 z-20 ${isMe ? "right-0" : "left-0"}`}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteMessage(msg.id);
+                            }}
+                            onTouchStart={(e) => e.stopPropagation()}
+                            onMouseDown={(e) => e.stopPropagation()}
+                            disabled={deletingId === msg.id}
+                            className="bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold py-1.5 px-3 rounded-lg shadow-lg flex items-center gap-1.5 whitespace-nowrap transition-colors"
+                          >
+                            {deletingId === msg.id ? (
+                              <svg className="h-3 w-3 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                              </svg>
+                            ) : (
+                              <svg className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            )}
+                            Hapus Obrolan
+                          </button>
+                          {/* Triangle Pointer */}
+                          <div className={`absolute bottom-[-4px] w-0 h-0 border-l-[5px] border-r-[5px] border-t-[5px] border-l-transparent border-r-transparent border-t-rose-500 ${isMe ? "right-3" : "left-3"}`}></div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
