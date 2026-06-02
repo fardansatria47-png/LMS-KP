@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getGuruProfile, updateGuruPassword, getCurrentUser } from "../services/authService";
-import { confirmDialog } from "../utils/notify";
+import { confirmDialog, toast } from "../utils/notify";
 import GuruLayout from "../components/GuruLayout";
 
 
@@ -18,7 +18,6 @@ export default function GuruProfile() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [updating, setUpdating] = useState(false);
-  const [msg, setMsg] = useState({ type: "", text: "" });
 
   const navigate = useNavigate();
 
@@ -56,20 +55,19 @@ export default function GuruProfile() {
     }
     
     setUpdating(true);
-    setMsg({ type: "", text: "" });
     try {
       await updateGuruPassword({ 
         current_password: oldPassword,
         password: newPassword,
         password_confirmation: confirmPassword
       });
-      setMsg({ type: "success", text: "Password berhasil diperbarui" });
+      toast("Kata sandi berhasil diubah!", "success");
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (err) {
       const errorData = err?.response?.data;
-      let errorMessage = errorData?.message || errorData?.error || "Gagal memperbarui password";
+      let errorMessage = errorData?.message || errorData?.error || "Gagal mengubah kata sandi";
 
       // Jika ada detail error validasi dari Laravel
       if (errorData?.errors) {
@@ -81,7 +79,7 @@ export default function GuruProfile() {
         }
       }
 
-      setMsg({ type: "error", text: errorMessage });
+      toast(errorMessage, "error");
     } finally {
       setUpdating(false);
     }
@@ -268,11 +266,7 @@ export default function GuruProfile() {
                 </div>
               </div>
 
-              {msg.text && (
-                <div className={`rounded-xl p-3 text-xs font-semibold ${msg.type === "success" ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"}`}>
-                  {msg.text}
-                </div>
-              )}
+
 
               <button
                 type="submit"
