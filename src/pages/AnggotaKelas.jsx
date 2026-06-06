@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-import { getRombel, deleteRombel, kickSiswaFromRombel, getRombelById, getRombelMapel, getGuru, getGuruByMapelRoute, promoteRombel, graduateRombel } from "../services/authService";
+import { getRombel, deleteRombel, kickSiswaFromRombel, getRombelById, getRombelMapel, promoteRombel, graduateRombel } from "../services/authService";
 import { toast } from "../utils/notify";
 import { getErrorMessage } from "../utils/translateError";
 
@@ -165,13 +165,30 @@ export default function AnggotaKelas() {
     setDetailLoading(true);
     try {
       const rombelId = rombel.rombel_id || rombel.id;
-      const res = await getRombelById(rombelId);
 
-      // Mengambil data rombel yang berisi array siswa
-      const data = res.data?.data || res.data || {};
+      // Ambil data Siswa dan Mapel secara paralel agar count mapel langsung tampil
+      const [resRombel, resMapel] = await Promise.all([
+        getRombelById(rombelId),
+        getRombelMapel(rombelId).catch(() => ({ data: { data: [] } }))
+      ]);
+
+      // --- Handle Siswa ---
+      const data = resRombel.data?.data || resRombel.data || {};
       const listSiswa = data.siswa || [];
-
       setDetailSiswa(listSiswa);
+
+      // --- Handle Mapel ---
+      const rawMapel = resMapel.data?.data || resMapel.data || [];
+      let mapelList = Array.isArray(rawMapel) ? rawMapel : [];
+      mapelList = mapelList.map((m) => {
+        const guruRaw = m.guru || m.gurus;
+        if (guruRaw) {
+          const gurusArr = Array.isArray(guruRaw) ? guruRaw : [guruRaw];
+          return { ...m, gurus: gurusArr };
+        }
+        return { ...m, gurus: [] };
+      });
+      setDetailMapel(mapelList);
 
       // Sinkronkan total_siswa di rombelList dengan data aslinya (berdasarkan panjang array)
       setRombelList((prev) =>
@@ -183,9 +200,10 @@ export default function AnggotaKelas() {
       );
 
     } catch (err) {
-      console.error("Lihat siswa error:", err);
+      console.error("Lihat detail error:", err);
       setDetailSiswa([]);
-      toast("Gagal memuat detail siswa dari server", "error");
+      setDetailMapel([]);
+      toast("Gagal memuat detail kelas dari server", "error");
     } finally {
       setDetailLoading(false);
     }
@@ -217,30 +235,16 @@ export default function AnggotaKelas() {
         mapelList = [];
       }
 
-      // Enrich dengan data guru (dibungkus try/catch agar tidak crash)
-      try {
-        const resGuru = await getGuru();
-        const allGurus = resGuru.data?.data || resGuru.data || [];
-
-        const gurusWithMapels = await Promise.all(
-          (Array.isArray(allGurus) ? allGurus : []).map(async (guru) => {
-            try {
-              const detailRes = await getGuruByMapelRoute(guru.id);
-              const mapelOfGuru = detailRes.data?.data?.mapel || [];
-              return { ...guru, mapel_ids: mapelOfGuru.map((gm) => gm.id) };
-            } catch {
-              return { ...guru, mapel_ids: [] };
-            }
-          })
-        );
-
-        mapelList = mapelList.map((m) => {
-          const matchingGurus = gurusWithMapels.filter((g) => g.mapel_ids.includes(m.id));
-          return { ...m, gurus: matchingGurus };
-        });
-      } catch (guruErr) {
-        console.warn("Gagal enrich guru:", guruErr);
-      }
+      // Normalize guru data dari mapel langsung (field "guru" atau "gurus")
+      mapelList = mapelList.map((m) => {
+        // Gunakan m.guru atau m.gurus dari backend
+        const guruRaw = m.guru || m.gurus;
+        if (guruRaw) {
+          const gurusArr = Array.isArray(guruRaw) ? guruRaw : [guruRaw];
+          return { ...m, gurus: gurusArr };
+        }
+        return { ...m, gurus: [] };
+      });
 
       setDetailMapel(mapelList);
     } catch (err) {
@@ -317,7 +321,7 @@ export default function AnggotaKelas() {
                 : "border-transparent text-slate-500 hover:text-slate-700"
                 }`}
             >
-              Mata Pelajaran
+              Mata Pelajaran ({detailMapel.length})
             </button>
           </div>
 
@@ -412,14 +416,7 @@ export default function AnggotaKelas() {
                       return (
                         <tr key={mapel.id || idx} className="transition hover:bg-slate-50/50">
                           <td className="py-4 pl-8 pr-4">
-                            <div className="flex items-center gap-3">
-                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
-                                <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-                                </svg>
-                              </div>
-                              <span className="text-sm font-semibold text-slate-700">{namaMapel}</span>
-                            </div>
+                            <span className="text-sm font-semibold text-slate-700">{namaMapel}</span>
                           </td>
                           <td className="px-4 py-4">
                             <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
@@ -430,8 +427,9 @@ export default function AnggotaKelas() {
                             {mapel.gurus && mapel.gurus.length > 0 ? (
                               <div className="flex flex-wrap gap-1">
                                 {mapel.gurus.map((g, gIdx) => (
-                                  <span key={gIdx} className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-bold text-blue-700">
-                                    {g.nama_lengkap || g.nama || g.name || "-"}
+                                  <span key={gIdx} className="text-sm font-medium text-slate-700">
+                                    {typeof g === 'string' ? g : (g.nama_lengkap || g.nama || g.name || "-")}
+                                    {gIdx < mapel.gurus.length - 1 && <span className="text-slate-400">, </span>}
                                   </span>
                                 ))}
                               </div>
@@ -482,7 +480,7 @@ export default function AnggotaKelas() {
         {/* Header */}
         <div className="mb-10 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-[28px] font-bold text-blue-600 uppercase tracking-wide">Manajemen Kelas</h1>
+            <h1 className="text-[28px] font-bold text-blue-600 uppercase tracking-wide">Kelola Kelas</h1>
             <p className="mt-1 text-sm font-medium text-slate-400">Kelola data kelas dan rombongan belajar institusi Anda.</p>
           </div>
 

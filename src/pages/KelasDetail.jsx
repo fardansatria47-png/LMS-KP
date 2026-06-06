@@ -424,15 +424,10 @@ export default function KelasDetail() {
                             </div>
                             <div>
                               <h3 className="text-base font-bold text-slate-800 group-hover:text-blue-600 transition">{m.judul}</h3>
-                              <p className="mt-1 flex items-center text-xs text-slate-500">
-                                {formatDate(m.created_at || m.tanggal)}
-                                {m.deskripsi && (
-                                  <>
-                                    <span className="mx-2 h-1 w-1 rounded-full bg-slate-300"></span>
-                                    <span className="truncate max-w-xs">{m.deskripsi}</span>
-                                  </>
-                                )}
-                              </p>
+                              {m.deskripsi && (
+                                <p className="mt-1 text-xs text-slate-500 truncate max-w-sm">{m.deskripsi}</p>
+                              )}
+                              <p className="mt-1 text-xs text-slate-400">{formatDate(m.created_at || m.tanggal)}</p>
                             </div>
                           </div>
                           
@@ -647,13 +642,17 @@ export default function KelasDetail() {
                       </div>
                     ) : (
                       <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
-                        <table className="w-full border-collapse min-w-[500px] sm:min-w-full">
+                        <table className="w-full border-collapse">
+                          <colgroup>
+                            <col className="w-1/2" />
+                            <col className="w-1/4" />
+                            <col className="w-1/4" />
+                          </colgroup>
                           <thead>
                             <tr className="bg-slate-50 border-b border-slate-100">
-                              <th className="px-3 py-3 sm:px-5 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Nama</th>
-                              <th className="px-3 py-3 sm:px-5 text-left text-xs font-bold uppercase tracking-wider text-slate-500">NIS</th>
-                              <th className="px-3 py-3 sm:px-5 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Jenis Kelamin</th>
-                              <th className="px-3 py-3 sm:px-5 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Status</th>
+                              <th className="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Nama Siswa</th>
+                              <th className="px-5 py-3.5 text-center text-xs font-bold uppercase tracking-wider text-slate-500">NIS</th>
+                              <th className="px-5 py-3.5 text-center text-xs font-bold uppercase tracking-wider text-slate-500">Jenis Kelamin</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -668,25 +667,18 @@ export default function KelasDetail() {
                                   key={s.id || idx}
                                   className={`transition hover:bg-blue-50 ${idx !== filtered.length - 1 ? "border-b border-slate-100" : ""}`}
                                 >
-                                  <td className="px-3 py-2.5 sm:px-5 sm:py-3.5">
-                                    <div className="flex items-center gap-2 sm:gap-3">
-                                      <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-700 text-[10px] sm:text-[11px] font-bold">
+                                  <td className="px-5 py-3.5">
+                                    <div className="flex items-center gap-3">
+                                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-700 text-[11px] font-bold">
                                         {initials}
                                       </div>
-                                      <span className="text-xs sm:text-sm font-semibold text-slate-800 line-clamp-1">{nama}</span>
+                                      <span className="text-sm font-semibold text-slate-800">{nama}</span>
                                     </div>
                                   </td>
-                                  <td className="px-3 py-2.5 sm:px-5 sm:py-3.5 text-xs sm:text-sm text-slate-500 font-mono">{nis}</td>
-                                  <td className="px-3 py-2.5 sm:px-5 sm:py-3.5 text-xs sm:text-sm text-slate-600">{gender}</td>
-                                  <td className="px-3 py-2.5 sm:px-5 sm:py-3.5">
-                                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wide ${
-                                      status.toLowerCase() === "aktif"
-                                        ? "bg-emerald-100 text-emerald-700"
-                                        : "bg-slate-100 text-slate-500"
-                                    }`}>
-                                      {status}
-                                    </span>
+                                  <td className="px-5 py-3.5 text-center">
+                                    <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">{nis}</span>
                                   </td>
+                                  <td className="px-5 py-3.5 text-center text-sm text-slate-600 font-medium">{gender}</td>
                                 </tr>
                               );
                             })}

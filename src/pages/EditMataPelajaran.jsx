@@ -55,13 +55,16 @@ export default function EditMataPelajaran() {
             jurusan_id: mapelData.jurusan_id || "",
             kelas_id: mapelData.kelas_id || "",
           });
-          if (Array.isArray(mapelData.gurus)) {
-            const gIds = mapelData.gurus.map((g) => g.id);
+          const gurusArr = mapelData.guru || mapelData.gurus;
+          if (Array.isArray(gurusArr)) {
+            const gIds = gurusArr.map((g) => Number(g.id));
             setSelectedGuruIds(gIds);
             setOriginalGuruIds(gIds);
           }
-          if (Array.isArray(mapelData.rombels)) {
-            const rIds = mapelData.rombels.map((r) => r.id);
+          
+          const rombelsArr = mapelData.rombel || mapelData.rombels;
+          if (Array.isArray(rombelsArr)) {
+            const rIds = rombelsArr.map((r) => Number(r.id));
             setSelectedRombelIds(rIds);
             setOriginalRombelIds(rIds);
           }
@@ -292,6 +295,46 @@ export default function EditMataPelajaran() {
                   rows="3"
                   className="w-full rounded-xl bg-blue-50/50 px-4 py-3.5 text-sm text-slate-700 outline-none transition focus:bg-white focus:ring-2 focus:ring-blue-500 resize-none"
                 />
+              </div>
+
+              {/* Jurusan */}
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-600">Jurusan</label>
+                <SelectWrapper>
+                  <select
+                    name="jurusan_id"
+                    value={form.jurusan_id}
+                    onChange={handleChange}
+                    className="w-full rounded-xl bg-blue-50/50 px-4 py-3.5 text-sm text-slate-700 outline-none transition focus:bg-white focus:ring-2 focus:ring-blue-500 appearance-none"
+                  >
+                    <option value="">Pilih Jurusan</option>
+                    {optionsJurusan.map((j) => (
+                      <option key={j.id} value={j.id}>
+                        {j.nama_jurusan || j.nama}
+                      </option>
+                    ))}
+                  </select>
+                </SelectWrapper>
+              </div>
+
+              {/* Kelas */}
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-600">Kelas / Tingkat</label>
+                <SelectWrapper>
+                  <select
+                    name="kelas_id"
+                    value={form.kelas_id}
+                    onChange={handleChange}
+                    className="w-full rounded-xl bg-blue-50/50 px-4 py-3.5 text-sm text-slate-700 outline-none transition focus:bg-white focus:ring-2 focus:ring-blue-500 appearance-none"
+                  >
+                    <option value="">Pilih Kelas</option>
+                    {optionsKelas.map((k) => (
+                      <option key={k.id} value={k.id}>
+                        {k.nama_kelas || k.tingkat}
+                      </option>
+                    ))}
+                  </select>
+                </SelectWrapper>
               </div>
 
               {/* Guru */}

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-import { getMapel, deleteMapel, getGuru, getGuruByMapelRoute, getCurrentUser, getMataPelajaranSiswa } from "../services/authService";
+import { getMapel, deleteMapel, getCurrentUser, getMataPelajaranSiswa } from "../services/authService";
 import { toast, confirmDialog } from "../utils/notify";
 import SiswaLayout from "../components/SiswaLayout";
 import { getErrorMessage } from "../utils/translateError";
@@ -51,38 +51,12 @@ export default function MataPelajaran() {
       const res = await getMapel();
       const data = res.data?.data || res.data || [];
 
-      // Ambil semua guru terlebih dahulu
-      let allGurus = [];
-      try {
-        const resGuru = await getGuru();
-        allGurus = resGuru.data?.data || resGuru.data || [];
-        if (!Array.isArray(allGurus)) allGurus = [];
-      } catch (e) {
-        console.error("Gagal memuat guru:", e);
-      }
-
-      // Untuk setiap guru, ambil detail mapel-nya menggunakan API yang diberikan
-      const gurusWithMapels = await Promise.all(
-        allGurus.map(async (guru) => {
-          try {
-            const detailRes = await getGuruByMapelRoute(guru.id); // hits /guru/{id}/mapel
-            const detailData = detailRes.data?.data;
-            return {
-              ...guru,
-              mapel_details: detailData?.mapel || []
-            };
-          } catch (e) {
-            return { ...guru, mapel_details: [] };
-          }
-        })
-      );
-
-      // Cocokkan mapel dengan guru-guru yang mengajarnya
+      // Normalisasi field guru dari setiap mapel langsung dari respons API
       const mapelWithGurus = data.map((m) => {
-        const matchingGurus = gurusWithMapels.filter((g) => {
-          return g.mapel_details.some((gm) => gm.id === m.id);
-        });
-        return { ...m, gurus: matchingGurus };
+        const guruRaw = m.guru || m.gurus;
+        if (!guruRaw) return { ...m, gurus: [] };
+        const gurusArr = Array.isArray(guruRaw) ? guruRaw : [guruRaw];
+        return { ...m, gurus: gurusArr };
       });
 
       setMapel(mapelWithGurus);
@@ -255,12 +229,14 @@ export default function MataPelajaran() {
           return (
             <div key={groupName} className="mb-8">
               {/* Group Header */}
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`h-6 w-1.5 rounded-full ${indicatorColor}`} />
-                  <h3 className="text-lg font-bold text-slate-800 uppercase">{groupName}</h3>
+              {groupName !== "TANPA JURUSAN" && (
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`h-6 w-1.5 rounded-full ${indicatorColor}`} />
+                    <h3 className="text-lg font-bold text-slate-800 uppercase">{groupName}</h3>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Table */}
               <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
@@ -290,13 +266,18 @@ export default function MataPelajaran() {
                             )}
                           </div>
                         </td>
-                        <td className="px-4 py-4 text-center text-sm font-semibold text-slate-600">{item.kode_mapel}</td>
+                        <td className="px-4 py-4 text-center">
+                          <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
+                            {item.kode_mapel}
+                          </span>
+                        </td>
                         <td className="px-4 py-4 text-left text-sm font-semibold text-slate-600">
                           {item.gurus && item.gurus.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {item.gurus.map((g, idx) => (
-                                <span key={idx} className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-bold text-blue-700">
-                                  {g.nama_lengkap || g.nama || g.name}
+                                <span key={idx} className="text-sm font-medium text-slate-700">
+                                  {typeof g === 'string' ? g : (g.nama_lengkap || g.nama || g.name || "")}
+                                  {idx < item.gurus.length - 1 && <span className="text-slate-400">, </span>}
                                 </span>
                               ))}
                             </div>
@@ -335,7 +316,7 @@ export default function MataPelajaran() {
           );
         })}
 
-        {grouped.length === 0 && (
+        {!loading && !error && grouped.length === 0 && (
           <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-slate-400">
             Tidak ada mata pelajaran ditemukan.
           </div>

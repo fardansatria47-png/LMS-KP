@@ -344,7 +344,7 @@ export default function DataPengguna() {
           </div>
         ) : (
           <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
-            <h1 className="text-[28px] font-bold text-blue-600 uppercase tracking-wide">Manajemen Data Pengguna</h1>
+            <h1 className="text-[28px] font-bold text-blue-600 uppercase tracking-wide">Kelola Data Pengguna</h1>
             <div className="flex flex-wrap items-center gap-3">
               <button
                 onClick={() => setIsImportModalOpen(true)}

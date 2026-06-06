@@ -121,15 +121,8 @@ export default function Kelas() {
                   {/* Subtle right gradient */}
                   <div className={`absolute top-0 right-0 bottom-0 w-1/3 bg-gradient-to-l ${gradientColor} to-transparent pointer-events-none`}></div>
                   
-                  {/* Icon Box */}
-                  <div className="flex items-center justify-center w-16 h-16 rounded-[18px] bg-[#EEF2FF] text-[#3B82F6] shrink-0">
-                    <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z" />
-                    </svg>
-                  </div>
-                  
                   {/* Content */}
-                  <div className="mt-4 sm:mt-0 sm:ml-6 flex-1 z-10">
+                  <div className="mt-4 sm:mt-0 flex-1 z-10">
                     {kelas.tahun_ajaran && (
                       <span className="inline-block px-3 py-1 bg-[#F59E0B] text-white text-[10px] font-bold tracking-wider uppercase rounded-full mb-2">
                         TAHUN AJARAN {kelas.tahun_ajaran}
