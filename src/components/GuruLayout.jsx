@@ -33,33 +33,33 @@ export default function GuruLayout({ children, title }) {
     <div className="min-h-screen bg-[#F0F4FF]">
 
       {/* ── Desktop Sidebar ──────────────────────────────── */}
-      <aside className="fixed left-0 top-0 hidden h-full w-44 flex-col bg-white border-r border-slate-100 shadow-sm z-20 lg:flex">
-        <div className="px-5 pt-6 pb-4 border-b border-slate-100 flex items-center gap-3">
+      <aside className="fixed left-0 top-0 hidden h-full w-56 flex-col bg-white border-r border-slate-100 shadow-sm z-20 lg:flex">
+        <div className="px-6 pt-8 pb-6 border-b border-slate-100 flex items-center gap-3">
           <img 
             src="/logo.png" 
             alt="Logo" 
             className="h-[42px] w-[42px] object-contain" 
             style={{ imageRendering: "-webkit-optimize-contrast" }}
           />
-          <p className="text-xs font-bold uppercase tracking-widest text-blue-700 leading-tight">LMS SMK - Yapsipa Tasikmalaya</p>
+          <p className="text-sm font-black uppercase tracking-widest text-blue-700 leading-tight">LMS SMK - Yapsipa Tasikmalaya</p>
         </div>
-        <nav className="flex-1 px-3 py-5 space-y-1">
+        <nav className="flex-1 px-4 py-4 space-y-1.5">
           {GURU_NAV.map((item) => (
             <a
               key={item.label}
               href={item.path}
-              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
-                isActive(item) ? "bg-blue-600 text-white shadow" : "text-slate-600 hover:bg-slate-100"
+              className={`flex items-center gap-3.5 rounded-xl px-4 py-3 text-xs font-bold transition ${
+                isActive(item) ? "bg-blue-50 text-blue-700" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
               }`}
             >
-              <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+              <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
               </svg>
               {item.label}
             </a>
           ))}
         </nav>
-        <div className="border-t border-slate-100 px-4 py-4">
+        <div className="border-t border-slate-100 px-5 py-4">
           <button onClick={handleLogout} className="flex items-center gap-2 text-xs font-semibold text-red-500 hover:text-red-700 transition">
             <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d={LOGOUT_ICON} />
@@ -83,7 +83,7 @@ export default function GuruLayout({ children, title }) {
       </header>
 
       {/* ── Main Content ──────────────────────────────────── */}
-      <main className="lg:ml-44 pt-12 lg:pt-0 pb-20 lg:pb-0 min-h-screen">
+      <main className="lg:ml-56 pt-12 lg:pt-0 pb-20 lg:pb-0 min-h-screen">
         {children}
       </main>
 
@@ -109,7 +109,6 @@ export default function GuruLayout({ children, title }) {
               <span className={`text-[10px] font-semibold leading-none ${active ? "text-blue-600" : "text-slate-400"}`}>
                 {item.label}
               </span>
-              {active && <span className="absolute top-0 mx-auto h-0.5 w-8 rounded-full bg-blue-600" style={{position: "relative"}} />}
             </a>
           );
         })}
