@@ -437,7 +437,7 @@ export default function KelasDetail() {
                                 e.stopPropagation();
                                 setDeleteConfirm(m);
                               }}
-                              className="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition"
+                              className="flex h-9 w-9 items-center justify-center rounded-full text-rose-500 transition hover:bg-rose-50 hover:text-rose-700"
                               title="Hapus"
                             >
                               <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -492,7 +492,7 @@ export default function KelasDetail() {
                               </button>
                               <button
                                 onClick={(e) => { e.stopPropagation(); navigate(`/kelas/${id}/edit-tugas/${tugas.id}`, { state: { tugas } }); }}
-                                className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition"
+                                className="flex h-8 w-8 items-center justify-center rounded-full text-blue-500 transition hover:bg-blue-50 hover:text-blue-700"
                                 title="Edit"
                               >
                                 <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -501,7 +501,7 @@ export default function KelasDetail() {
                               </button>
                               <button
                                 onClick={(e) => { e.stopPropagation(); setDeleteTugasConfirm(tugas); }}
-                                className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition"
+                                className="flex h-8 w-8 items-center justify-center rounded-full text-rose-500 transition hover:bg-rose-50 hover:text-rose-700"
                                 title="Hapus"
                               >
                                 <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -561,7 +561,7 @@ export default function KelasDetail() {
                                       anggotaKelasId: kelasInfo?.anggota_kelas_id || kelasInfo?.anggota_id || id,
                                     }
                                   })}
-                                  className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition"
+                                  className="flex h-8 w-8 items-center justify-center rounded-full text-blue-500 transition hover:bg-blue-50 hover:text-blue-700"
                                   title="Edit"
                                 >
                                   <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -570,7 +570,7 @@ export default function KelasDetail() {
                                 </button>
                                 <button
                                   onClick={() => setDeletePengumumanConfirm(p)}
-                                  className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition"
+                                  className="flex h-8 w-8 items-center justify-center rounded-full text-rose-500 transition hover:bg-rose-50 hover:text-rose-700"
                                   title="Hapus"
                                 >
                                   <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
