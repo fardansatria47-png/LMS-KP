@@ -25,8 +25,17 @@ const echo = new Echo({
                     channel_name: channel.name
                 })
                 .then(response => {
-                    console.log(`[Echo Auth] Berhasil authorize channel: ${channel.name}`);
-                    callback(false, response.data);
+                    // Beberapa backend membungkus response API dengan 'data' (misal: { success: true, data: { auth: "..." } })
+                    // Pusher mengharuskan object kembalian persis berisi { auth: "..." }
+                    const authData = response.data.auth ? response.data : (response.data?.data || response.data);
+                    
+                    console.log(`[Echo Auth] Berhasil authorize channel: ${channel.name}`, authData);
+                    
+                    if (!authData || !authData.auth) {
+                        console.error(`[Echo Auth] Peringatan: Token 'auth' tidak ditemukan dalam response!`, response.data);
+                    }
+                    
+                    callback(false, authData);
                 })
                 .catch(error => {
                     console.error(`[Echo Auth] Gagal authorize channel: ${channel.name}`, error);
