@@ -728,7 +728,7 @@ export default function AnggotaKelas() {
               </div>
 
               <div className="rounded-xl bg-amber-50 p-4 text-[13px] text-amber-800 font-medium mb-6">
-                <span className="font-bold">Perhatian:</span> Seluruh siswa pada kelas asal akan dipindahkan ke kelas tujuan secara langsung.
+                <span className="font-bold">Perhatian:</span> Seluruh siswa pada kelas asal akan dipindahkan ke kelas tujuan. <strong>Seluruh materi, tugas, diskusi, dan pengumuman di kelas asal juga akan otomatis dibersihkan (reset).</strong>
               </div>
 
               <div className="flex gap-3">
@@ -812,7 +812,7 @@ export default function AnggotaKelas() {
               </div>
 
               <div className="rounded-xl bg-rose-50 p-4 text-[13px] text-rose-800 font-medium mb-6">
-                <span className="font-bold">Peringatan:</span> Seluruh data siswa dan akun User pada kelas ini akan dihapus secara permanen. Tindakan ini tidak dapat dibatalkan.
+                <span className="font-bold">Peringatan:</span> Seluruh data siswa, akun User, beserta <strong>seluruh konten kelas (materi, tugas, diskusi, dan pengumuman)</strong> akan dihapus secara permanen. Tindakan ini tidak dapat dibatalkan.
               </div>
 
               <div className="flex gap-3">
