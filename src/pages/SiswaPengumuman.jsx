@@ -341,6 +341,16 @@ export default function SiswaPengumuman() {
                         </svg>
                       </div>
                       <div className="flex-1">
+                        <div className="mb-2">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-[10px] sm:text-xs font-semibold text-emerald-700">
+                            {(() => {
+                              const match = mataPelajaranSiswa.find(
+                                (m) => String(m.mapel_id || m.mata_pelajaran_id || m.id) === String(pengumuman.mapel_id)
+                              );
+                              return match?.nama_mapel || match?.mata_pelajaran || pengumuman.nama_mapel || pengumuman.mata_pelajaran || "Mata Pelajaran";
+                            })()}
+                          </span>
+                        </div>
                         <h3 className="text-lg font-bold text-slate-800">
                           {pengumuman.judul}
                         </h3>
@@ -363,14 +373,6 @@ export default function SiswaPengumuman() {
                               />
                             </svg>
                             {formatDate(pengumuman.created_at)}
-                          </span>
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-700">
-                            {(() => {
-                              const match = mataPelajaranSiswa.find(
-                                (m) => String(m.mapel_id || m.mata_pelajaran_id || m.id) === String(pengumuman.mapel_id)
-                              );
-                              return match?.nama_mapel || match?.mata_pelajaran || pengumuman.nama_mapel || pengumuman.mata_pelajaran || "Mata Pelajaran";
-                            })()}
                           </span>
                         </div>
                       </div>
