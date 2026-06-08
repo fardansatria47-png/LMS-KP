@@ -35,6 +35,19 @@ import SiswaTugasSusulanDetail from "./pages/SiswaTugasSusulanDetail";
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
 
+  // --- START TEST REVERB LISTENER ---
+  // Kode sementara untuk mengecek endpoint test reverb dari backend
+  useEffect(() => {
+    if (window.Echo) {
+      window.Echo.channel('forum')
+        .listen('.forum.message', (data) => {
+          console.log("Pesan Realtime Diterima:", data);
+          alert("Pesan realtime masuk (Test Reverb): " + (data.message?.message || data.message || "Berhasil!"));
+        });
+    }
+  }, []);
+  // --- END TEST REVERB LISTENER ---
+
   const handleLogout = async () => {
     const ok = await confirmDialog("Yakin ingin logout?", { isDanger: true, title: "Logout" });
     if (!ok) return;
