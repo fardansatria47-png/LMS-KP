@@ -58,91 +58,97 @@ export default function DiskusiMapel({ mapelId, currentUser }) {
     fetchMessages();
 
     // ── Subscribe ke private channel ─────────────────────────────────
-    console.log(`[Echo] Subscribe ke channel: diskusi.${mapelId}`);
-    const channel = echo.private(`diskusi.${mapelId}`);
-
-    // bind_global ref untuk cleanup
-    let boundGlobalHandler = null;
+    // Menggunakan private channel sesuai dengan event backend (MessageSent.php)
+    const channelName = `diskusi.${mapelId}`;
+    console.log(`[Echo] Subscribing ke private channel: ${channelName}`);
+    const channel = echo.private(channelName);
 
     channel.subscribed(() => {
-      console.log(`[Echo] Berhasil subscribe ke channel: diskusi.${mapelId}`);
-
+      console.log(`[Echo] ✅ Berhasil subscribe ke: ${channelName}`);
     });
 
     channel.error((error) => {
-      console.error(`[Echo] Gagal subscribe:`, error);
+      console.error(`[Echo] ❌ Gagal subscribe ke ${channelName}:`, error);
     });
 
     // ── Handler pesan baru ────────────────────────────────────────────
-    channel.listen(".message.sent", (e) => {
-      console.log("[Echo] Menerima event .message.sent:", e);
-      if (e.diskusi) {
+    // Coba berbagai nama event yang mungkin dikirim backend
+    const newMessageHandler = (e) => {
+      console.log("[Echo] Event masuk (pesan baru):", e);
+      const diskusiData = e.diskusi || e.message || e.data || e;
+      if (diskusiData && (diskusiData.id || diskusiData.pesan)) {
         setMessages((prev) => {
-          const exists = prev.find((m) => m.id === e.diskusi.id);
+          const exists = prev.find((m) => m.id === diskusiData.id);
           if (exists) return prev;
-          return [...prev, e.diskusi];
+          return [...prev, diskusiData];
         });
-      }
-    });
-
-    // ── Handler hapus pesan (Fail-proof Global Listener) ──────────────
-    const handleGlobalEvent = (eventName, data) => {
-      // Hanya proses event yang berhubungan dengan "deleted"
-      const isDeleteEvent =
-        eventName.toLowerCase().includes("deleted") ||
-        eventName.toLowerCase().includes("messagedeleted");
-
-      if (!isDeleteEvent) return;
-
-      console.log(`[Pusher] Event hapus terdeteksi: "${eventName}"`, data);
-
-      const payload = typeof data === "string" ? JSON.parse(data) : data;
-      
-      // Ambil ID dari berbagai kemungkinan nama variabel yang dikirim backend
-      const deletedId =
-        payload.id ||
-        payload.pesan_id ||
-        payload.diskusi_id ||
-        payload.message_id ||
-        (payload.diskusi && payload.diskusi.id) ||
-        (payload.pesan && payload.pesan.id);
-
-      if (deletedId) {
-        console.log(`[Pusher] Menghapus pesan id=${deletedId}`);
-        setMessages((prev) =>
-          prev.filter((m) => String(m.id) !== String(deletedId))
-        );
       }
     };
 
-    // Pasang listener global di root Pusher agar menangkap event apapun
-    if (echo.connector && echo.connector.pusher) {
-      echo.connector.pusher.bind_global(handleGlobalEvent);
-    }
+    channel.listen(".message.sent", newMessageHandler);
+    channel.listen("message.sent", newMessageHandler);
+    channel.listen(".MessageSent", newMessageHandler);
+    channel.listen("MessageSent", newMessageHandler);
 
-    // Fallback normal listen
+    // ── Handler hapus pesan ──────────────────────────────────────────
     const deleteHandler = (e) => {
-      const deletedId = e.id || e.pesan_id || e.diskusi_id || e.message_id || (e.diskusi && e.diskusi.id);
+      console.log("[Echo] Event masuk (hapus pesan):", e);
+      const deletedId = e.id || e.pesan_id || e.diskusi_id || e.message_id ||
+        (e.diskusi && e.diskusi.id) || (e.pesan && e.pesan.id);
       if (deletedId) {
         setMessages((prev) => prev.filter((m) => String(m.id) !== String(deletedId)));
       }
     };
+
     channel.listen(".message.deleted", deleteHandler);
+    channel.listen("message.deleted", deleteHandler);
     channel.listen(".MessageDeleted", deleteHandler);
     channel.listen("MessageDeleted", deleteHandler);
-    channel.listen("message.deleted", deleteHandler);
+
+    // ── Bind global Pusher (tangkap event apapun dari channel ini) ───
+    const handleGlobalEvent = (eventName, data) => {
+      // Filter hanya event dari channel diskusi ini
+      const isRelevant =
+        eventName.toLowerCase().includes("message") ||
+        eventName.toLowerCase().includes("diskusi");
+      if (!isRelevant) return;
+
+      console.log(`[Pusher Global] Event: "${eventName}"`, data);
+
+      const payload = typeof data === "string" ? JSON.parse(data) : data;
+
+      const isDeleteEvent =
+        eventName.toLowerCase().includes("deleted") ||
+        eventName.toLowerCase().includes("delete");
+
+      if (isDeleteEvent) {
+        const deletedId =
+          payload.id || payload.pesan_id || payload.diskusi_id || payload.message_id ||
+          (payload.diskusi && payload.diskusi.id) || (payload.pesan && payload.pesan.id);
+        if (deletedId) {
+          setMessages((prev) => prev.filter((m) => String(m.id) !== String(deletedId)));
+        }
+      }
+    };
+
+    if (echo.connector?.pusher) {
+      echo.connector.pusher.bind_global(handleGlobalEvent);
+    }
 
     return () => {
-      console.log(`[Echo] Unsubscribe dari channel: diskusi.${mapelId}`);
-      if (echo.connector && echo.connector.pusher) {
+      console.log(`[Echo] Unsubscribe dari channel: ${channelName}`);
+      if (echo.connector?.pusher) {
         echo.connector.pusher.unbind_global(handleGlobalEvent);
       }
       channel.stopListening(".message.sent");
+      channel.stopListening("message.sent");
+      channel.stopListening(".MessageSent");
+      channel.stopListening("MessageSent");
       channel.stopListening(".message.deleted");
-      channel.stopListening(".MessageDeleted");
       channel.stopListening("message.deleted");
+      channel.stopListening(".MessageDeleted");
       channel.stopListening("MessageDeleted");
-      echo.leaveChannel(`diskusi.${mapelId}`);
+      echo.leaveChannel(channelName);
     };
   }, [mapelId]);
 

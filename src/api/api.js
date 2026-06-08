@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const BASE_URL = "https://enchanting-intuition-production-d080.up.railway.app";
+export const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://enchanting-intuition-production-d080.up.railway.app";
 export const API_BASE_URL = `${BASE_URL}/api`;
 
 const api = axios.create({
