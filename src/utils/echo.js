@@ -14,31 +14,45 @@ const echo = new Echo({
     wssPort: 443,
     forceTLS: true,
     enabledTransports: ["ws", "wss"],
-    
-    // Kembali menggunakan custom authorizer karena backend tidak memproses request form-data dari pusher-js dengan baik
-    // api.post menjamin request dikirim sebagai JSON dan token Bearer disematkan dengan benar
+    // Mengikuti instruksi persis dari backend developer menggunakan fetch
     authorizer: (channel, options) => {
         return {
             authorize: (socketId, callback) => {
-                api.post('/broadcasting/auth', {
-                    socket_id: socketId,
-                    channel_name: channel.name
+                fetch('https://enchanting-intuition-production-d080.up.railway.app/api/broadcasting/auth', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        socket_id: socketId,
+                        channel_name: channel.name,
+                    }),
                 })
                 .then(response => {
-                    // Beberapa backend membungkus response API dengan 'data' (misal: { success: true, data: { auth: "..." } })
-                    // Pusher mengharuskan object kembalian persis berisi { auth: "..." }
-                    const authData = response.data.auth ? response.data : (response.data?.data || response.data);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(`[Echo Auth] RAW Response dari Backend untuk ${channel.name}:`, JSON.stringify(data));
                     
-                    console.log(`[Echo Auth] Berhasil authorize channel: ${channel.name}`, authData);
-                    
-                    if (!authData || !authData.auth) {
-                        console.error(`[Echo Auth] Peringatan: Token 'auth' tidak ditemukan dalam response!`, response.data);
+                    // Pusher butuh { auth: "..." }. Jika backend membungkus di dalam 'data', kita keluarkan
+                    let authObject = data;
+                    if (!data.auth && data.data && data.data.auth) {
+                        authObject = data.data;
+                    }
+
+                    if (!authObject.auth) {
+                        console.error(`[Echo Auth] FATAL: Key 'auth' benar-benar tidak ada di response backend!`, data);
                     }
                     
-                    callback(false, authData);
+                    callback(false, authObject);
                 })
                 .catch(error => {
-                    console.error(`[Echo Auth] Gagal authorize channel: ${channel.name}`, error);
+                    console.error(`[Echo Auth] Fetch error:`, error);
                     callback(true, error);
                 });
             }
