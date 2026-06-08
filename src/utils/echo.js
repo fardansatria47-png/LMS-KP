@@ -5,21 +5,14 @@ import api from '../api/api';
 window.Pusher = Pusher;
 Pusher.logToConsole = true;
 
-// Because we don't have .env setup here yet, we will define defaults
-// that can be customized easily if needed.
-const REVERB_APP_KEY = '34390549805146d697e1';
-const REVERB_HOST = '192.168.1.20';
-const REVERB_PORT = 8080;
-const REVERB_SCHEME = 'http';
-
 const echo = new Echo({
-    broadcaster: 'reverb',
-    key: REVERB_APP_KEY,
-    wsHost: REVERB_HOST,
-    wsPort: REVERB_PORT,
-    wssPort: REVERB_PORT,
-    forceTLS: REVERB_SCHEME === 'https',
-    enabledTransports: ['ws', 'wss'],
+    broadcaster: "reverb",
+    key: import.meta.env.VITE_REVERB_APP_KEY,
+    wsHost: import.meta.env.VITE_REVERB_HOST,
+    wsPort: import.meta.env.VITE_REVERB_PORT || 443,
+    wssPort: import.meta.env.VITE_REVERB_PORT || 443,
+    forceTLS: import.meta.env.VITE_REVERB_SCHEME === "https" || true,
+    enabledTransports: ["ws", "wss"],
     authorizer: (channel, options) => {
         return {
             authorize: (socketId, callback) => {
