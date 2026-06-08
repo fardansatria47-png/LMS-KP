@@ -294,45 +294,7 @@ export default function TambahMataPelajaran() {
               />
             </div>
 
-            {/* Jurusan */}
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-600">Jurusan</label>
-              <SelectWrapper>
-                <select
-                  name="jurusan_id"
-                  value={formData.jurusan_id}
-                  onChange={handleChange}
-                  className="w-full rounded-xl bg-blue-50/50 px-4 py-3.5 text-sm text-slate-700 outline-none transition focus:bg-white focus:ring-2 focus:ring-blue-500 appearance-none"
-                >
-                  <option value="">Pilih Jurusan</option>
-                  {optionsJurusan.map((j) => (
-                    <option key={j.id} value={j.id}>
-                      {j.nama_jurusan || j.nama}
-                    </option>
-                  ))}
-                </select>
-              </SelectWrapper>
-            </div>
 
-            {/* Kelas */}
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-600">Kelas / Tingkat</label>
-              <SelectWrapper>
-                <select
-                  name="kelas_id"
-                  value={formData.kelas_id}
-                  onChange={handleChange}
-                  className="w-full rounded-xl bg-blue-50/50 px-4 py-3.5 text-sm text-slate-700 outline-none transition focus:bg-white focus:ring-2 focus:ring-blue-500 appearance-none"
-                >
-                  <option value="">Pilih Kelas</option>
-                  {optionsKelas.map((k) => (
-                    <option key={k.id} value={k.id}>
-                      {k.nama_kelas || k.tingkat}
-                    </option>
-                  ))}
-                </select>
-              </SelectWrapper>
-            </div>
 
 
             {/* Guru Pengajar */}
