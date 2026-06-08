@@ -145,7 +145,7 @@ export default function TambahMataPelajaran() {
     </div>
   );
 
-  const MultiSelectContainer = ({ title, search, setSearch, filteredItems, selectedIds, toggleFn, labelKey, placeholder }) => (
+  const MultiSelectContainer = ({ title, search, setSearch, filteredItems, selectedIds, toggleFn, labelKey, placeholder, allOptions }) => (
     <div>
       <label className="mb-2 block text-sm font-semibold text-slate-600">
         {title}
@@ -156,7 +156,7 @@ export default function TambahMataPelajaran() {
       {selectedIds.length > 0 && (
         <div className="mb-3 flex flex-wrap gap-2">
           {selectedIds.map((id) => {
-            const item = optionsGuru.concat(optionsRombel).find((x) => x.id === id);
+            const item = (allOptions || []).find((x) => x.id === id);
             if (!item) return null;
             const nama = item[labelKey] || item.nama || item.name || "Item";
             return (
@@ -307,6 +307,7 @@ export default function TambahMataPelajaran() {
               toggleFn={toggleGuru}
               labelKey="nama_lengkap"
               placeholder="Cari nama guru..."
+              allOptions={optionsGuru}
             />
 
             {/* Rombel (Kelas Spesifik) */}
@@ -319,6 +320,7 @@ export default function TambahMataPelajaran() {
               toggleFn={toggleRombel}
               labelKey="nama_rombel"
               placeholder="Cari nama rombel (misal: X-RPL-1)..."
+              allOptions={optionsRombel}
             />
 
             {/* Actions */}
