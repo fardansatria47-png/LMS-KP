@@ -221,15 +221,15 @@ export default function DataPengguna() {
       <td className="py-4 pl-6 pr-3">
         <span className="text-sm font-medium text-slate-700">{user.nama_lengkap || user.nama || user.name || "-"}</span>
       </td>
-      <td className="px-3 py-4">
+      <td className="px-3 py-4 text-center">
         <span className="inline-flex items-center rounded-full bg-blue-50 text-blue-700 px-3 py-1 text-xs font-bold">
           {user.nis || user.nip || user.nik || "-"}
         </span>
       </td>
-      <td className="px-3 py-4 text-sm font-medium text-slate-600">{user.jenis_kelamin || "-"}</td>
+      <td className="px-3 py-4 text-center text-sm font-medium text-slate-600">{user.jenis_kelamin || "-"}</td>
       {tab === "siswa" && (
         <>
-          <td className="px-3 py-4 text-sm font-medium text-slate-600">
+          <td className="px-3 py-4 text-center text-sm font-medium text-slate-600">
             {typeof user.jurusan === "string" ? user.jurusan
               : user.jurusan?.nama || user.jurusan?.nama_jurusan
               || user.nama_jurusan || "-"}
@@ -290,9 +290,9 @@ export default function DataPengguna() {
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/60">
                 <th className="py-3 pl-6 pr-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Nama Siswa</th>
-                <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">NIS</th>
-                <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Jenis Kelamin</th>
-                <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Jurusan</th>
+                <th className="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">NIS</th>
+                <th className="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Jenis Kelamin</th>
+                <th className="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Jurusan</th>
                 <th className="px-3 py-3 pr-6 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Aksi</th>
               </tr>
             </thead>
@@ -312,8 +312,8 @@ export default function DataPengguna() {
         <thead>
           <tr className="border-b border-slate-100 bg-slate-50/60">
             <th className="py-3 pl-6 pr-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Nama Guru</th>
-            <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">NIK / NIP</th>
-            <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Jenis Kelamin</th>
+            <th className="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">NIK / NIP</th>
+            <th className="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Jenis Kelamin</th>
             <th className="px-3 py-3 pr-6 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Aksi</th>
           </tr>
         </thead>

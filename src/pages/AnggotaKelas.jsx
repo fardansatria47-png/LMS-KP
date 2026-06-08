@@ -342,8 +342,8 @@ export default function AnggotaKelas() {
                   <thead>
                     <tr className="border-b border-slate-100 bg-slate-50/50">
                       <th className="py-4 pl-8 pr-4 text-xs font-bold uppercase tracking-wider text-slate-400">Nama Siswa</th>
-                      <th className="px-4 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">NIS</th>
-                      <th className="px-4 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">Jenis Kelamin</th>
+                      <th className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-400">NIS</th>
+                      <th className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider text-slate-400">Jenis Kelamin</th>
                       <th className="px-4 py-4 pr-8 text-right text-xs font-bold uppercase tracking-wider text-slate-400">Aksi</th>
                     </tr>
                   </thead>
@@ -356,12 +356,12 @@ export default function AnggotaKelas() {
                       return (
                         <tr key={item.id} className="transition hover:bg-slate-50/50">
                           <td className="py-4 pl-8 pr-4 text-sm font-semibold text-slate-700">{nama}</td>
-                          <td className="px-4 py-4">
+                          <td className="px-4 py-4 text-center">
                             <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
                               {nis}
                             </span>
                           </td>
-                          <td className="px-4 py-4 text-sm font-medium text-slate-600">{jk}</td>
+                          <td className="px-4 py-4 text-center text-sm font-medium text-slate-600">{jk}</td>
                           <td className="px-4 py-4 pr-8">
                             <div className="flex items-center justify-end">
                               <button
