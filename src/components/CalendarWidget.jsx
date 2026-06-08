@@ -1,27 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
-
-// ── Cache hari libur per tahun agar tidak bolak-balik fetch ───────────
-const holidayCache = {};
-
-// Fetch hari libur Indonesia dari Nager.Date API (gratis, tidak perlu key)
-async function fetchHolidays(year) {
-  if (holidayCache[year]) return holidayCache[year];
-  try {
-    const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/ID`);
-    if (!res.ok) throw new Error("fetch failed");
-    const data = await res.json();
-    // Konversi ke Map: "YYYY-MM-DD" => "Nama Hari Libur"
-    const map = {};
-    data.forEach((h) => {
-      map[h.date] = h.localName || h.name;
-    });
-    holidayCache[year] = map;
-    return map;
-  } catch {
-    // Jika gagal (offline/API error), kembalikan objek kosong
-    return {};
-  }
-}
+import { useState } from "react";
 
 const DAY_NAMES = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 const MONTH_NAMES = [
@@ -29,38 +6,60 @@ const MONTH_NAMES = [
   "Juli", "Agustus", "September", "Oktober", "November", "Desember",
 ];
 
+// Hari libur spesifik (tanggal merah dan cuti bersama)
+// Karena hari raya keagamaan (Idul Fitri, dll) berubah setiap tahun, 
+// kita hardcode untuk tahun-tahun terdekat agar sangat akurat.
+const VARIABLE_HOLIDAYS = {
+  // 2025
+  "2025-01-27": "Isra Mikraj",
+  "2025-01-28": "Cuti Bersama Isra Mikraj",
+  "2025-01-29": "Tahun Baru Imlek",
+  "2025-01-30": "Cuti Bersama Imlek",
+  "2025-03-29": "Hari Raya Nyepi",
+  "2025-03-30": "Cuti Bersama Nyepi",
+  "2025-03-31": "Idul Fitri 1446 H",
+  "2025-04-01": "Idul Fitri 1446 H",
+  "2025-04-02": "Cuti Bersama Idul Fitri",
+  "2025-04-03": "Cuti Bersama Idul Fitri",
+  "2025-04-04": "Cuti Bersama Idul Fitri",
+  "2025-04-07": "Cuti Bersama Idul Fitri",
+  "2025-04-18": "Wafat Isa Al-Masih",
+  "2025-05-12": "Hari Raya Waisak",
+  "2025-05-13": "Cuti Bersama Waisak",
+  "2025-05-29": "Kenaikan Isa Al-Masih",
+  "2025-06-06": "Idul Adha 1446 H",
+  "2025-06-09": "Cuti Bersama Idul Adha",
+  "2025-06-27": "Tahun Baru Islam 1447 H",
+  "2025-09-05": "Maulid Nabi Muhammad SAW",
+  "2025-12-26": "Cuti Bersama Natal",
+
+  // 2026
+  "2026-01-16": "Isra Mikraj",
+  "2026-01-17": "Tahun Baru Imlek",
+  "2026-03-19": "Hari Raya Nyepi",
+  "2026-03-20": "Idul Fitri 1447 H",
+  "2026-03-21": "Idul Fitri 1447 H",
+  "2026-03-23": "Cuti Bersama Idul Fitri",
+  "2026-03-24": "Cuti Bersama Idul Fitri",
+  "2026-03-25": "Cuti Bersama Idul Fitri",
+  "2026-03-26": "Cuti Bersama Idul Fitri",
+  "2026-04-03": "Wafat Isa Al-Masih",
+  "2026-05-14": "Kenaikan Isa Al-Masih",
+  "2026-05-27": "Idul Adha 1447 H",
+  "2026-05-31": "Hari Raya Waisak",
+  "2026-06-16": "Tahun Baru Islam 1448 H", // <--- 16 Juni 2026
+  "2026-08-25": "Maulid Nabi Muhammad SAW",
+  "2026-12-24": "Cuti Bersama Natal",
+};
+
 export default function CalendarWidget() {
   const now = new Date();
   const [viewYear, setViewYear] = useState(now.getFullYear());
-  const [viewMonth, setViewMonth] = useState(now.getMonth()); // 0-indexed
-  const [holidays, setHolidays] = useState({});
-  const [loadingHolidays, setLoadingHolidays] = useState(false);
+  const [viewMonth, setViewMonth] = useState(now.getMonth());
 
   const todayDate = now.getDate();
   const todayMonth = now.getMonth();
   const todayYear = now.getFullYear();
-
-  // Fetch hari libur ketika tahun berubah
-  const loadHolidays = useCallback(async (year) => {
-    setLoadingHolidays(true);
-    const data = await fetchHolidays(year);
-    setHolidays(data);
-    setLoadingHolidays(false);
-  }, []);
-
-  useEffect(() => {
-    loadHolidays(viewYear);
-  }, [viewYear, loadHolidays]);
-
-  // Jika pindah ke bulan Desember → prefetch tahun depan
-  useEffect(() => {
-    if (viewMonth === 11) {
-      fetchHolidays(viewYear + 1);
-    }
-    if (viewMonth === 0) {
-      fetchHolidays(viewYear - 1);
-    }
-  }, [viewMonth, viewYear]);
 
   const prevMonth = () => {
     if (viewMonth === 0) {
@@ -86,12 +85,24 @@ export default function CalendarWidget() {
   };
 
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
-  // getDay() → 0=Minggu..6=Sabtu (sudah sesuai dengan grid Min-Sab)
   const firstDayOfWeek = new Date(viewYear, viewMonth, 1).getDay();
 
+  // Menggabungkan hari libur fix (otomatis setiap tahun) dengan hari raya (dinamis)
   const getHolidayName = (day) => {
-    const key = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    return holidays[key] || null;
+    const mm = String(viewMonth + 1).padStart(2, "0");
+    const dd = String(day).padStart(2, "0");
+    const key = `${viewYear}-${mm}-${dd}`;
+    const md = `${mm}-${dd}`; // bulan-tanggal
+
+    // Libur Fix setiap tahun
+    if (md === "01-01") return "Tahun Baru Masehi";
+    if (md === "05-01") return "Hari Buruh Internasional";
+    if (md === "06-01") return "Hari Lahir Pancasila";
+    if (md === "08-17") return "Hari Kemerdekaan RI";
+    if (md === "12-25") return "Hari Raya Natal";
+
+    // Libur variabel (Idul fitri, Nyepi, Waisak, dll)
+    return VARIABLE_HOLIDAYS[key] || null;
   };
 
   const isCurrentMonth = viewYear === todayYear && viewMonth === todayMonth;
@@ -133,7 +144,8 @@ export default function CalendarWidget() {
           aria-label="Bulan berikutnya"
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7 7 7" />
+            {/* SVG Path yang sudah diperbaiki! (-) agar tidak jadi garis miring */}
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </button>
       </div>
@@ -147,12 +159,6 @@ export default function CalendarWidget() {
 
       {/* Day cells */}
       <div className="grid grid-cols-7 gap-1 text-center relative">
-        {loadingHolidays && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/60 rounded-xl z-10">
-            <div className="h-5 w-5 rounded-full border-2 border-blue-200 border-t-blue-600 animate-spin" />
-          </div>
-        )}
-
         {/* Offset blank cells */}
         {Array.from({ length: firstDayOfWeek }).map((_, i) => (
           <div key={`e-${i}`} />
@@ -162,7 +168,6 @@ export default function CalendarWidget() {
         {Array.from({ length: daysInMonth }).map((_, i) => {
           const day = i + 1;
           const isToday = isCurrentMonth && day === todayDate;
-          // dayOfWeek: 0=Minggu..6=Sabtu
           const dayOfWeek = (firstDayOfWeek + i) % 7;
           const isSunday = dayOfWeek === 0;
           const holidayName = getHolidayName(day);
