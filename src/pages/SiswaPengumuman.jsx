@@ -365,7 +365,12 @@ export default function SiswaPengumuman() {
                             {formatDate(pengumuman.created_at)}
                           </span>
                           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-700">
-                            {pengumuman.nama_mapel || pengumuman.mata_pelajaran || "Mata Pelajaran"}
+                            {(() => {
+                              const match = mataPelajaranSiswa.find(
+                                (m) => String(m.mapel_id || m.mata_pelajaran_id || m.id) === String(pengumuman.mapel_id)
+                              );
+                              return match?.nama_mapel || match?.mata_pelajaran || pengumuman.nama_mapel || pengumuman.mata_pelajaran || "Mata Pelajaran";
+                            })()}
                           </span>
                         </div>
                       </div>
