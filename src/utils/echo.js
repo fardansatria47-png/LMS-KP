@@ -1,20 +1,19 @@
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
+import api from '../api/api';
 
 window.Pusher = Pusher;
 Pusher.logToConsole = true;
 
-const REVERB_KEY    = import.meta.env.VITE_REVERB_APP_KEY;
-const REVERB_HOST   = import.meta.env.VITE_REVERB_HOST;
+// Hardcode fallback credentials if .env is not loaded (e.g., Vite server not restarted)
+const REVERB_KEY    = import.meta.env.VITE_REVERB_APP_KEY || "lms-key";
+const REVERB_HOST   = import.meta.env.VITE_REVERB_HOST || "learning-management-system-production-8008.up.railway.app";
 const REVERB_PORT   = parseInt(import.meta.env.VITE_REVERB_PORT || "443", 10);
 const REVERB_SCHEME = import.meta.env.VITE_REVERB_SCHEME || "https";
-const API_BASE_URL  = import.meta.env.VITE_API_BASE_URL || "https://enchanting-intuition-production-d080.up.railway.app";
 
-console.log("[Echo] Config →", { key: REVERB_KEY, host: REVERB_HOST, port: REVERB_PORT });
+console.log("[Echo] Config →", { key: REVERB_KEY, host: REVERB_HOST, port: REVERB_PORT, scheme: REVERB_SCHEME });
 
-// Fungsi untuk membuat instance Echo dengan token terbaru
-// Dipanggil sekali saat import, tapi token dibaca fresh setiap request auth
-const createEcho = () => new Echo({
+const echo = new Echo({
     broadcaster: "reverb",
     key: REVERB_KEY,
     wsHost: REVERB_HOST,
@@ -23,50 +22,35 @@ const createEcho = () => new Echo({
     forceTLS: REVERB_SCHEME === "https",
     enabledTransports: ["ws", "wss"],
 
-    // ✅ KONFIGURASI PRIVATE CHANNEL - kirim JWT Bearer Token ke /api/broadcasting/auth
-    authEndpoint: `${API_BASE_URL}/api/broadcasting/auth`,
-    auth: {
-        headers: {
-            Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
-            Accept: "application/json",
-        },
+    // Menggunakan custom authorizer agar selalu menggunakan token terbaru via interceptor api.js
+    // Ini lebih andal untuk SPA (Single Page Application) dibanding authEndpoint statis
+    authorizer: (channel, options) => {
+        return {
+            authorize: (socketId, callback) => {
+                api.post('/broadcasting/auth', {
+                    socket_id: socketId,
+                    channel_name: channel.name
+                })
+                .then(response => {
+                    console.log(`[Echo Auth] Berhasil authorize channel: ${channel.name}`);
+                    callback(false, response.data);
+                })
+                .catch(error => {
+                    console.error(`[Echo Auth] Gagal authorize channel: ${channel.name}`, error?.response?.data || error.message);
+                    callback(true, error);
+                });
+            }
+        };
     },
 });
 
-const echo = createEcho();
-
-// Interceptor: refresh token di header auth sebelum setiap request broadcasting/auth
-// (Penting jika token diperbarui setelah echo dibuat)
-if (echo.connector?.pusher) {
-    echo.connector.pusher.config.auth = {
-        headers: {
-            Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
-            Accept: "application/json",
-        },
-    };
-}
-
-// Pasang ke window agar bisa diakses dari console browser untuk debugging
 window.Echo = echo;
 
-// Log status koneksi
 echo.connector?.pusher?.connection?.bind("connected", () => {
     console.log("[Echo] ✅ Reverb terhubung! Socket ID:", echo.socketId());
-    // Refresh token di auth header saat terhubung (pastikan token terbaru)
-    if (echo.connector?.pusher) {
-        echo.connector.pusher.config.auth = {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
-                Accept: "application/json",
-            },
-        };
-    }
 });
 echo.connector?.pusher?.connection?.bind("error", (err) => {
     console.error("[Echo] ❌ Reverb connection error:", err);
-});
-echo.connector?.pusher?.connection?.bind("state_change", (states) => {
-    console.log("[Echo] State:", states.previous, "→", states.current);
 });
 
 export default echo;
