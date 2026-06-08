@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const BASE_URL = "http://192.168.1.20:8000";
+export const BASE_URL = "https://enchanting-intuition-production-d080.up.railway.app";
 export const API_BASE_URL = `${BASE_URL}/api`;
 
 const api = axios.create({
