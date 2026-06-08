@@ -195,20 +195,6 @@ export default function CalendarWidget() {
         })}
       </div>
 
-      {/* Legend */}
-      <div className="mt-4 flex items-center gap-4 text-[10px] text-slate-400 border-t border-slate-100 pt-3">
-        <span className="flex items-center gap-1">
-          <span className="inline-block h-3 w-3 rounded-full bg-blue-600" />
-          Hari ini
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="inline-block h-3 w-3 rounded-full bg-rose-400" />
-          Libur Nasional
-        </span>
-        <span className="flex items-center gap-1 text-rose-400 font-semibold">
-          Min = Hari Minggu
-        </span>
-      </div>
     </div>
   );
 }
