@@ -86,6 +86,7 @@ export default function SiswaProfile() {
     const ok = await confirmDialog("Yakin ingin keluar?", { isDanger: true, title: "Keluar" });
     if (ok) {
       localStorage.removeItem("token");
+      localStorage.removeItem("user_role");
       navigate("/login");
     }
   };

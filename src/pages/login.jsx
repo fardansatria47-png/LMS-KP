@@ -38,6 +38,23 @@ export default function Login({ onLogin }) {
       }
 
       localStorage.setItem("token", token);
+
+      // Simpan role dari response login agar tidak ada mismatch saat refresh
+      const userFromRes =
+        res.data?.user ||
+        res.data?.data?.user ||
+        res.data?.data ||
+        null;
+      const roleFromRes =
+        userFromRes?.role ||
+        (Array.isArray(userFromRes?.roles) ? userFromRes.roles[0] : null) ||
+        null;
+      if (roleFromRes) {
+        localStorage.setItem("user_role", roleFromRes.toLowerCase());
+      } else {
+        localStorage.removeItem("user_role");
+      }
+
       onLogin?.(token);
       navigate("/dashboard");
     } catch (err) {

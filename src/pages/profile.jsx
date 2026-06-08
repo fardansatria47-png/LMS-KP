@@ -10,7 +10,8 @@ export default function Profile() {
   useEffect(() => {
     getCurrentUser().then(res => {
       const userData = res.data?.data || res.data;
-      setRole(userData?.role || userData?.roles?.[0] || 'admin');
+      const fetchedRole = userData?.role || (Array.isArray(userData?.roles) ? userData.roles[0] : null);
+      setRole((fetchedRole || localStorage.getItem("user_role") || "guru").toLowerCase());
     }).catch(err => {
       console.error(err);
     }).finally(() => {

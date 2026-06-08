@@ -63,6 +63,7 @@ api.interceptors.response.use(
       if (error.response.status === 401 && !isAuthEndpoint) {
         console.warn("Token expired / unauthorized");
         localStorage.removeItem("token");
+        localStorage.removeItem("user_role");
         // optional redirect ke login
         if (window.location.pathname !== "/login") {
           window.location.href = "/login";

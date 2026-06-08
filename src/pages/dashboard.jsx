@@ -18,28 +18,56 @@ export default function Dashboard() {
       setLoading(true);
       setError("");
       try {
-        // Ambil user dulu untuk tahu role-nya
+        // Ambil user dari API /me (sumber kebenaran utama)
         const resUser = await getCurrentUser();
         const userData = resUser.data?.data || resUser.data;
         setCurrentUser(userData);
 
-        const role = userData?.role || userData?.roles?.[0] || "admin";
+        // Ambil role dari API — JANGAN fallback ke "admin" secara otomatis
+        const roleFromAPI = (
+          userData?.role ||
+          (Array.isArray(userData?.roles) ? userData.roles[0] : null)
+        )?.toLowerCase?.() || null;
 
-        if (role === "guru") {
-          // Panggil endpoint khusus guru
+        if (!roleFromAPI) {
+          // Jika backend tidak mengembalikan role, paksa logout untuk keamanan
+          console.error("[Auth] Role tidak ditemukan dari API /me. Paksa logout.");
+          localStorage.removeItem("token");
+          localStorage.removeItem("user_role");
+          navigate("/login");
+          return;
+        }
+
+        // Cross-validasi dengan role yang tersimpan di localStorage saat login
+        const cachedRole = localStorage.getItem("user_role");
+        if (cachedRole && cachedRole !== roleFromAPI) {
+          // Role tidak cocok — kemungkinan token milik orang lain atau data korup
+          console.error(`[Auth] Role mismatch! Cache: ${cachedRole}, API: ${roleFromAPI}. Paksa logout.`);
+          localStorage.removeItem("token");
+          localStorage.removeItem("user_role");
+          navigate("/login");
+          return;
+        }
+
+        // Perbarui cache localStorage dengan role terbaru dari API
+        localStorage.setItem("user_role", roleFromAPI);
+
+        if (roleFromAPI === "guru") {
           const resGuru = await getDashboardGuru();
-          const guruData = resGuru.data?.data || resGuru.data;
-          setSummary(guruData);
-        } else if (role === "siswa" || role === "murid") {
-          // Panggil endpoint khusus siswa
+          setSummary(resGuru.data?.data || resGuru.data);
+        } else if (roleFromAPI === "siswa" || roleFromAPI === "murid") {
           const resSiswa = await getDashboardSiswa();
-          const siswaData = resSiswa.data?.data || resSiswa.data;
-          setSummary(siswaData);
-        } else {
-          // Panggil endpoint admin
+          setSummary(resSiswa.data?.data || resSiswa.data);
+        } else if (roleFromAPI === "admin") {
           const resSummary = await getDashboardSummary();
-          const summaryData = resSummary.data?.data || resSummary.data;
-          setSummary(summaryData);
+          setSummary(resSummary.data?.data || resSummary.data);
+        } else {
+          // Role tidak dikenal — paksa logout
+          console.error(`[Auth] Role tidak dikenal: "${roleFromAPI}". Paksa logout.`);
+          localStorage.removeItem("token");
+          localStorage.removeItem("user_role");
+          navigate("/login");
+          return;
         }
       } catch (err) {
         setError(getErrorMessage(err, "Gagal memuat data dashboard"));
@@ -50,7 +78,7 @@ export default function Dashboard() {
     };
 
     fetchDashboard();
-  }, []);
+  }, [navigate]);
 
   if (loading) {
     return (
@@ -76,7 +104,8 @@ export default function Dashboard() {
     );
   }
 
-  const role = currentUser?.role || currentUser?.roles?.[0] || "admin";
+  // Gunakan role yang sudah divalidasi dari localStorage (bukan fallback "admin")
+  const role = (currentUser?.role || localStorage.getItem("user_role") || "").toLowerCase();
   const isGuru = role === "guru";
   const isSiswa = role === "siswa" || role === "murid";
 

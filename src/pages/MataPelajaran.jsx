@@ -27,7 +27,8 @@ export default function MataPelajaran() {
         const resUser = await getCurrentUser();
         const userData = resUser.data?.data || resUser.data;
         setCurrentUser(userData);
-        const role = userData?.role || userData?.roles?.[0] || "admin";
+        const fetchedRole = userData?.role || (Array.isArray(userData?.roles) ? userData.roles[0] : null);
+        const role = (fetchedRole || localStorage.getItem("user_role") || "guru").toLowerCase();
         if (role === "siswa" || role === "murid") {
           setIsSiswa(true);
         } else {

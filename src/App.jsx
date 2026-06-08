@@ -39,6 +39,7 @@ function App() {
     const ok = await confirmDialog("Yakin ingin logout?", { isDanger: true, title: "Logout" });
     if (!ok) return;
     localStorage.removeItem("token");
+    localStorage.removeItem("user_role");
     setToken(null);
     window.location.href = "/login";
   };

@@ -109,6 +109,7 @@ export default function SiswaDashboard({ user, summary }) {
     const ok = await confirmDialog("Yakin ingin logout?", { isDanger: true, title: "Logout" });
     if (ok) {
       localStorage.removeItem("token");
+      localStorage.removeItem("user_role");
       window.location.href = "/login";
     }
   };
