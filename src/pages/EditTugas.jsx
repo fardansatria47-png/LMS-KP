@@ -18,6 +18,7 @@ export default function EditTugas() {
   const navigate = useNavigate();
   const location = useLocation();
   const [form, setForm] = useState({ judul: "", deskripsi: "", deadline: "" });
+  const [rombelId, setRombelId] = useState(location.state?.tugas?.rombel_id || null);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState("");
@@ -32,6 +33,7 @@ export default function EditTugas() {
             deskripsi: t.deskripsi || "",
             deadline: t.deadline ? t.deadline.slice(0, 16) : "", // Format for datetime-local
           });
+          setRombelId(t.rombel_id || null);
           setFetching(false);
         } else {
           const res = await getTugasById(tugasId);
@@ -41,6 +43,7 @@ export default function EditTugas() {
             deskripsi: t.deskripsi || "",
             deadline: t.deadline ? t.deadline.slice(0, 16) : "",
           });
+          setRombelId(t.rombel_id || null);
           setFetching(false);
         }
       } catch (err) {
@@ -66,6 +69,9 @@ export default function EditTugas() {
       fd.append("deskripsi", form.deskripsi);
       fd.append("deadline", form.deadline);
       fd.append("mapel_id", id);
+      if (rombelId) {
+        fd.append("rombel_id", rombelId);
+      }
 
       await updateTugas(tugasId, fd);
       navigate(`/kelas/${id}`, { state: { successMsg: "Tugas berhasil diperbarui!" } });

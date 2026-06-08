@@ -349,6 +349,7 @@ export default function KelasDetail() {
                     onClick={() => navigate(`/kelas/${id}/upload-materi`, {
                       state: {
                         actualMapelId: kelasInfo?.mapel_id || kelasInfo?.mata_pelajaran_id || id,
+                        rombelId: kelasInfo?.rombel_id || kelasInfo?.kelas_id || kelasInfo?.rombel?.id || null,
                       }
                     })}
                     className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-blue-700 transition"
@@ -364,6 +365,7 @@ export default function KelasDetail() {
                     onClick={() => navigate(`/kelas/${id}/buat-tugas`, {
                       state: {
                         actualMapelId: kelasInfo?.mapel_id || kelasInfo?.mata_pelajaran_id || id,
+                        rombelId: kelasInfo?.rombel_id || kelasInfo?.kelas_id || kelasInfo?.rombel?.id || null,
                       }
                     })}
                     className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-blue-700 transition"

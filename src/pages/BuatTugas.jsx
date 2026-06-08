@@ -37,6 +37,9 @@ export default function BuatTugas() {
       fd.append("deskripsi", form.deskripsi);
       fd.append("deadline", form.deadline);
       fd.append("mapel_id", actualMapelId);
+      if (rombelId) {
+        fd.append("rombel_id", rombelId);
+      }
 
       await createTugas(fd);
       navigate(`/kelas/${id}`, { state: { successMsg: "Tugas berhasil dibuat!" } });

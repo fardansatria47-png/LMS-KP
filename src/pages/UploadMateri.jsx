@@ -110,6 +110,9 @@ export default function UploadMateri() {
       fd.append("mapel_id", actualMapelId);
       fd.append("tipe", tipe);
       fd.append("files[]", file); // backend: $request->hasFile('files')
+      if (rombelId) {
+        fd.append("rombel_id", rombelId);
+      }
       if (form.youtube_url?.trim()) {
         fd.append("youtube_url", form.youtube_url.trim());
         fd.append("link_youtube", form.youtube_url.trim()); // Tambahan agar 100% cocok dengan backend
