@@ -90,6 +90,14 @@ export const simpanNilaiGuru = async (pengumpulanId, nilai, catatan = "") => {
   return await API.post(`/pengumpulan/${pengumpulanId}/nilai`, { nilai, catatan });
 };
 
+// ── Download Rekap Nilai ──────────────────────────────────────────────
+export const downloadRecapNilai = async (params = {}) => {
+  return await API.get("/recap/nilai", {
+    params,
+    responseType: "blob", // Penting untuk mengunduh file (Excel/PDF)
+  });
+};
+
 export const createTugasSusulan = async (data) => {
   return await API.post("/tugas-susulan", data);
 };

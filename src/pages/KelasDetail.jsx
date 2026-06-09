@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { getKelasGuru, getMateri, deleteMateri, getTugas, deleteTugas, getPengumuman, deletePengumuman, getSiswaGuru } from "../services/authService";
+import { getKelasGuru, getMateri, deleteMateri, getTugas, deleteTugas, getPengumuman, deletePengumuman, getSiswaGuru, downloadRecapNilai } from "../services/authService";
 import { getErrorMessage } from "../utils/translateError";
 import DiskusiMapel from "../components/DiskusiMapel";
 import GuruLayout from "../components/GuruLayout";
@@ -248,6 +248,44 @@ export default function KelasDetail() {
     }
   };
 
+  const [isDownloadingRecap, setIsDownloadingRecap] = useState(false);
+
+  const handleDownloadRecap = async () => {
+    try {
+      const rombelId = kelasInfo?.rombel_id || kelasInfo?.kelas_id || kelasInfo?.rombel?.id;
+      const actualMapelId = kelasInfo?.mapel_id || kelasInfo?.mata_pelajaran_id || id;
+      
+      if (!rombelId) {
+        toast("ID Rombel tidak ditemukan.", "error");
+        return;
+      }
+      
+      setIsDownloadingRecap(true);
+      const res = await downloadRecapNilai({ rombel_id: rombelId, mapel_id: actualMapelId });
+      
+      let filename = `Rekap_Nilai_${kelasInfo?.nama_kelas || kelasInfo?.tingkat || 'Kelas'}_${kelasInfo?.nama_mapel || kelasInfo?.mata_pelajaran || 'Mapel'}.xlsx`;
+      const disposition = res.headers && res.headers['content-disposition'];
+      if (disposition && disposition.indexOf('attachment') !== -1) {
+        const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition);
+        if (matches != null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+      }
+
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      toast("Berhasil mengunduh rekap nilai", "success");
+    } catch (err) {
+      toast(err?.response?.data?.message || "Gagal mengunduh rekap nilai.", "error");
+    } finally {
+      setIsDownloadingRecap(false);
+    }
+  };
+
   const formatDate = (dateStr) => {
     if (!dateStr) return "-";
     return new Date(dateStr).toLocaleDateString("id-ID", {
@@ -343,7 +381,7 @@ export default function KelasDetail() {
                 ))}
               </div>
               {/* Action button — below tabs on mobile, right-aligned on desktop */}
-              <div className="flex justify-end py-2">
+              <div className="flex justify-end py-2 gap-2">
                 {activeTab === "Materi" && (
                   <button
                     onClick={() => navigate(`/kelas/${id}/upload-materi`, {
@@ -361,20 +399,39 @@ export default function KelasDetail() {
                   </button>
                 )}
                 {activeTab === "Tugas" && (
-                  <button
-                    onClick={() => navigate(`/kelas/${id}/buat-tugas`, {
-                      state: {
-                        actualMapelId: kelasInfo?.mapel_id || kelasInfo?.mata_pelajaran_id || id,
-                        rombelId: kelasInfo?.rombel_id || kelasInfo?.kelas_id || kelasInfo?.rombel?.id || null,
-                      }
-                    })}
-                    className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-blue-700 transition"
-                  >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    Buat Tugas
-                  </button>
+                  <>
+                    <button
+                      onClick={handleDownloadRecap}
+                      disabled={isDownloadingRecap}
+                      className="flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-emerald-700 transition disabled:opacity-50"
+                    >
+                      {isDownloadingRecap ? (
+                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                        </svg>
+                      ) : (
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                        </svg>
+                      )}
+                      Rekap Nilai
+                    </button>
+                    <button
+                      onClick={() => navigate(`/kelas/${id}/buat-tugas`, {
+                        state: {
+                          actualMapelId: kelasInfo?.mapel_id || kelasInfo?.mata_pelajaran_id || id,
+                          rombelId: kelasInfo?.rombel_id || kelasInfo?.kelas_id || kelasInfo?.rombel?.id || null,
+                        }
+                      })}
+                      className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-blue-700 transition"
+                    >
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                      </svg>
+                      Buat Tugas
+                    </button>
+                  </>
                 )}
                 {activeTab === "Pengumuman" && (
                   <button
@@ -391,6 +448,25 @@ export default function KelasDetail() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
                     </svg>
                     Buat Pengumuman
+                  </button>
+                )}
+                {activeTab === "Siswa" && (
+                  <button
+                    onClick={handleDownloadRecap}
+                    disabled={isDownloadingRecap}
+                    className="flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-emerald-700 transition disabled:opacity-50"
+                  >
+                    {isDownloadingRecap ? (
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                      </svg>
+                    ) : (
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                      </svg>
+                    )}
+                    Rekap Nilai
                   </button>
                 )}
               </div>
