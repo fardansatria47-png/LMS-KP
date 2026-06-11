@@ -107,7 +107,7 @@ export default function Login({ onLogin }) {
           </div>
 
           {/* Card */}
-          <div className="rounded-3xl border border-slate-200 bg-white p-7 lg:shadow-xl lg:shadow-slate-200/60 sm:p-8">
+          <div className="rounded-3xl lg:border lg:border-slate-200 bg-white p-7 lg:shadow-xl lg:shadow-slate-200/60 sm:p-8">
 
             {/* Heading */}
             <div className="mb-7">
@@ -186,7 +186,7 @@ export default function Login({ onLogin }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-xl bg-blue-600 py-3 text-sm font-bold text-white shadow-md shadow-blue-200 transition hover:bg-blue-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full rounded-xl bg-blue-600 py-3 text-sm font-bold text-white lg:shadow-md lg:shadow-blue-200 transition hover:bg-blue-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
