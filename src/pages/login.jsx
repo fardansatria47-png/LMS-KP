@@ -80,9 +80,9 @@ export default function Login({ onLogin }) {
 
         <div className="relative z-10 max-w-md">
           {/* Logo / Badge */}
-          <div className="mb-8 inline-flex items-center gap-3 rounded-2xl bg-white/10 px-4 py-2.5 backdrop-blur-sm">
-            <img src="/logo.png" alt="Logo YAPSIPA" className="h-10 w-auto object-contain drop-shadow-md" />
-            <span className="text-sm font-bold tracking-widest text-white/90 uppercase">LMS</span>
+          <div className="mb-8 inline-flex items-center gap-4 rounded-3xl bg-white/10 px-6 py-3.5 backdrop-blur-sm">
+            <img src="/logo.png" alt="Logo YAPSIPA" className="h-16 w-auto object-contain drop-shadow-md" />
+            <span className="text-2xl font-black tracking-widest text-white/90 uppercase">LMS</span>
           </div>
 
           <h1 className="text-4xl font-extrabold leading-tight text-white">
@@ -101,9 +101,9 @@ export default function Login({ onLogin }) {
 
           {/* Mobile-only logo */}
           <div className="mb-7 flex flex-col items-center lg:hidden">
-            <img src="/logo.png" alt="Logo YAPSIPA" className="h-24 w-auto object-contain drop-shadow-md" />
-            <p className="mt-3 text-xs font-bold uppercase tracking-widest text-white">LMS</p>
-            <p className="text-[10px] text-blue-100 font-medium">SMK YAPSIPA Tasikmalaya</p>
+            <img src="/logo.png" alt="Logo YAPSIPA" className="h-28 w-auto object-contain drop-shadow-md" />
+            <p className="mt-3 text-lg font-black uppercase tracking-widest text-white">LMS</p>
+            <p className="text-xs text-blue-100 font-medium mt-1">SMK YAPSIPA Tasikmalaya</p>
           </div>
 
           {/* Card */}
