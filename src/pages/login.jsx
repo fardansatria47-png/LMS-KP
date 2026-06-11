@@ -101,13 +101,13 @@ export default function Login({ onLogin }) {
 
           {/* Mobile-only logo */}
           <div className="mb-7 flex flex-col items-center lg:hidden">
-            <img src="/logo.png" alt="Logo YAPSIPA" className="h-28 w-auto object-contain drop-shadow-md" />
+            <img src="/logo.png" alt="Logo YAPSIPA" className="h-28 w-auto object-contain" />
             <p className="mt-3 text-lg font-black uppercase tracking-widest text-white">LMS</p>
             <p className="text-xs text-blue-100 font-medium mt-1">SMK YAPSIPA Tasikmalaya</p>
           </div>
 
           {/* Card */}
-          <div className="rounded-3xl border border-slate-200 bg-white p-7 shadow-xl shadow-slate-200/60 sm:p-8">
+          <div className="rounded-3xl border border-slate-200 bg-white p-7 lg:shadow-xl lg:shadow-slate-200/60 sm:p-8">
 
             {/* Heading */}
             <div className="mb-7">
