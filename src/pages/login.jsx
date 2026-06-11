@@ -80,7 +80,7 @@ export default function Login({ onLogin }) {
 
         <div className="relative z-10 max-w-md">
           {/* Logo / Badge */}
-          <div className="mb-8 inline-flex items-center gap-4 rounded-3xl bg-white/10 px-6 py-3.5 backdrop-blur-sm">
+          <div className="mb-8 inline-flex items-center gap-4">
             <img src="/logo.png" alt="Logo YAPSIPA" className="h-16 w-auto object-contain drop-shadow-md" />
             <span className="text-2xl font-black tracking-widest text-white/90 uppercase">LMS</span>
           </div>
