@@ -81,11 +81,7 @@ export default function Login({ onLogin }) {
         <div className="relative z-10 max-w-md">
           {/* Logo / Badge */}
           <div className="mb-8 inline-flex items-center gap-3 rounded-2xl bg-white/10 px-4 py-2.5 backdrop-blur-sm">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-blue-700">
-              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
-              </svg>
-            </div>
+            <img src="/logo.png" alt="Logo YAPSIPA" className="h-10 w-auto object-contain drop-shadow-md" />
             <span className="text-sm font-bold tracking-widest text-white/90 uppercase">LMS</span>
           </div>
 
@@ -100,18 +96,14 @@ export default function Login({ onLogin }) {
       </section>
 
       {/* ── Right Panel — Form ─────────────────────────────── */}
-      <section className="flex min-h-screen items-center justify-center px-5 py-10 sm:px-8 bg-slate-50">
+      <section className="flex min-h-screen items-center justify-center px-5 py-10 sm:px-8 bg-blue-600 lg:bg-slate-50">
         <div className="w-full max-w-sm">
 
           {/* Mobile-only logo */}
           <div className="mb-7 flex flex-col items-center lg:hidden">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-200">
-              <svg className="h-7 w-7" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
-              </svg>
-            </div>
-            <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-blue-600">LMS</p>
-            <p className="text-[10px] text-slate-400 font-medium">SMK YAPSIPA Tasikmalaya</p>
+            <img src="/logo.png" alt="Logo YAPSIPA" className="h-24 w-auto object-contain drop-shadow-md" />
+            <p className="mt-3 text-xs font-bold uppercase tracking-widest text-white">LMS</p>
+            <p className="text-[10px] text-blue-100 font-medium">SMK YAPSIPA Tasikmalaya</p>
           </div>
 
           {/* Card */}
@@ -210,7 +202,7 @@ export default function Login({ onLogin }) {
           </div>
 
           {/* Footer */}
-          <p className="mt-6 text-center text-[11px] text-slate-400">
+          <p className="mt-6 text-center text-[11px] text-blue-200 lg:text-slate-400">
             © {new Date().getFullYear()} SMK YAPSIPA Tasikmalaya
           </p>
         </div>
