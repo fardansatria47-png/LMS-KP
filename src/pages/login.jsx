@@ -113,7 +113,7 @@ export default function Login({ onLogin }) {
             <div className="mb-7">
               <h2 className="text-xl font-extrabold text-slate-900 text-center">Selamat Datang</h2>
               <p className="mt-1 text-xs text-slate-500 text-center">
-                Selamat Datang di Learning Management System Yapsipa Tasikmalaya
+                Selamat Datang di Learning Management System SMK Yapsipa Tasikmalaya
               </p>
             </div>
 
