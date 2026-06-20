@@ -363,6 +363,16 @@ export const importGuru = async (file) => {
   });
 };
 
+export const importMapel = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  return await API.post("/mata-pelajaran/import", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
 // ── Reset Password Siswa oleh Admin ─────────────────────────────────
 export const resetPasswordSiswa = async (id) => {
   return await API.post(`/siswa/${id}/reset-password`);

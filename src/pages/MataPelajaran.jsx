@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-import { getMapel, deleteMapel, getCurrentUser, getMataPelajaranSiswa } from "../services/authService";
+import { getMapel, deleteMapel, getCurrentUser, getMataPelajaranSiswa, importMapel } from "../services/authService";
 import { toast, confirmDialog } from "../utils/notify";
 import SiswaLayout from "../components/SiswaLayout";
 import { getErrorMessage } from "../utils/translateError";
@@ -16,10 +16,18 @@ export default function MataPelajaran() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(false);
-  
+
   const [currentUser, setCurrentUser] = useState(null);
   const [isSiswa, setIsSiswa] = useState(false);
   const [checkingRole, setCheckingRole] = useState(true);
+
+  // ── Import Modal State ─────────────────────────────────────────────
+  const [importModal, setImportModal] = useState(false);
+  const [importFile, setImportFile] = useState(null);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState(null);
+  const [dragOver, setDragOver] = useState(false);
+  const importFileRef = useRef(null);
 
   useEffect(() => {
     const checkRole = async () => {
@@ -99,6 +107,62 @@ export default function MataPelajaran() {
       toast(err?.response?.data?.message || "Gagal menghapus mata pelajaran", "error");
     } finally {
       setDeleting(false);
+    }
+  };
+
+  // ── Import Handlers ────────────────────────────────────────────────
+  const openImportModal = () => {
+    setImportModal(true);
+    setImportFile(null);
+    setImportResult(null);
+  };
+
+  const closeImportModal = () => {
+    setImportModal(false);
+    setImportFile(null);
+    setImportResult(null);
+  };
+
+  const handleFileDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file) setImportFile(file);
+  };
+
+  const handleImport = async () => {
+    if (!importFile) {
+      toast("Pilih file Excel/CSV terlebih dahulu!", "warning");
+      return;
+    }
+    const allowedTypes = [
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-excel",
+      "text/csv",
+    ];
+    const ext = importFile.name.split(".").pop().toLowerCase();
+    if (!allowedTypes.includes(importFile.type) && !["xlsx", "xls", "csv"].includes(ext)) {
+      toast("Format file tidak valid. Gunakan Excel (.xlsx/.xls) atau CSV.", "error");
+      return;
+    }
+    setImporting(true);
+    setImportResult(null);
+    try {
+      const res = await importMapel(importFile);
+      const result = res.data;
+      setImportResult(result);
+      if (result?.success_count > 0) {
+        toast(`${result.success_count} mata pelajaran berhasil diimpor!`, "success");
+        fetchMapel();
+      } else {
+        toast("Tidak ada data yang berhasil diimpor.", "warning");
+      }
+    } catch (err) {
+      const msg = err?.response?.data?.message || "Gagal mengimpor file.";
+      toast(msg, "error");
+      if (err?.response?.data) setImportResult(err.response.data);
+    } finally {
+      setImporting(false);
     }
   };
 
@@ -193,15 +257,29 @@ export default function MataPelajaran() {
             <p className="mt-1 text-sm font-medium text-slate-400">Manajemen mata pelajaran</p>
           </div>
 
-          <button
-            onClick={() => navigate("/tambah-mata-pelajaran")}
-            className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-blue-200 transition hover:bg-blue-700 hover:shadow-lg"
-          >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-            TAMBAH MATA PELAJARAN
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Import Button */}
+            <button
+              onClick={openImportModal}
+              className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 hover:shadow-md"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+              </svg>
+              IMPORT EXCEL / CSV
+            </button>
+
+            {/* Tambah Button */}
+            <button
+              onClick={() => navigate("/tambah-mata-pelajaran")}
+              className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-blue-200 transition hover:bg-blue-700 hover:shadow-lg"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              TAMBAH MATA PELAJARAN
+            </button>
+          </div>
         </div>
 
         {/* Content */}
@@ -351,6 +429,175 @@ export default function MataPelajaran() {
                 className="flex-1 rounded-xl bg-rose-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-rose-700"
               >
                 Ya, Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ── Import Modal ─────────────────────────────────────────────── */}
+      {importModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+          <div className="w-full max-w-lg animate-[fadeIn_0.2s_ease] rounded-3xl bg-white shadow-2xl overflow-hidden">
+
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100">
+                  <svg className="h-5 w-5 text-emerald-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Import Mata Pelajaran</h3>
+                  <p className="text-xs text-slate-400">Format: Excel (.xlsx / .xls) atau CSV</p>
+                </div>
+              </div>
+              <button onClick={closeImportModal} className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="px-8 py-6 space-y-5">
+
+              {/* Column Guide */}
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Kolom yang Diperlukan</p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[
+                    { col: "A", name: "kode_mapel", req: true },
+                    { col: "B", name: "nama_mapel", req: true },
+                    { col: "C", name: "deskripsi", req: false },
+                    { col: "D", name: "guru_ids", req: false },
+                    { col: "E", name: "rombel_ids", req: false },
+                  ].map(({ col, name, req }) => (
+                    <div key={col} className="flex items-center gap-2 text-xs">
+                      <span className="flex h-5 w-5 items-center justify-center rounded bg-slate-200 font-bold text-slate-600">{col}</span>
+                      <code className="text-slate-700 font-medium">{name}</code>
+                      {req
+                        ? <span className="ml-auto text-rose-500 font-semibold">wajib</span>
+                        : <span className="ml-auto text-slate-400">opsional</span>}
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-3 text-[11px] text-slate-400">Baris pertama adalah header. <code>guru_ids</code> &amp; <code>rombel_ids</code> diisi ID dipisah koma (contoh: <code>1,2,3</code>).</p>
+              </div>
+
+              {/* Drop Zone */}
+              <div
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handleFileDrop}
+                onClick={() => importFileRef.current?.click()}
+                className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-8 transition ${
+                  dragOver ? "border-emerald-400 bg-emerald-50" : "border-slate-300 bg-slate-50 hover:border-emerald-400 hover:bg-emerald-50"
+                }`}
+              >
+                <input
+                  ref={importFileRef}
+                  type="file"
+                  accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+                  className="hidden"
+                  onChange={(e) => setImportFile(e.target.files[0] || null)}
+                />
+                {importFile ? (
+                  <>
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100">
+                      <svg className="h-6 w-6 text-emerald-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+                      </svg>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-semibold text-slate-800">{importFile.name}</p>
+                      <p className="text-xs text-slate-400">{(importFile.size / 1024).toFixed(1)} KB</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setImportFile(null); }}
+                      className="text-xs text-rose-500 hover:underline"
+                    >
+                      Ganti file
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-200">
+                      <svg className="h-6 w-6 text-slate-500" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                      </svg>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-semibold text-slate-700">Klik atau seret file ke sini</p>
+                      <p className="text-xs text-slate-400">.xlsx, .xls, atau .csv</p>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Import Result */}
+              {importResult && (
+                <div className={`rounded-xl border p-4 text-sm ${
+                  importResult.success_count > 0
+                    ? "border-emerald-200 bg-emerald-50"
+                    : "border-rose-200 bg-rose-50"
+                }`}>
+                  <p className="font-bold text-slate-700 mb-2">Hasil Import</p>
+                  {importResult.success_count !== undefined && (
+                    <p className="text-emerald-700">
+                      ✅ {importResult.success_count} baris berhasil diimpor
+                    </p>
+                  )}
+                  {importResult.errors && importResult.errors.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-rose-600 font-semibold mb-1">❌ {importResult.errors.length} baris gagal:</p>
+                      <ul className="max-h-28 overflow-y-auto space-y-1">
+                        {importResult.errors.map((err, i) => (
+                          <li key={i} className="text-xs text-rose-700 bg-rose-100 rounded-lg px-3 py-1.5">
+                            {typeof err === "string" ? err : (err.message || err.error || JSON.stringify(err))}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {importResult.message && !importResult.errors && (
+                    <p className="text-rose-700">{importResult.message}</p>
+                  )}
+                </div>
+              )}
+
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end gap-3 px-8 py-5 border-t border-slate-100 bg-slate-50">
+              <button
+                onClick={closeImportModal}
+                disabled={importing}
+                className="px-5 py-2.5 text-sm font-semibold text-slate-600 rounded-xl border border-slate-200 bg-white transition hover:bg-slate-100 disabled:opacity-50"
+              >
+                Tutup
+              </button>
+              <button
+                onClick={handleImport}
+                disabled={importing || !importFile}
+                className="flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow-md shadow-emerald-200 transition hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {importing ? (
+                  <>
+                    <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Mengimpor...
+                  </>
+                ) : (
+                  <>
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                    </svg>
+                    Import Sekarang
+                  </>
+                )}
               </button>
             </div>
           </div>
