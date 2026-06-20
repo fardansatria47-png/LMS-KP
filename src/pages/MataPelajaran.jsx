@@ -26,6 +26,9 @@ export default function MataPelajaran() {
   const [importFile, setImportFile] = useState(null);
   const [importing, setImporting] = useState(false);
 
+  // ── Search State ───────────────────────────────────────────────────
+  const [search, setSearch] = useState("");
+
   useEffect(() => {
     const checkRole = async () => {
       try {
@@ -73,16 +76,32 @@ export default function MataPelajaran() {
     }
   };
 
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return mapel;
+    return mapel.filter((m) => {
+      const nama = (m.nama_mapel || "").toLowerCase();
+      const kode = (m.kode_mapel || "").toLowerCase();
+      const guruNames = (m.gurus || []).map((g) =>
+        (typeof g === "string" ? g : (g.nama_lengkap || g.nama || g.name || "")).toLowerCase()
+      ).join(" ");
+      return nama.includes(q) || kode.includes(q) || guruNames.includes(q);
+    });
+  }, [mapel, search]);
+
   const grouped = useMemo(() => {
     const map = {};
-    mapel.forEach((m) => {
+    filtered.forEach((m) => {
       // Grouping berdasarkan jurusan
       const groupName = (m.nama_jurusan || "Tanpa Jurusan").toUpperCase();
       if (!map[groupName]) map[groupName] = [];
       map[groupName].push(m);
     });
     return Object.entries(map).sort(([a], [b]) => a.localeCompare(b));
-  }, [mapel]);
+  }, [filtered]);
+
+  // Reset ke halaman 1 saat search berubah
+  useEffect(() => { setPage(1); }, [search]);
 
   const totalPages = Math.max(1, Math.ceil(grouped.length / PER_PAGE));
   const pagedGroups = useMemo(() => {
@@ -228,7 +247,7 @@ export default function MataPelajaran() {
 
       <div className="lg:ml-64 px-4 sm:px-6 lg:px-10 pt-12 lg:pt-12 pb-24 lg:pb-12">
         {/* Header */}
-        <div className="mb-10 flex flex-wrap items-start justify-between gap-4">
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="text-[28px] font-bold text-blue-600 uppercase tracking-wide">Kelola Mata Pelajaran</h1>
             <p className="mt-1 text-sm font-medium text-slate-400">Manajemen mata pelajaran</p>
@@ -259,6 +278,30 @@ export default function MataPelajaran() {
           </div>
         </div>
 
+        {/* Search Bar */}
+        <div className="mb-8 relative w-full sm:max-w-sm">
+          <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); }}
+            placeholder="Cari nama, kode, atau guru..."
+            className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-10 text-sm text-slate-700 shadow-sm transition focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
+
         {/* Content */}
         {loading ? (
           <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-white p-16">
@@ -273,6 +316,17 @@ export default function MataPelajaran() {
               className="mt-4 rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700"
             >
               Coba Lagi
+            </button>
+          </div>
+        ) : search && grouped.length === 0 ? (
+          <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center">
+            <svg className="mx-auto h-10 w-10 text-slate-300 mb-3" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <p className="font-semibold text-slate-500">Tidak ditemukan hasil untuk <span className="text-blue-600">"{search}"</span></p>
+            <p className="mt-1 text-sm text-slate-400">Coba kata kunci lain atau hapus pencarian.</p>
+            <button onClick={() => setSearch("")} className="mt-4 rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
+              Hapus Pencarian
             </button>
           </div>
         ) : pagedGroups.map(([groupName, items]) => {
