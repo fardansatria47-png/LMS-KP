@@ -478,17 +478,17 @@ export default function DataPengguna() {
               <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
                 {tab === "siswa" ? (
                   <ol className="list-decimal list-inside text-sm text-slate-600 space-y-1">
-                    <li><strong className="text-slate-800">NIS</strong> (sebagai Username)</li>
-                    <li><strong className="text-slate-800">Nama</strong> (Nama Lengkap)</li>
-                    <li><strong className="text-slate-800">Jenis Kelamin</strong> (Laki-laki / Perempuan / L / P)</li>
-                    <li><strong className="text-slate-800">Rombel</strong> (ID Rombel, misal: <code className="bg-slate-200 px-1 rounded">1</code> atau nama Rombel seperti <code className="bg-slate-200 px-1 rounded">X PPLG</code>)</li>
+                    <li><strong className="text-slate-800">NIS</strong></li>
+                    <li><strong className="text-slate-800">Nama</strong></li>
+                    <li><strong className="text-slate-800">Jenis Kelamin</strong></li>
+                    <li><strong className="text-slate-800">Rombel</strong></li>
                     <li><strong className="text-slate-800">Password</strong></li>
                   </ol>
                 ) : (
                   <ol className="list-decimal list-inside text-sm text-slate-600 space-y-1">
-                    <li><strong className="text-slate-800">NIK</strong> (sebagai Username)</li>
-                    <li><strong className="text-slate-800">Nama</strong> (Nama Lengkap)</li>
-                    <li><strong className="text-slate-800">Jenis Kelamin</strong> (Laki-laki / Perempuan / L / P)</li>
+                    <li><strong className="text-slate-800">NIK</strong></li>
+                    <li><strong className="text-slate-800">Nama</strong></li>
+                    <li><strong className="text-slate-800">Jenis Kelamin</strong></li>
                     <li><strong className="text-slate-800">Password</strong></li>
                   </ol>
                 )}

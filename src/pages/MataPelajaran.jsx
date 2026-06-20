@@ -485,11 +485,11 @@ export default function MataPelajaran() {
               <h4 className="text-sm font-semibold text-slate-700 mb-2">Format Kolom Excel (Mulai dari Kolom A):</h4>
               <div className="rounded-xl bg-slate-50 p-4 border border-slate-100">
                 <ol className="list-decimal list-inside text-sm text-slate-600 space-y-1">
-                  <li><strong className="text-slate-800">kode_mapel</strong> — wajib, unik</li>
-                  <li><strong className="text-slate-800">nama_mapel</strong> — wajib</li>
-                  <li><strong className="text-slate-800">deskripsi</strong> — opsional</li>
-                  <li><strong className="text-slate-800">guru_ids</strong> — opsional, ID dipisah koma (misal: <code className="bg-slate-200 px-1 rounded">1,2</code>)</li>
-                  <li><strong className="text-slate-800">rombel_ids</strong> — opsional, ID dipisah koma (misal: <code className="bg-slate-200 px-1 rounded">3,4</code>)</li>
+                  <li><strong className="text-slate-800">Kode Mata Pelajaran</strong></li>
+                  <li><strong className="text-slate-800">Nama Mata Pelajaran</strong></li>
+                  <li><strong className="text-slate-800">Deskripsi</strong></li>
+                  <li><strong className="text-slate-800">Guru Pengajar</strong></li>
+                  <li><strong className="text-slate-800">Rombel/Kelas</strong></li>
                 </ol>
               </div>
               <p className="mt-3 text-xs text-slate-400">Dukungan format file: .xlsx, .xls, .csv</p>
