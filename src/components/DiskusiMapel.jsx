@@ -61,20 +61,23 @@ export default function DiskusiMapel({ mapelId, currentUser }) {
     // Menggunakan private channel sesuai dengan event backend (MessageSent.php)
     const channelName = `diskusi.${mapelId}`;
     console.log(`[Echo] Subscribing ke private channel: ${channelName}`);
+    // Coba dengarkan di Private Channel (seharusnya ini yang benar)
     const channel = echo.private(channelName);
+    
+    // Coba dengarkan juga di Public Channel (untuk jaga-jaga kalau backend pakai public channel)
+    const publicChannel = echo.channel(channelName);
 
     channel.subscribed(() => {
-      console.log(`[Echo] ✅ Berhasil subscribe ke: ${channelName}`);
+      console.log(`[Echo] ✅ Berhasil subscribe ke private: ${channelName}`);
     });
 
-    channel.error((error) => {
-      console.error(`[Echo] ❌ Gagal subscribe ke ${channelName}:`, error);
+    publicChannel.subscribed(() => {
+      console.log(`[Echo] ✅ Berhasil subscribe ke public: ${channelName}`);
     });
 
     // ── Handler pesan baru ────────────────────────────────────────────
-    // Coba berbagai nama event yang mungkin dikirim backend
     const newMessageHandler = (e) => {
-      console.log("[Echo] Event masuk (pesan baru):", e);
+      console.log("[Echo] 🚀 ADA EVENT MASUK DARI BACKEND! (.message.sent):", e);
       const diskusiData = e.diskusi || e.message || e.data || e;
       if (diskusiData && (diskusiData.id || diskusiData.pesan)) {
         setMessages((prev) => {
@@ -86,6 +89,7 @@ export default function DiskusiMapel({ mapelId, currentUser }) {
     };
 
     channel.listen(".message.sent", newMessageHandler);
+    publicChannel.listen(".message.sent", newMessageHandler);
 
     // ── Handler hapus pesan ──────────────────────────────────────────
     const deleteHandler = (e) => {
@@ -135,6 +139,7 @@ export default function DiskusiMapel({ mapelId, currentUser }) {
         echo.connector.pusher.unbind_global(handleGlobalEvent);
       }
       channel.stopListening(".message.sent");
+      publicChannel.stopListening(".message.sent");
       channel.stopListening(".message.deleted");
       echo.leaveChannel(channelName);
     };
