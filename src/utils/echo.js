@@ -19,11 +19,36 @@ const echo = new Echo({
     
     // Konfigurasi endpoint sesuai instruksi backend
     authEndpoint: 'https://enchanting-intuition-production-d080.up.railway.app/api/broadcasting/auth',
-    auth: {
-        headers: {
-            Authorization: `Bearer ${token}`, 
-            Accept: 'application/json', 
-        },
+    authorizer: (channel, options) => {
+        return {
+            authorize: (socketId, callback) => {
+                fetch(options.authEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        socket_id: socketId,
+                        channel_name: channel.name
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    callback(false, data);
+                })
+                .catch(error => {
+                    console.error("[Echo Auth] Error:", error);
+                    callback(true, error);
+                });
+            }
+        };
     },
 });
 
