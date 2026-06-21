@@ -86,9 +86,6 @@ export default function DiskusiMapel({ mapelId, currentUser }) {
     };
 
     channel.listen(".message.sent", newMessageHandler);
-    channel.listen("message.sent", newMessageHandler);
-    channel.listen(".MessageSent", newMessageHandler);
-    channel.listen("MessageSent", newMessageHandler);
 
     // ── Handler hapus pesan ──────────────────────────────────────────
     const deleteHandler = (e) => {
@@ -101,9 +98,6 @@ export default function DiskusiMapel({ mapelId, currentUser }) {
     };
 
     channel.listen(".message.deleted", deleteHandler);
-    channel.listen("message.deleted", deleteHandler);
-    channel.listen(".MessageDeleted", deleteHandler);
-    channel.listen("MessageDeleted", deleteHandler);
 
     // ── Bind global Pusher (tangkap event apapun dari channel ini) ───
     const handleGlobalEvent = (eventName, data) => {
@@ -141,13 +135,7 @@ export default function DiskusiMapel({ mapelId, currentUser }) {
         echo.connector.pusher.unbind_global(handleGlobalEvent);
       }
       channel.stopListening(".message.sent");
-      channel.stopListening("message.sent");
-      channel.stopListening(".MessageSent");
-      channel.stopListening("MessageSent");
       channel.stopListening(".message.deleted");
-      channel.stopListening("message.deleted");
-      channel.stopListening(".MessageDeleted");
-      channel.stopListening("MessageDeleted");
       echo.leaveChannel(channelName);
     };
   }, [mapelId]);
