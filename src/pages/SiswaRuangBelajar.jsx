@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { getMataPelajaranSiswaDetail, getTugasSiswa, getTugasSusulanSiswa, getPengumuman } from "../services/authService";
+import { getMataPelajaranSiswaDetail, getTugasSiswa, getTugasSusulanSiswa, getPengumuman, logoutUser } from "../services/authService";
 import { getErrorMessage } from "../utils/translateError";
 import DiskusiMapel from "../components/DiskusiMapel";
 import SiswaLayout from "../components/SiswaLayout";
@@ -191,7 +191,11 @@ export default function SiswaRuangBelajar() {
   const handleLogout = async () => {
     const ok = await confirmDialog("Yakin ingin logout?", { isDanger: true, title: "Logout" });
     if (ok) {
-      localStorage.removeItem("token");
+      try {
+        await logoutUser();
+      } catch (e) {
+        console.warn("[Logout] API logout gagal:", e);
+      }
       localStorage.removeItem("user_role");
       window.location.href = "/login";
     }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { confirmDialog } from "../utils/notify";
-import { getMataPelajaranSiswa } from "../services/authService";
+import { getMataPelajaranSiswa, logoutUser } from "../services/authService";
 import CalendarWidget from "../components/CalendarWidget";
 import SiswaLayout from "../components/SiswaLayout";
 
@@ -108,7 +108,11 @@ export default function SiswaDashboard({ user, summary }) {
   const handleLogout = async () => {
     const ok = await confirmDialog("Yakin ingin logout?", { isDanger: true, title: "Logout" });
     if (ok) {
-      localStorage.removeItem("token");
+      try {
+        await logoutUser();
+      } catch (e) {
+        console.warn("[Logout] API logout gagal:", e);
+      }
       localStorage.removeItem("user_role");
       window.location.href = "/login";
     }

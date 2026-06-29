@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
 import { confirmDialog } from "./utils/notify";
+import { logoutUser } from "./services/authService";
 import Login from "./pages/login";
 import Register from "./pages/register";
 import Profile from "./pages/profile";
@@ -33,7 +34,12 @@ import SiswaTugasSusulan from "./pages/SiswaTugasSusulan";
 import SiswaTugasSusulanDetail from "./pages/SiswaTugasSusulanDetail";
 
 function App() {
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  // 🍪 Autentikasi kini berbasis cookie HttpOnly yang dikelola backend.
+  // Gunakan user_role di localStorage sebagai "penanda sesi" lokal (bukan token).
+  // Cookie asli tidak bisa dibaca JS (HttpOnly), jadi ini hanya untuk routing UI.
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    () => !!localStorage.getItem("user_role")
+  );
 
   // --- START TEST REVERB LISTENER ---
   // Kode sementara untuk mengecek endpoint test reverb dari backend
@@ -51,45 +57,51 @@ function App() {
   const handleLogout = async () => {
     const ok = await confirmDialog("Yakin ingin logout?", { isDanger: true, title: "Logout" });
     if (!ok) return;
-    localStorage.removeItem("token");
+    try {
+      // Minta backend untuk menghapus cookie HttpOnly
+      await logoutUser();
+    } catch (e) {
+      console.warn("[Logout] API logout gagal, melanjutkan pembersihan lokal:", e);
+    }
+    // Bersihkan state lokal
     localStorage.removeItem("user_role");
-    setToken(null);
+    setIsAuthenticated(false);
     window.location.href = "/login";
   };
 
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={token ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
-        <Route path="/login" element={token ? <Navigate to="/dashboard" /> : <Login onLogin={setToken} />} />
+        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
+        <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login onLogin={() => setIsAuthenticated(true)} />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={token ? <Dashboard /> : <Navigate to="/login" />} />
-        <Route path="/data-pengguna" element={token ? <DataPengguna /> : <Navigate to="/login" />} />
-        <Route path="/edit-user/:id" element={token ? <EditUser /> : <Navigate to="/login" />} />
-        <Route path="/mata-pelajaran" element={token ? <MataPelajaran /> : <Navigate to="/login" />} />
-        <Route path="/tambah-mata-pelajaran" element={token ? <TambahMataPelajaran /> : <Navigate to="/login" />} />
-        <Route path="/edit-mata-pelajaran/:id" element={token ? <EditMataPelajaran /> : <Navigate to="/login" />} />
-        <Route path="/anggota-kelas" element={token ? <AnggotaKelas /> : <Navigate to="/login" />} />
-        <Route path="/tambah-anggota-kelas" element={token ? <TambahAnggotaKelas /> : <Navigate to="/login" />} />
-        <Route path="/tambah-kelas" element={token ? <TambahRombel /> : <Navigate to="/login" />} />
-        <Route path="/edit-anggota-kelas/:id" element={token ? <EditAnggotaKelas /> : <Navigate to="/login" />} />
-        <Route path="/assign-mapel" element={token ? <AssignMapel /> : <Navigate to="/login" />} />
-        <Route path="/kelas" element={token ? <Kelas /> : <Navigate to="/login" />} />
-        <Route path="/kelas/:id" element={token ? <KelasDetail /> : <Navigate to="/login" />} />
-        <Route path="/ruang-belajar/:id" element={token ? <SiswaRuangBelajar /> : <Navigate to="/login" />} />
-        <Route path="/ruang-belajar/:id/materi/:materiId" element={token ? <SiswaMateriDetail /> : <Navigate to="/login" />} />
-        <Route path="/ruang-belajar/:id/tugas/:tugasId" element={token ? <SiswaTugasDetail /> : <Navigate to="/login" />} />
-        <Route path="/kelas/:id/upload-materi" element={token ? <UploadMateri /> : <Navigate to="/login" />} />
-        <Route path="/kelas/:id/materi/:materiId" element={token ? <MateriDetail /> : <Navigate to="/login" />} />
-        <Route path="/kelas/:id/tugas/:tugasId/pengumpulan" element={token ? <PengumpulanTugas /> : <Navigate to="/login" />} />
-        <Route path="/kelas/:id/buat-tugas" element={token ? <BuatTugas /> : <Navigate to="/login" />} />
-        <Route path="/kelas/:id/edit-tugas/:tugasId" element={token ? <EditTugas /> : <Navigate to="/login" />} />
-        <Route path="/kelas/:id/buat-pengumuman" element={token ? <BuatPengumuman /> : <Navigate to="/login" />} />
-        <Route path="/kelas/:id/edit-pengumuman/:pengumumanId" element={token ? <EditPengumuman /> : <Navigate to="/login" />} />
-        <Route path="/siswa-pengumuman" element={token ? <SiswaPengumuman /> : <Navigate to="/login" />} />
-        <Route path="/siswa/tugas-susulan" element={token ? <SiswaTugasSusulan /> : <Navigate to="/login" />} />
-        <Route path="/siswa/tugas-susulan/:id" element={token ? <SiswaTugasSusulanDetail /> : <Navigate to="/login" />} />
-        <Route path="/profile" element={token ? <Profile /> : <Navigate to="/login" />} />
+        <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} />
+        <Route path="/data-pengguna" element={isAuthenticated ? <DataPengguna /> : <Navigate to="/login" />} />
+        <Route path="/edit-user/:id" element={isAuthenticated ? <EditUser /> : <Navigate to="/login" />} />
+        <Route path="/mata-pelajaran" element={isAuthenticated ? <MataPelajaran /> : <Navigate to="/login" />} />
+        <Route path="/tambah-mata-pelajaran" element={isAuthenticated ? <TambahMataPelajaran /> : <Navigate to="/login" />} />
+        <Route path="/edit-mata-pelajaran/:id" element={isAuthenticated ? <EditMataPelajaran /> : <Navigate to="/login" />} />
+        <Route path="/anggota-kelas" element={isAuthenticated ? <AnggotaKelas /> : <Navigate to="/login" />} />
+        <Route path="/tambah-anggota-kelas" element={isAuthenticated ? <TambahAnggotaKelas /> : <Navigate to="/login" />} />
+        <Route path="/tambah-kelas" element={isAuthenticated ? <TambahRombel /> : <Navigate to="/login" />} />
+        <Route path="/edit-anggota-kelas/:id" element={isAuthenticated ? <EditAnggotaKelas /> : <Navigate to="/login" />} />
+        <Route path="/assign-mapel" element={isAuthenticated ? <AssignMapel /> : <Navigate to="/login" />} />
+        <Route path="/kelas" element={isAuthenticated ? <Kelas /> : <Navigate to="/login" />} />
+        <Route path="/kelas/:id" element={isAuthenticated ? <KelasDetail /> : <Navigate to="/login" />} />
+        <Route path="/ruang-belajar/:id" element={isAuthenticated ? <SiswaRuangBelajar /> : <Navigate to="/login" />} />
+        <Route path="/ruang-belajar/:id/materi/:materiId" element={isAuthenticated ? <SiswaMateriDetail /> : <Navigate to="/login" />} />
+        <Route path="/ruang-belajar/:id/tugas/:tugasId" element={isAuthenticated ? <SiswaTugasDetail /> : <Navigate to="/login" />} />
+        <Route path="/kelas/:id/upload-materi" element={isAuthenticated ? <UploadMateri /> : <Navigate to="/login" />} />
+        <Route path="/kelas/:id/materi/:materiId" element={isAuthenticated ? <MateriDetail /> : <Navigate to="/login" />} />
+        <Route path="/kelas/:id/tugas/:tugasId/pengumpulan" element={isAuthenticated ? <PengumpulanTugas /> : <Navigate to="/login" />} />
+        <Route path="/kelas/:id/buat-tugas" element={isAuthenticated ? <BuatTugas /> : <Navigate to="/login" />} />
+        <Route path="/kelas/:id/edit-tugas/:tugasId" element={isAuthenticated ? <EditTugas /> : <Navigate to="/login" />} />
+        <Route path="/kelas/:id/buat-pengumuman" element={isAuthenticated ? <BuatPengumuman /> : <Navigate to="/login" />} />
+        <Route path="/kelas/:id/edit-pengumuman/:pengumumanId" element={isAuthenticated ? <EditPengumuman /> : <Navigate to="/login" />} />
+        <Route path="/siswa-pengumuman" element={isAuthenticated ? <SiswaPengumuman /> : <Navigate to="/login" />} />
+        <Route path="/siswa/tugas-susulan" element={isAuthenticated ? <SiswaTugasSusulan /> : <Navigate to="/login" />} />
+        <Route path="/siswa/tugas-susulan/:id" element={isAuthenticated ? <SiswaTugasSusulanDetail /> : <Navigate to="/login" />} />
+        <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   );

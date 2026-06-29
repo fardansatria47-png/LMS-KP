@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getGuruProfile, updateGuruPassword, getCurrentUser } from "../services/authService";
+import { getGuruProfile, updateGuruPassword, getCurrentUser, logoutUser } from "../services/authService";
 import { confirmDialog, toast } from "../utils/notify";
 import GuruLayout from "../components/GuruLayout";
 
@@ -88,7 +88,11 @@ export default function GuruProfile() {
   const handleLogout = async () => {
     const ok = await confirmDialog("Yakin ingin keluar?", { isDanger: true, title: "Keluar" });
     if (ok) {
-      localStorage.removeItem("token");
+      try {
+        await logoutUser();
+      } catch (e) {
+        console.warn("[Logout] API logout gagal:", e);
+      }
       localStorage.removeItem("user_role");
       navigate("/login");
     }

@@ -3,6 +3,7 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { getMataPelajaranSiswaDetail } from "../services/authService";
 import { fixFileUrl } from "../api/api";
 import { confirmDialog } from "../utils/notify";
+import { logoutUser } from "../services/authService";
 import { getErrorMessage } from "../utils/translateError";
 import SiswaLayout from "../components/SiswaLayout";
 
@@ -51,7 +52,11 @@ export default function SiswaMateriDetail() {
   const handleLogout = async () => {
     const ok = await confirmDialog("Yakin ingin logout?", { isDanger: true, title: "Logout" });
     if (ok) {
-      localStorage.removeItem("token");
+      try {
+        await logoutUser();
+      } catch (e) {
+        console.warn("[Logout] API logout gagal:", e);
+      }
       localStorage.removeItem("user_role");
       window.location.href = "/login";
     }

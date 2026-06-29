@@ -32,7 +32,6 @@ export default function Dashboard() {
         if (!roleFromAPI) {
           // Jika backend tidak mengembalikan role, paksa logout untuk keamanan
           console.error("[Auth] Role tidak ditemukan dari API /me. Paksa logout.");
-          localStorage.removeItem("token");
           localStorage.removeItem("user_role");
           navigate("/login");
           return;
@@ -43,7 +42,6 @@ export default function Dashboard() {
         if (cachedRole && cachedRole !== roleFromAPI) {
           // Role tidak cocok — kemungkinan token milik orang lain atau data korup
           console.error(`[Auth] Role mismatch! Cache: ${cachedRole}, API: ${roleFromAPI}. Paksa logout.`);
-          localStorage.removeItem("token");
           localStorage.removeItem("user_role");
           navigate("/login");
           return;
@@ -64,7 +62,6 @@ export default function Dashboard() {
         } else {
           // Role tidak dikenal — paksa logout
           console.error(`[Auth] Role tidak dikenal: "${roleFromAPI}". Paksa logout.`);
-          localStorage.removeItem("token");
           localStorage.removeItem("user_role");
           navigate("/login");
           return;

@@ -25,21 +25,9 @@ export default function Login({ onLogin }) {
 
     try {
       const res = await loginUser(payload);
-      const token =
-        res.data?.token ||
-        res.data?.access_token ||
-        res.data?.data?.token ||
-        res.data?.data?.access_token;
 
-      if (!token) {
-        setMessage("Login berhasil, tetapi token tidak ditemukan.");
-        setLoading(false);
-        return;
-      }
-
-      localStorage.setItem("token", token);
-
-      // Simpan role dari response login agar tidak ada mismatch saat refresh
+      // Cookie HttpOnly sudah di-set oleh backend secara otomatis.
+      // Frontend tidak perlu menyimpan token — cukup baca data user dari respons.
       const userFromRes =
         res.data?.user ||
         res.data?.data?.user ||
@@ -49,13 +37,15 @@ export default function Login({ onLogin }) {
         userFromRes?.role ||
         (Array.isArray(userFromRes?.roles) ? userFromRes.roles[0] : null) ||
         null;
+
+      // Simpan role di localStorage agar routing UI tidak harus fetch /me setiap kali
       if (roleFromRes) {
         localStorage.setItem("user_role", roleFromRes.toLowerCase());
       } else {
         localStorage.removeItem("user_role");
       }
 
-      onLogin?.(token);
+      onLogin?.();
       navigate("/dashboard");
     } catch (err) {
       let msg = getErrorMessage(err, "Login gagal. Periksa username dan kata sandi Anda.");

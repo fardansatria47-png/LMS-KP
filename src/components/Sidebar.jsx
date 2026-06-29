@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { confirmDialog } from "../utils/notify";
+import { logoutUser } from "../services/authService";
 
 const LOGOUT_ICON = "M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1";
 
@@ -49,7 +50,11 @@ export default function Sidebar() {
   const handleLogout = async () => {
     const ok = await confirmDialog("Yakin ingin logout?", { isDanger: true, title: "Logout" });
     if (!ok) return;
-    localStorage.removeItem("token");
+    try {
+      await logoutUser(); // Minta backend hapus cookie HttpOnly
+    } catch (e) {
+      console.warn("[Logout] API logout gagal:", e);
+    }
     localStorage.removeItem("user_role");
     navigate("/login");
   };

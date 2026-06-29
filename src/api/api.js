@@ -9,6 +9,8 @@ const api = axios.create({
     "Content-Type": "application/json",
   },
   timeout: 30000,
+  // 🍪 Kirim cookie HttpOnly secara otomatis di setiap request (termasuk cross-origin)
+  withCredentials: true,
 });
 
 export const fixFileUrl = (url) => {
@@ -25,18 +27,11 @@ export const fixFileUrl = (url) => {
   return `${BASE_URL}${path}`;
 };
 
-// ✅ REQUEST INTERCEPTOR (TOKEN)
+// ✅ REQUEST INTERCEPTOR
+// Token tidak perlu ditambahkan secara manual — browser otomatis menyisipkan
+// cookie HttpOnly ke setiap request berkat withCredentials: true di atas.
 api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-
-    if (token) {
-      config.headers = config.headers || {};
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    return config;
-  },
+  (config) => config,
   (error) => Promise.reject(error)
 );
 
@@ -58,13 +53,12 @@ api.interceptors.response.use(
         data: error.response.data,
       });
 
-      // 🔐 Token invalid / expired — skip broadcasting/auth endpoint
+      // 🔐 Sesi tidak valid / cookie expired — skip broadcasting/auth endpoint
       const isAuthEndpoint = error.config?.url?.includes('/broadcasting/auth') || error.config?.url?.endsWith('/login');
       if (error.response.status === 401 && !isAuthEndpoint) {
-        console.warn("Token expired / unauthorized");
-        localStorage.removeItem("token");
+        console.warn("[Auth] Sesi tidak valid atau cookie expired. Redirect ke login.");
+        // Bersihkan state lokal yang masih tersisa (user_role, dll.)
         localStorage.removeItem("user_role");
-        // optional redirect ke login
         if (window.location.pathname !== "/login") {
           window.location.href = "/login";
         }

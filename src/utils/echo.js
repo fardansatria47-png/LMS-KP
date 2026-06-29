@@ -4,8 +4,8 @@ import Pusher from 'pusher-js';
 window.Pusher = Pusher;
 Pusher.logToConsole = true;
 
-// Ambil token dari localStorage
-const token = localStorage.getItem('token') || '';
+// Token tidak lagi dibaca dari localStorage — autentikasi menggunakan cookie HttpOnly
+// yang akan dikirim browser secara otomatis berkat credentials: 'include'
 
 // Mengikuti instruksi persis dari backend developer (Solusi authEndpoint dengan header Accept)
 const echo = new Echo({
@@ -27,8 +27,10 @@ const echo = new Echo({
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        // 🍪 Tidak perlu header Authorization manual —
+                        // cookie HttpOnly dikirim otomatis oleh browser
                     },
+                    credentials: 'include', // Wajib agar cookie dikirim pada request cross-origin
                     body: JSON.stringify({
                         socket_id: socketId,
                         channel_name: channel.name

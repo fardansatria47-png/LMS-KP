@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { confirmDialog } from "../utils/notify";
+import { logoutUser } from "../services/authService";
 
 const GURU_NAV = [
   { label: "Dashboard", path: "/dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },
@@ -15,7 +16,11 @@ export default function GuruLayout({ children, title }) {
   const handleLogout = async () => {
     const ok = await confirmDialog("Yakin ingin logout?", { isDanger: true, title: "Logout" });
     if (!ok) return;
-    localStorage.removeItem("token");
+    try {
+      await logoutUser(); // Minta backend hapus cookie HttpOnly
+    } catch (e) {
+      console.warn("[Logout] API logout gagal:", e);
+    }
     localStorage.removeItem("user_role");
     window.location.href = "/login";
   };

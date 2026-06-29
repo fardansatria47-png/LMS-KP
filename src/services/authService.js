@@ -8,6 +8,11 @@ export const loginUser = async (data) => {
   return await API.post("/login", data);
 };
 
+export const logoutUser = async () => {
+  return await API.post("/logout");
+};
+
+
 export const getCurrentUser = async () => {
   return await API.get("/me");
 };
