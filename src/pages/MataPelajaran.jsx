@@ -245,7 +245,7 @@ export default function MataPelajaran() {
     <main className="min-h-screen bg-[#F8FAFC]">
       <Sidebar />
 
-      <div className="lg:ml-64 px-4 sm:px-6 lg:px-10 pt-20 lg:pt-12 pb-24 lg:pb-12">
+      <div className="lg:ml-64 px-4 sm:px-6 lg:px-10 pt-16 lg:pt-12 pb-24 lg:pb-12">
         {/* Header */}
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
