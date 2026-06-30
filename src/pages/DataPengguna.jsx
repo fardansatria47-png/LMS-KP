@@ -340,11 +340,11 @@ export default function DataPengguna() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
               Kembali
             </button>
-            <h1 className="text-[28px] font-bold text-blue-600 uppercase tracking-wide">Daftar Siswa — {selectedKelas}</h1>
+            <h1 className="text-[28px] font-bold text-blue-600 uppercase tracking-wide leading-normal">Daftar Siswa — {selectedKelas}</h1>
           </div>
         ) : (
           <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
-            <h1 className="text-[28px] font-bold text-blue-600 uppercase tracking-wide">Kelola Data Pengguna</h1>
+            <h1 className="text-[28px] font-bold text-blue-600 uppercase tracking-wide leading-normal">Kelola Data Pengguna</h1>
             <div className="flex flex-wrap items-center gap-3">
               <button
                 onClick={() => setIsImportModalOpen(true)}

@@ -295,7 +295,7 @@ export default function AnggotaKelas() {
                 </svg>
                 Kembali ke Kelas
               </button>
-              <h1 className="text-[28px] font-bold text-blue-600 uppercase tracking-wide">Daftar Siswa — {kelasLabel}</h1>
+              <h1 className="text-[28px] font-bold text-blue-600 uppercase tracking-wide leading-normal">Daftar Siswa — {kelasLabel}</h1>
               <p className="mt-1 text-sm font-medium text-slate-400">Anggota rombongan belajar kelas ini</p>
             </div>
 
@@ -480,7 +480,7 @@ export default function AnggotaKelas() {
         {/* Header */}
         <div className="mb-10 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-[28px] font-bold text-blue-600 uppercase tracking-wide">Kelola Kelas</h1>
+            <h1 className="text-[28px] font-bold text-blue-600 uppercase tracking-wide leading-normal">Kelola Kelas</h1>
             <p className="mt-1 text-sm font-medium text-slate-400">Kelola data kelas dan rombongan belajar institusi Anda.</p>
           </div>
 

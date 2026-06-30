@@ -222,7 +222,7 @@ export default function AssignMapel() {
               </svg>
               Kembali
             </button>
-            <h1 className="text-[28px] font-bold text-blue-600 uppercase tracking-wide">
+            <h1 className="text-[28px] font-bold text-blue-600 uppercase tracking-wide leading-normal">
               Tambah Mata Pelajaran ke Kelas
             </h1>
             <p className="mt-1 text-sm font-medium text-slate-400">

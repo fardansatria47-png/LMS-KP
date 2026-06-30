@@ -24,10 +24,10 @@
   }
 
   /* ── Global Heading Scale (lebih kecil & konsisten) ─────────── */
-  h1 { @apply text-xl font-bold text-slate-900; }
-  h2 { @apply text-lg font-bold text-slate-800; }
-  h3 { @apply text-base font-semibold text-slate-800; }
-  h4 { @apply text-sm font-semibold text-slate-700; }
+  h1 { @apply text-xl font-bold text-slate-900 leading-normal; }
+  h2 { @apply text-lg font-bold text-slate-800 leading-normal; }
+  h3 { @apply text-base font-semibold text-slate-800 leading-snug; }
+  h4 { @apply text-sm font-semibold text-slate-700 leading-snug; }
 
   /* ── Input & Textarea global font ───────────────────────────── */
   input, textarea, select, button {

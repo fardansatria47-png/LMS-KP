@@ -249,7 +249,7 @@ export default function MataPelajaran() {
         {/* Header */}
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-[28px] font-bold text-blue-600 uppercase tracking-wide">Kelola Mata Pelajaran</h1>
+            <h1 className="text-[28px] font-bold text-blue-600 uppercase tracking-wide leading-normal">Kelola Mata Pelajaran</h1>
             <p className="mt-1 text-sm font-medium text-slate-400">Manajemen mata pelajaran</p>
           </div>
 
