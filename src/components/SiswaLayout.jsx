@@ -90,7 +90,7 @@ export default function SiswaLayout({ children, title }) {
       </header>
 
       {/* ── Main Content ──────────────────────────────────── */}
-      <main className="lg:ml-56 pt-12 lg:pt-0 pb-20 lg:pb-0 min-h-screen bg-slate-50">
+      <main className="lg:ml-56 pt-20 lg:pt-0 pb-20 lg:pb-0 min-h-screen bg-slate-50">
         {children}
       </main>
 

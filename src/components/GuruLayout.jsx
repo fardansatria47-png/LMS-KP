@@ -89,7 +89,7 @@ export default function GuruLayout({ children, title }) {
       </header>
 
       {/* ── Main Content ──────────────────────────────────── */}
-      <main className="lg:ml-56 pt-12 lg:pt-0 pb-20 lg:pb-0 min-h-screen">
+      <main className="lg:ml-56 pt-20 lg:pt-0 pb-20 lg:pb-0 min-h-screen">
         {children}
       </main>
 

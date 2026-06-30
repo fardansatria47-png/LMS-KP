@@ -283,7 +283,7 @@ export default function AnggotaKelas() {
     return (
       <main className="min-h-screen bg-[#F8FAFC]">
         <Sidebar />
-        <div className="lg:ml-64 px-4 sm:px-6 lg:px-10 pt-12 lg:pt-12 pb-24 lg:pb-12">
+        <div className="lg:ml-64 px-4 sm:px-6 lg:px-10 pt-20 lg:pt-12 pb-24 lg:pb-12">
           <div className="mb-10 flex flex-wrap items-start justify-between gap-4">
             <div>
               <button
@@ -476,7 +476,7 @@ export default function AnggotaKelas() {
     <main className="min-h-screen bg-[#F8FAFC]">
       <Sidebar />
 
-      <div className="lg:ml-64 px-4 sm:px-6 lg:px-10 pt-16 pb-24 lg:pt-12 lg:pb-12">
+      <div className="lg:ml-64 px-4 sm:px-6 lg:px-10 pt-20 pb-24 lg:pt-12 lg:pb-12">
         {/* Header */}
         <div className="mb-10 flex flex-wrap items-start justify-between gap-4">
           <div>
