@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { loginUser } from "../services/authService";
+import { setToken } from "../api/api";
 import { getErrorMessage } from "../utils/translateError";
 
 export default function Login({ onLogin }) {
@@ -26,8 +27,19 @@ export default function Login({ onLogin }) {
     try {
       const res = await loginUser(payload);
 
-      // Cookie HttpOnly sudah di-set oleh backend secara otomatis.
-      // Frontend tidak perlu menyimpan token — cukup baca data user dari respons.
+      // Simpan token dari response backend (Bearer token untuk semua browser termasuk Safari iOS)
+      const token =
+        res.data?.token ||
+        res.data?.access_token ||
+        res.data?.data?.token ||
+        null;
+
+      if (token) {
+        setToken(token);
+      } else {
+        console.warn("[Login] Token tidak ditemukan di response backend.");
+      }
+
       const userFromRes =
         res.data?.user ||
         res.data?.data?.user ||

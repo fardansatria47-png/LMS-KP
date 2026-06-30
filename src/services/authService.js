@@ -1,4 +1,4 @@
-import API from "../api/api";
+import API, { removeToken } from "../api/api";
 
 export const registerUser = async (data) => {
   return await API.post("/register", data);
@@ -9,7 +9,11 @@ export const loginUser = async (data) => {
 };
 
 export const logoutUser = async () => {
-  return await API.post("/logout");
+  const res = await API.post("/logout");
+  // Hapus token lokal setelah logout
+  removeToken();
+  localStorage.removeItem("user_role");
+  return res;
 };
 
 
