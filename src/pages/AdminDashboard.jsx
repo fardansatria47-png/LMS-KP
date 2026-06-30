@@ -31,11 +31,13 @@ export default function AdminDashboard({ summary, navigate }) {
 
         {/* Calendar and Actions */}
         <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-          {/* Calendar */}
-          <CalendarWidget />
+          {/* Calendar — shown below Aksi Cepat on mobile, left side on desktop */}
+          <div className="order-last lg:order-first">
+            <CalendarWidget />
+          </div>
 
-          {/* Quick Actions */}
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col gap-4">
+          {/* Quick Actions — shown first on mobile, right side on desktop */}
+          <div className="order-first lg:order-last rounded-3xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col gap-4">
             <h3 className="text-lg font-bold text-blue-600">Aksi Cepat</h3>
 
             {/* Tambah Pengguna */}
