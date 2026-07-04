@@ -10,11 +10,11 @@ Pusher.logToConsole = true;
 // Mengikuti instruksi persis dari backend developer (Solusi authEndpoint dengan header Accept)
 const echo = new Echo({
     broadcaster: 'reverb',
-    key: 'lms-key', 
-    wsHost: 'learning-management-system-production-8008.up.railway.app', 
-    wsPort: 443,
-    wssPort: 443,
-    forceTLS: true,
+    key: import.meta.env.VITE_REVERB_APP_KEY,
+    wsHost: import.meta.env.VITE_REVERB_HOST,
+    wsPort: import.meta.env.VITE_REVERB_PORT || 443,
+    wssPort: import.meta.env.VITE_REVERB_PORT || 443,
+    forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
     enabledTransports: ['ws', 'wss'],
     
     // Konfigurasi endpoint sesuai instruksi backend
