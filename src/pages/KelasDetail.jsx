@@ -155,6 +155,14 @@ export default function KelasDetail() {
     // Auto-clear success message after 3s
     if (successMsg) {
       const t = setTimeout(() => setSuccessMsg(""), 3000);
+      
+      // Hapus successMsg dari history state agar tidak muncul lagi saat di-refresh
+      if (location.state && location.state.successMsg) {
+        const newState = { ...location.state };
+        delete newState.successMsg;
+        navigate(location.pathname, { replace: true, state: newState });
+      }
+
       return () => clearTimeout(t);
     }
   }, [id]);
