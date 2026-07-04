@@ -92,7 +92,7 @@ export default function GuruDashboard({ user, summary }) {
         </div>
 
         {/* Calendar + Kelas Grid */}
-        <div className="grid gap-6 lg:grid-cols-[350px_1fr]">
+        <div className="flex flex-col-reverse gap-6 lg:grid lg:grid-cols-[350px_1fr]">
           {/* Kalender */}
           <CalendarWidget />
 
