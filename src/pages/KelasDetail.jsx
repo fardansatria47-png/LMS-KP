@@ -618,6 +618,7 @@ export default function KelasDetail() {
                                       pengumuman: p,
                                       actualMapelId: kelasInfo?.mapel_id || kelasInfo?.mata_pelajaran_id || id,
                                       anggotaKelasId: kelasInfo?.anggota_kelas_id || kelasInfo?.anggota_id || id,
+                                      rombelId: kelasInfo?.rombel_id || kelasInfo?.kelas_id || kelasInfo?.rombel?.id || null,
                                     }
                                   })}
                                   className="flex h-8 w-8 items-center justify-center rounded-full text-blue-500 transition hover:bg-blue-50 hover:text-blue-700"

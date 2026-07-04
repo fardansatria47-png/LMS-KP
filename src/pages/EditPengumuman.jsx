@@ -14,6 +14,7 @@ export default function EditPengumuman() {
   const existing = location.state?.pengumuman || null;
   const actualMapelId = location.state?.actualMapelId || id;
   const anggotaKelasId = location.state?.anggotaKelasId || null;
+  const rombelId = location.state?.rombelId || null;
 
   const [form, setForm] = useState({
     judul: existing?.judul || "",
@@ -30,12 +31,22 @@ export default function EditPengumuman() {
     setLoading(true);
     setError("");
     try {
-      await updatePengumuman(pengumumanId, {
+      const payload = {
         judul: form.judul,
         deskripsi: form.deskripsi,
         mapel_id: actualMapelId,
-        ...(anggotaKelasId ? { anggota_kelas_id: anggotaKelasId } : {}),
-      });
+        mata_pelajaran_id: actualMapelId,
+      };
+
+      if (rombelId) {
+        payload.rombel_id = rombelId;
+      }
+      
+      if (anggotaKelasId && anggotaKelasId !== id && anggotaKelasId !== actualMapelId) {
+        payload.anggota_kelas_id = anggotaKelasId;
+      }
+
+      await updatePengumuman(pengumumanId, payload);
       navigate(`/kelas/${id}`, { state: { successMsg: "Pengumuman berhasil diperbarui!", activeTab: "Pengumuman" } });
     } catch (err) {
       setError(getErrorMessage(err, "Gagal memperbarui pengumuman."));
