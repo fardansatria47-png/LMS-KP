@@ -1,13 +1,12 @@
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
+import { getToken } from '../api/api';
 
 window.Pusher = Pusher;
 Pusher.logToConsole = true;
 
-// Token tidak lagi dibaca dari localStorage — autentikasi menggunakan cookie HttpOnly
-// yang akan dikirim browser secara otomatis berkat credentials: 'include'
+const AUTH_ENDPOINT = `${import.meta.env.VITE_API_BASE_URL || 'https://enchanting-intuition-production-d080.up.railway.app'}/api/broadcasting/auth`;
 
-// Mengikuti instruksi persis dari backend developer (Solusi authEndpoint dengan header Accept)
 const echo = new Echo({
     broadcaster: 'reverb',
     key: import.meta.env.VITE_REVERB_APP_KEY,
@@ -16,29 +15,31 @@ const echo = new Echo({
     wssPort: import.meta.env.VITE_REVERB_PORT || 443,
     forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
     enabledTransports: ['ws', 'wss'],
-    
-    // Konfigurasi endpoint sesuai instruksi backend
-    authEndpoint: 'https://enchanting-intuition-production-d080.up.railway.app/api/broadcasting/auth',
+
+    // Custom authorizer: kirim Bearer token dari localStorage
+    authEndpoint: AUTH_ENDPOINT,
     authorizer: (channel, options) => {
         return {
             authorize: (socketId, callback) => {
-                fetch(options.authEndpoint, {
+                // Ambil token terbaru setiap kali authorize dipanggil
+                const token = getToken();
+
+                fetch(AUTH_ENDPOINT, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
-                        // 🍪 Tidak perlu header Authorization manual —
-                        // cookie HttpOnly dikirim otomatis oleh browser
+                        // ✅ Sisipkan Bearer token agar backend mengenali user
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
                     },
-                    credentials: 'include', // Wajib agar cookie dikirim pada request cross-origin
                     body: JSON.stringify({
                         socket_id: socketId,
-                        channel_name: channel.name
-                    })
+                        channel_name: channel.name,
+                    }),
                 })
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        throw new Error(`Broadcasting auth gagal: ${response.status}`);
                     }
                     return response.json();
                 })
@@ -46,22 +47,22 @@ const echo = new Echo({
                     callback(false, data);
                 })
                 .catch(error => {
-                    console.error("[Echo Auth] Error:", error);
+                    console.error('[Echo Auth] Error:', error);
                     callback(true, error);
                 });
-            }
+            },
         };
     },
 });
 
 window.Echo = echo;
 
-echo.connector?.pusher?.connection?.bind("connected", () => {
-    console.log("[Echo] ✅ Reverb terhubung! Socket ID:", echo.socketId());
+echo.connector?.pusher?.connection?.bind('connected', () => {
+    console.log('[Echo] ✅ Reverb terhubung! Socket ID:', echo.socketId());
 });
 
-echo.connector?.pusher?.connection?.bind("error", (err) => {
-    console.error("[Echo] ❌ Reverb connection error:", err);
+echo.connector?.pusher?.connection?.bind('error', (err) => {
+    console.error('[Echo] ❌ Reverb connection error:', err);
 });
 
 export default echo;
