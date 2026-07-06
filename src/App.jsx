@@ -55,7 +55,7 @@ function App() {
   // --- END TEST REVERB LISTENER ---
 
   const handleLogout = async () => {
-    const ok = await confirmDialog("Yakin ingin logout?", { isDanger: true, title: "Logout" });
+    const ok = await confirmDialog("Yakin ingin keluar?", { isDanger: true, title: "Keluar" });
     if (!ok) return;
     try {
       // Minta backend untuk menghapus cookie HttpOnly

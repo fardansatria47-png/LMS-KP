@@ -189,7 +189,7 @@ export default function SiswaRuangBelajar() {
   }, [data, id]);
 
   const handleLogout = async () => {
-    const ok = await confirmDialog("Yakin ingin logout?", { isDanger: true, title: "Logout" });
+    const ok = await confirmDialog("Yakin ingin keluar?", { isDanger: true, title: "Keluar" });
     if (ok) {
       try {
         await logoutUser();

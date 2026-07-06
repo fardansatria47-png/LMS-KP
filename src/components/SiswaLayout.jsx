@@ -15,7 +15,7 @@ export default function SiswaLayout({ children, title }) {
   const location = useLocation();
 
   const handleLogout = async () => {
-    const ok = await confirmDialog("Yakin ingin logout?", { isDanger: true, title: "Logout" });
+    const ok = await confirmDialog("Yakin ingin keluar?", { isDanger: true, title: "Keluar" });
     if (!ok) return;
     try {
       await logoutUser(); // Minta backend hapus cookie HttpOnly
