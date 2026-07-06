@@ -98,12 +98,12 @@ export default function Sidebar() {
         <div className="mt-auto px-6 pb-6 pt-4 border-t border-slate-100">
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-2 text-sm font-semibold text-red-600 transition hover:text-red-700"
+            className="flex items-center gap-2 text-xs font-semibold text-red-500 hover:text-red-700 transition"
           >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d={LOGOUT_ICON} />
             </svg>
-            LOGOUT
+            Keluar
           </button>
         </div>
       </div>

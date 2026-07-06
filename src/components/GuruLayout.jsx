@@ -70,7 +70,7 @@ export default function GuruLayout({ children, title }) {
             <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d={LOGOUT_ICON} />
             </svg>
-            Logout
+            Keluar
           </button>
         </div>
       </aside>
