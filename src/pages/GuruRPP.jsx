@@ -423,6 +423,11 @@ export default function GuruRPP() {
                 <form onSubmit={handleRppSubmit}>
                   <div className="px-6 py-5 space-y-4">
                     
+                    {/* Debug Info */}
+                    <div className="text-[10px] text-slate-500 bg-slate-100 p-3 rounded-xl border border-slate-200">
+                      <strong>Debug:</strong> mapelList length = {mapelList.length}. Data: {JSON.stringify(mapelList)}
+                    </div>
+
                     {/* Mata Pelajaran & Kelas */}
                     <div>
                       <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">Mata Pelajaran & Kelas <span className="text-red-400">*</span></label>
