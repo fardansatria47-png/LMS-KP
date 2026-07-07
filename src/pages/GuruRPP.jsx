@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getKelasGuru, getRpp, createRpp, updateRpp, deleteRpp, deleteRppFile } from "../services/authService";
+import { getRpp, createRpp, updateRpp, deleteRpp, deleteRppFile, getMataPelajaranList, getRombelList } from "../services/authService";
 import { fixFileUrl } from "../api/api";
 import GuruLayout from "../components/GuruLayout";
 import { toast } from "../utils/notify";
@@ -37,38 +37,28 @@ export default function GuruRPP() {
     setLoading(true);
     setError("");
     try {
-      const [resRpp, resKelas] = await Promise.all([
+      const [resRpp, resMapel, resRombel] = await Promise.all([
         getRpp(),
-        getKelasGuru()
+        getMataPelajaranList(),
+        getRombelList()
       ]);
       setRppList(resRpp.data?.data || resRpp.data || []);
-      
-      const rawKelas = resKelas.data?.data || resKelas.data || [];
-      const kelasArr = Array.isArray(rawKelas) ? rawKelas : [];
 
-      // Build unique mapel list
-      const mapelMap = new Map();
-      kelasArr.forEach(item => {
-        const mapelId = item.mapel_id || item.mata_pelajaran_id || item.id;
-        const mapelNama = item.nama_mapel || item.mata_pelajaran?.nama_mapel || item.mata_pelajaran || "Mata Pelajaran";
-        if (mapelId && !mapelMap.has(mapelId)) {
-          mapelMap.set(mapelId, { id: mapelId, nama: mapelNama });
-        }
-      });
-      setMapelList(Array.from(mapelMap.values()));
+      // Mata Pelajaran dropdown
+      const rawMapel = resMapel.data?.data || resMapel.data || [];
+      const mapelArr = Array.isArray(rawMapel) ? rawMapel : [];
+      setMapelList(mapelArr.map(m => ({
+        id: m.id,
+        nama: m.nama_mapel || m.nama || "Mata Pelajaran"
+      })));
 
-      // Build unique kelas list
-      const kelasSet = new Set();
-      kelasArr.forEach(item => {
-        const kelasName = item.nama_kelas || item.tingkat || "";
-        const jurusanName = item.jurusan?.nama_jurusan || item.nama_jurusan || "";
-        const rombelName = item.nama_rombel || item.rombel?.nama_rombel || "";
-        // Build full kelas label: e.g. "X RPL 1" or "X Akuntansi"
-        const parts = [kelasName, jurusanName, rombelName].filter(Boolean);
-        const fullLabel = parts.join(" ").trim();
-        if (fullLabel) kelasSet.add(fullLabel);
-      });
-      setKelasList(Array.from(kelasSet).sort());
+      // Rombel / Kelas dropdown
+      const rawRombel = resRombel.data?.data || resRombel.data || [];
+      const rombelArr = Array.isArray(rawRombel) ? rawRombel : [];
+      setKelasList(rombelArr.map(r => ({
+        id: r.id,
+        nama: r.nama_rombel || r.nama || "Kelas"
+      })));
 
     } catch (err) {
       setError("Gagal memuat data RPP.");
@@ -541,7 +531,7 @@ export default function GuruRPP() {
                       >
                         <option value="">-- Pilih Kelas --</option>
                         {kelasList.map(k => (
-                          <option key={k} value={k}>{k}</option>
+                          <option key={k.id} value={k.nama}>{k.nama}</option>
                         ))}
                       </select>
                     </div>

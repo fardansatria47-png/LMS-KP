@@ -408,6 +408,14 @@ export const graduateRombel = async (rombelId, action) => {
   });
 };
 
+// ── Mata Pelajaran & Rombel (untuk dropdown RPP) ────────────────────
+export const getMataPelajaranList = async () => {
+  return await API.get("/mata-pelajaran");
+};
+export const getRombelList = async () => {
+  return await API.get("/rombel");
+};
+
 // ── RPP (Rencana Pelaksanaan Pembelajaran) ──────────────────────────
 export const getRpp = async (params = {}) => {
   return await API.get("/rpp", { params });
