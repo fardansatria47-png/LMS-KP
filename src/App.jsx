@@ -25,9 +25,6 @@ import BuatTugas from "./pages/BuatTugas";
 import EditTugas from "./pages/EditTugas";
 import BuatPengumuman from "./pages/BuatPengumuman";
 import EditPengumuman from "./pages/EditPengumuman";
-import GuruRPP from "./pages/GuruRPP";
-import BuatRPP from "./pages/BuatRPP";
-import EditRPP from "./pages/EditRPP";
 
 import SiswaRuangBelajar from "./pages/SiswaRuangBelajar";
 import SiswaPengumuman from "./pages/SiswaPengumuman";
@@ -101,10 +98,6 @@ function App() {
         <Route path="/kelas/:id/edit-tugas/:tugasId" element={isAuthenticated ? <EditTugas /> : <Navigate to="/login" />} />
         <Route path="/kelas/:id/buat-pengumuman" element={isAuthenticated ? <BuatPengumuman /> : <Navigate to="/login" />} />
         <Route path="/kelas/:id/edit-pengumuman/:pengumumanId" element={isAuthenticated ? <EditPengumuman /> : <Navigate to="/login" />} />
-        {/* ── RPP Routes ── */}
-        <Route path="/rpp" element={isAuthenticated ? <GuruRPP /> : <Navigate to="/login" />} />
-        <Route path="/rpp/buat" element={isAuthenticated ? <BuatRPP /> : <Navigate to="/login" />} />
-        <Route path="/rpp/edit/:id" element={isAuthenticated ? <EditRPP /> : <Navigate to="/login" />} />
         <Route path="/siswa-pengumuman" element={isAuthenticated ? <SiswaPengumuman /> : <Navigate to="/login" />} />
         <Route path="/siswa/tugas-susulan" element={isAuthenticated ? <SiswaTugasSusulan /> : <Navigate to="/login" />} />
         <Route path="/siswa/tugas-susulan/:id" element={isAuthenticated ? <SiswaTugasSusulanDetail /> : <Navigate to="/login" />} />
