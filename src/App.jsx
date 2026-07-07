@@ -25,6 +25,7 @@ import BuatTugas from "./pages/BuatTugas";
 import EditTugas from "./pages/EditTugas";
 import BuatPengumuman from "./pages/BuatPengumuman";
 import EditPengumuman from "./pages/EditPengumuman";
+import GuruRPP from "./pages/GuruRPP";
 
 import SiswaRuangBelajar from "./pages/SiswaRuangBelajar";
 import SiswaPengumuman from "./pages/SiswaPengumuman";
@@ -88,6 +89,7 @@ function App() {
         <Route path="/assign-mapel" element={isAuthenticated ? <AssignMapel /> : <Navigate to="/login" />} />
         <Route path="/kelas" element={isAuthenticated ? <Kelas /> : <Navigate to="/login" />} />
         <Route path="/kelas/:id" element={isAuthenticated ? <KelasDetail /> : <Navigate to="/login" />} />
+        <Route path="/rpp" element={isAuthenticated ? <GuruRPP /> : <Navigate to="/login" />} />
         <Route path="/ruang-belajar/:id" element={isAuthenticated ? <SiswaRuangBelajar /> : <Navigate to="/login" />} />
         <Route path="/ruang-belajar/:id/materi/:materiId" element={isAuthenticated ? <SiswaMateriDetail /> : <Navigate to="/login" />} />
         <Route path="/ruang-belajar/:id/tugas/:tugasId" element={isAuthenticated ? <SiswaTugasDetail /> : <Navigate to="/login" />} />

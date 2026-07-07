@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { getKelasGuru, getMateri, deleteMateri, getTugas, deleteTugas, getPengumuman, deletePengumuman, getSiswaGuru, downloadRecapNilai, getRpp, createRpp, updateRpp, deleteRpp, deleteRppFile } from "../services/authService";
+import { getKelasGuru, getMateri, deleteMateri, getTugas, deleteTugas, getPengumuman, deletePengumuman, getSiswaGuru, downloadRecapNilai } from "../services/authService";
 import { fixFileUrl } from "../api/api";
 import { getErrorMessage } from "../utils/translateError";
 import DiskusiMapel from "../components/DiskusiMapel";
@@ -14,7 +14,7 @@ const GURU_NAV = [
   { label: "Profil", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", path: "/profile" },
 ];
 
-const TABS = ["Materi", "RPP", "Tugas", "Siswa", "Diskusi", "Pengumuman"];
+const TABS = ["Materi", "Tugas", "Siswa", "Diskusi", "Pengumuman"];
 
 function MateriIcon({ tipe }) {
   if (tipe === "Video") {
@@ -74,19 +74,6 @@ export default function KelasDetail() {
   const [deletePengumumanConfirm, setDeletePengumumanConfirm] = useState(null);
   const [successMsg, setSuccessMsg] = useState(location.state?.successMsg || "");
 
-  // ── RPP State ──────────────────────────────────────────────────────────────
-  const [rppList, setRppList] = useState([]);
-  const [loadingRpp, setLoadingRpp] = useState(false);
-  const [deleteRppConfirm, setDeleteRppConfirm] = useState(null);
-  const [rppDetailModal, setRppDetailModal] = useState(null);
-  // Modal buat/edit RPP (null = tutup, {} = buat baru, {...data} = edit)
-  const [rppFormModal, setRppFormModal] = useState(null);
-  const [rppFormLoading, setRppFormLoading] = useState(false);
-  const [rppFormError, setRppFormError] = useState("");
-  const [rppForm, setRppForm] = useState({ judul: "", deskripsi: "", semester: "", tahun_ajaran: "", kelas: "", is_published: false });
-  const [rppNewFiles, setRppNewFiles] = useState([]);
-  const [rppExistingFiles, setRppExistingFiles] = useState([]);
-
   const fetchData = async () => {
     setLoading(true);
     setError("");
@@ -113,13 +100,6 @@ export default function KelasDetail() {
           return { data: [] };
         }),
       ]);
-
-      // Fetch RPP untuk mapel ini
-      try {
-        setLoadingRpp(true);
-        const resRpp = await getRpp({ mapel_id: actualMapelId });
-        setRppList(resRpp.data?.data || resRpp.data || []);
-      } catch { setRppList([]); } finally { setLoadingRpp(false); }
 
       const materiData = resMateri.data?.data || resMateri.data || [];
       const materiArr = Array.isArray(materiData) ? materiData : [];
@@ -427,23 +407,6 @@ export default function KelasDetail() {
                     Upload Materi
                   </button>
                 )}
-                {activeTab === "RPP" && (
-                  <button
-                    onClick={() => {
-                      setRppForm({ judul: "", deskripsi: "", semester: "", tahun_ajaran: "", kelas: "", is_published: false });
-                      setRppNewFiles([]);
-                      setRppExistingFiles([]);
-                      setRppFormError("");
-                      setRppFormModal({ mode: "buat" });
-                    }}
-                    className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-blue-700 transition"
-                  >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    Buat RPP
-                  </button>
-                )}
                 {activeTab === "Tugas" && (
                   <>
                     <button
@@ -552,108 +515,6 @@ export default function KelasDetail() {
                           </div>
                         </div>
                       ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* ── Tab RPP ─────────────────────────────────────── */}
-              {activeTab === "RPP" && (
-                <div>
-                  <h2 className="mb-4 text-lg font-bold text-slate-800">Rencana Pelaksanaan Pembelajaran</h2>
-                  {loadingRpp ? (
-                    <div className="flex justify-center py-16">
-                      <svg className="h-7 w-7 animate-spin text-blue-400" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                    </div>
-                  ) : rppList.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-20 text-center">
-                      <svg className="mx-auto h-12 w-12 text-slate-300 mb-3" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                      </svg>
-                      <p className="font-semibold text-slate-500">Belum ada RPP</p>
-                      <p className="mt-1 text-sm text-slate-400">Klik "Buat RPP" untuk menambahkan RPP baru.</p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-3">
-                      {rppList.map((rpp) => {
-                        const files = rpp.files || [];
-                        return (
-                          <div key={rpp.id} className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:border-blue-300 hover:shadow-md transition">
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="flex items-center gap-4 min-w-0">
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
-                                  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                                  </svg>
-                                </div>
-                                <div className="min-w-0">
-                                  <h3 className="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition leading-snug">{rpp.judul}</h3>
-                                  <div className="mt-1 flex flex-wrap gap-1.5">
-                                    {rpp.semester && <span className="text-[10px] font-semibold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">Semester {rpp.semester}</span>}
-                                    {rpp.tahun_ajaran && <span className="text-[10px] font-semibold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{rpp.tahun_ajaran}</span>}
-                                    {rpp.kelas && <span className="text-[10px] font-semibold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">{rpp.kelas}</span>}
-                                    {rpp.is_published ? (
-                                      <span className="text-[10px] font-semibold bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full">Publik</span>
-                                    ) : (
-                                      <span className="text-[10px] font-semibold bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full">Draf</span>
-                                    )}
-                                  </div>
-                                  {files.length > 0 && (
-                                    <p className="mt-1.5 text-xs text-slate-400">{files.length} file lampiran</p>
-                                  )}
-                                </div>
-                              </div>
-                              {/* Action buttons */}
-                              <div className="flex items-center gap-1 shrink-0">
-                                <button
-                                  onClick={() => setRppDetailModal(rpp)}
-                                  className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
-                                  title="Lihat Detail"
-                                >
-                                  <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                  </svg>
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setRppForm({
-                                      judul: rpp.judul || "",
-                                      deskripsi: rpp.deskripsi || "",
-                                      semester: rpp.semester?.toString() || "",
-                                      tahun_ajaran: rpp.tahun_ajaran || "",
-                                      kelas: rpp.kelas || "",
-                                      is_published: rpp.is_published ? true : false
-                                    });
-                                    setRppExistingFiles(rpp.files || []);
-                                    setRppNewFiles([]);
-                                    setRppFormError("");
-                                    setRppFormModal({ mode: "edit", id: rpp.id });
-                                  }}
-                                  className="flex h-8 w-8 items-center justify-center rounded-full text-blue-500 hover:bg-blue-50 hover:text-blue-700 transition"
-                                  title="Edit"
-                                >
-                                  <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                  </svg>
-                                </button>
-                                <button
-                                  onClick={() => setDeleteRppConfirm(rpp)}
-                                  className="flex h-8 w-8 items-center justify-center rounded-full text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition"
-                                  title="Hapus"
-                                >
-                                  <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                  </svg>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
                     </div>
                   )}
                 </div>
