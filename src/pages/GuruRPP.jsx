@@ -37,25 +37,38 @@ export default function GuruRPP() {
     setLoading(true);
     setError("");
     try {
-      const [resRpp, resMapel] = await Promise.all([
+      const [resRpp, resMapel] = await Promise.allSettled([
         getRpp(),
         getKelasGuru()
       ]);
-      setRppList(resRpp.data?.data || resRpp.data || []);
 
-      const rawMapel = resMapel.data?.data || resMapel.data || [];
-      const mapelArr = Array.isArray(rawMapel) ? rawMapel : [];
-      setMapelList(mapelArr.map(m => {
-        const kelasName = m.nama_kelas || m.tingkat || "";
-        const jurusanName = m.jurusan?.nama_jurusan || m.nama_jurusan || "";
-        const rombel = `${kelasName} ${jurusanName}`.trim();
-        return {
-          id: m.id,
-          nama: `${m.nama_mapel || m.nama || "Mata Pelajaran"}${rombel ? ` - Kelas ${rombel}` : ""}`,
-          kelasAsli: rombel
-        };
-      }));
+      if (resRpp.status === "fulfilled") {
+        setRppList(resRpp.value.data?.data || resRpp.value.data || []);
+      } else {
+        console.error("Gagal getRpp:", resRpp.reason);
+        setError("Gagal memuat daftar RPP.");
+      }
 
+      if (resMapel.status === "fulfilled") {
+        const rawMapel = resMapel.value.data?.data || resMapel.value.data || [];
+        const mapelArr = Array.isArray(rawMapel) ? rawMapel : [];
+        console.log("Data Kelas Guru:", mapelArr); // Debugging
+        
+        setMapelList(mapelArr.map(m => {
+          const kelasName = m.nama_kelas || m.tingkat || "";
+          const jurusanName = m.jurusan?.nama_jurusan || m.nama_jurusan || "";
+          const rombel = `${kelasName} ${jurusanName}`.trim();
+          // Fallback to mapel_id if m.id is pivot id
+          const id = m.mapel_id || m.mata_pelajaran_id || m.id;
+          return {
+            id: id,
+            nama: `${m.nama_mapel || m.nama || m.mata_pelajaran?.nama_mapel || "Mata Pelajaran"}${rombel ? ` - Kelas ${rombel}` : ""}`,
+            kelasAsli: rombel
+          };
+        }));
+      } else {
+        console.error("Gagal getKelasGuru:", resMapel.reason);
+      }
     } catch (err) {
       setError("Gagal memuat data RPP.");
       console.error(err);
