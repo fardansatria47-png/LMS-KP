@@ -23,6 +23,7 @@ export default function GuruRPP() {
     deskripsi: "",
     kelas: "",
     mapel_id: "",
+    rombel_id: "",
     is_published: false,
     pertemuans: [],
   });
@@ -60,8 +61,10 @@ export default function GuruRPP() {
           const rombel = `${kelasName} ${jurusanName}`.trim();
           // Fallback to mapel_id if m.id is pivot id
           const id = m.mapel_id || m.mata_pelajaran_id || m.id;
+          const rombelId = m.rombel_id || m.kelas_id || m.rombel?.id || null;
           return {
             id: id,
+            rombel_id: rombelId,
             nama: `${m.nama_mapel || m.nama || m.mata_pelajaran?.nama_mapel || "Mata Pelajaran"}${rombel ? ` - Kelas ${rombel}` : ""}`,
             kelasAsli: rombel
           };
@@ -376,8 +379,8 @@ export default function GuruRPP() {
               
               const selectedMapel = mapelList.find(m => String(m.id) === String(rppForm.mapel_id));
               fd.append("kelas", selectedMapel ? selectedMapel.kelasAsli : (rppForm.kelas || ""));
-              
               fd.append("mapel_id", rppForm.mapel_id);
+              if (rppForm.rombel_id) fd.append("rombel_id", rppForm.rombel_id);
               fd.append("is_published", rppForm.is_published ? 1 : 0);
               fd.append("pertemuans", JSON.stringify(rppForm.pertemuans || []));
               rppNewFiles.forEach(f => fd.append("files[]", f));
@@ -434,7 +437,15 @@ export default function GuruRPP() {
                       <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">Mata Pelajaran <span className="text-red-400">*</span></label>
                       <select
                         value={rppForm.mapel_id}
-                        onChange={e => setRppForm({ ...rppForm, mapel_id: e.target.value })}
+                        onChange={e => {
+                          const selected = mapelList.find(m => String(m.id) === String(e.target.value));
+                          setRppForm({ 
+                            ...rppForm, 
+                            mapel_id: e.target.value,
+                            rombel_id: selected?.rombel_id || "",
+                            kelas: selected?.kelasAsli || ""
+                          });
+                        }}
                         className="w-full rounded-xl border-0 bg-[#E8F0FE] px-3 py-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-300 transition"
                       >
                         <option value="">-- Pilih Mata Pelajaran --</option>
