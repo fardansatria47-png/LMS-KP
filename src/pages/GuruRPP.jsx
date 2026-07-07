@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getRpp, createRpp, updateRpp, deleteRpp, deleteRppFile, getMataPelajaranList, getRombelList } from "../services/authService";
+import { getRpp, createRpp, updateRpp, deleteRpp, deleteRppFile, getKelasGuru } from "../services/authService";
 import { fixFileUrl } from "../api/api";
 import GuruLayout from "../components/GuruLayout";
 import { toast } from "../utils/notify";
@@ -7,7 +7,6 @@ import { toast } from "../utils/notify";
 export default function GuruRPP() {
   const [rppList, setRppList] = useState([]);
   const [mapelList, setMapelList] = useState([]);
-  const [kelasList, setKelasList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -37,28 +36,31 @@ export default function GuruRPP() {
     setLoading(true);
     setError("");
     try {
-      const [resRpp, resMapel, resRombel] = await Promise.all([
+      const [resRpp, resKelas] = await Promise.all([
         getRpp(),
-        getMataPelajaranList(),
-        getRombelList()
+        getKelasGuru()
       ]);
       setRppList(resRpp.data?.data || resRpp.data || []);
 
-      // Mata Pelajaran dropdown
-      const rawMapel = resMapel.data?.data || resMapel.data || [];
-      const mapelArr = Array.isArray(rawMapel) ? rawMapel : [];
-      setMapelList(mapelArr.map(m => ({
-        id: m.id,
-        nama: m.nama_mapel || m.nama || "Mata Pelajaran"
-      })));
+      const rawKelas = resKelas.data?.data || resKelas.data || [];
+      const kelasArr = Array.isArray(rawKelas) ? rawKelas : [];
 
-      // Rombel / Kelas dropdown
-      const rawRombel = resRombel.data?.data || resRombel.data || [];
-      const rombelArr = Array.isArray(rawRombel) ? rawRombel : [];
-      setKelasList(rombelArr.map(r => ({
-        id: r.id,
-        nama: r.nama_rombel || r.nama || "Kelas"
-      })));
+      // Build unique mapel + kelas list
+      const mappedOptions = kelasArr.map(item => {
+        const mapelId = item.mapel_id || item.mata_pelajaran_id || item.id;
+        const mapelNama = item.nama_mapel || item.mata_pelajaran?.nama_mapel || item.mata_pelajaran || "Mata Pelajaran";
+        const kelasName = item.nama_kelas || item.tingkat || "";
+        const jurusanName = item.jurusan?.nama_jurusan || item.nama_jurusan || "";
+        const rombelName = item.nama_rombel || item.rombel?.nama_rombel || "";
+        const parts = [kelasName, jurusanName, rombelName].filter(Boolean);
+        const fullKelasName = parts.join(" ").trim();
+        return {
+          id: mapelId,
+          kelas: fullKelasName,
+          label: `${mapelNama} - ${fullKelasName}`
+        };
+      });
+      setMapelList(mappedOptions);
 
     } catch (err) {
       setError("Gagal memuat data RPP.");
@@ -421,17 +423,20 @@ export default function GuruRPP() {
                 <form onSubmit={handleRppSubmit}>
                   <div className="px-6 py-5 space-y-4">
                     
-                    {/* Mata Pelajaran */}
+                    {/* Mata Pelajaran & Kelas */}
                     <div>
-                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">Mata Pelajaran <span className="text-red-400">*</span></label>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">Mata Pelajaran & Kelas <span className="text-red-400">*</span></label>
                       <select
-                        value={rppForm.mapel_id}
-                        onChange={e => setRppForm({ ...rppForm, mapel_id: e.target.value })}
+                        value={`${rppForm.mapel_id}|${rppForm.kelas}`}
+                        onChange={e => {
+                          const [mapelId, kelas] = e.target.value.split("|");
+                          setRppForm({ ...rppForm, mapel_id: mapelId || "", kelas: kelas || "" });
+                        }}
                         className="w-full rounded-xl border-0 bg-[#E8F0FE] px-3 py-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-300 transition"
                       >
-                        <option value="">-- Pilih Mata Pelajaran --</option>
-                        {mapelList.map(m => (
-                          <option key={m.id} value={m.id}>{m.nama}</option>
+                        <option value="">-- Pilih Mata Pelajaran & Kelas --</option>
+                        {mapelList.map((m, idx) => (
+                          <option key={idx} value={`${m.id}|${m.kelas}`}>{m.label}</option>
                         ))}
                       </select>
                     </div>
@@ -521,20 +526,7 @@ export default function GuruRPP() {
                       )}
                     </div>
 
-                    {/* Kelas */}
-                    <div>
-                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">Kelas (Opsional)</label>
-                      <select
-                        value={rppForm.kelas}
-                        onChange={e => setRppForm({ ...rppForm, kelas: e.target.value })}
-                        className="w-full rounded-xl border-0 bg-[#E8F0FE] px-3 py-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-300 transition"
-                      >
-                        <option value="">-- Pilih Kelas --</option>
-                        {kelasList.map(k => (
-                          <option key={k.id} value={k.nama}>{k.nama}</option>
-                        ))}
-                      </select>
-                    </div>
+
 
                     {/* Deskripsi */}
                     <div>
