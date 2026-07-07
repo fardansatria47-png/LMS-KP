@@ -74,6 +74,7 @@ export default function KelasDetail() {
   const [deleteTugasConfirm, setDeleteTugasConfirm] = useState(null);
   const [deletePengumumanConfirm, setDeletePengumumanConfirm] = useState(null);
   const [successMsg, setSuccessMsg] = useState(location.state?.successMsg || "");
+  const [expandedRppId, setExpandedRppId] = useState(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -479,10 +480,13 @@ export default function KelasDetail() {
                   <h2 className="mb-4 text-lg font-bold text-slate-800">RPP (Rencana Pelaksanaan Pembelajaran)</h2>
                   {rppList.length > 0 ? (
                     <div className="mb-8 flex flex-col gap-4">
-                      {rppList.map((rpp) => (
+                      {rppList.map((rpp) => {
+                        const isExpanded = expandedRppId === rpp.id;
+                        return (
                         <div
                           key={rpp.id}
-                          className="group flex flex-col rounded-2xl border border-indigo-100 bg-indigo-50/30 p-5 shadow-sm transition hover:border-indigo-300 hover:shadow-md"
+                          onClick={() => setExpandedRppId(isExpanded ? null : rpp.id)}
+                          className="group flex flex-col rounded-2xl border border-indigo-100 bg-indigo-50/30 p-5 shadow-sm transition hover:border-indigo-300 hover:shadow-md cursor-pointer"
                         >
                           <div className="flex items-start gap-4">
                             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 transition group-hover:bg-indigo-600 group-hover:text-white">
@@ -491,20 +495,25 @@ export default function KelasDetail() {
                               </svg>
                             </div>
                             <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="text-base font-bold text-slate-800">{rpp.judul}</h3>
-                                {rpp.is_published ? (
-                                  <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md">Publik</span>
-                                ) : (
-                                  <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md">Draf</span>
-                                )}
+                              <div className="flex items-center justify-between mb-1">
+                                <div className="flex items-center gap-2">
+                                  <h3 className="text-base font-bold text-slate-800">{rpp.judul}</h3>
+                                  {rpp.is_published ? (
+                                    <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md">Publik</span>
+                                  ) : (
+                                    <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md">Draf</span>
+                                  )}
+                                </div>
+                                <svg className={`h-5 w-5 text-slate-400 transition-transform ${isExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
                               </div>
                               {rpp.deskripsi && (
                                 <p className="text-sm text-slate-500 mb-3">{rpp.deskripsi}</p>
                               )}
                               
-                              {rpp.files && rpp.files.length > 0 && (
-                                <div className="mt-2 flex flex-wrap gap-2">
+                              {isExpanded && rpp.files && rpp.files.length > 0 && (
+                                <div className="mt-4 pt-4 border-t border-indigo-100 flex flex-wrap gap-2">
                                   {rpp.files.map((file) => (
                                     <a
                                       key={file.id}
@@ -523,7 +532,8 @@ export default function KelasDetail() {
                             </div>
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="mb-8 rounded-2xl border border-dashed border-slate-300 bg-slate-50 py-8 text-center">

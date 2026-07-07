@@ -22,6 +22,7 @@ export default function SiswaRuangBelajar() {
   const [error, setError] = useState("");
   
   const [rppList, setRppList] = useState([]);
+  const [expandedRppId, setExpandedRppId] = useState(null);
   const [tugasList, setTugasList] = useState([]);
   const [loadingTugas, setLoadingTugas] = useState(false);
   const [hasFetchedTugas, setHasFetchedTugas] = useState(false);
@@ -326,10 +327,13 @@ export default function SiswaRuangBelajar() {
                     <div className="mb-8">
                       <h2 className="text-lg font-bold text-[#0F172A] mb-4">RPP (Rencana Pelaksanaan Pembelajaran)</h2>
                       <div className="flex flex-col gap-4">
-                        {rppList.map((rpp) => (
+                        {rppList.map((rpp) => {
+                          const isExpanded = expandedRppId === rpp.id;
+                          return (
                           <div
                             key={rpp.id}
-                            className="group flex flex-col rounded-[20px] border border-indigo-100 bg-indigo-50/30 p-5 shadow-sm transition hover:border-indigo-300 hover:shadow-md"
+                            onClick={() => setExpandedRppId(isExpanded ? null : rpp.id)}
+                            className="group flex flex-col rounded-[20px] border border-indigo-100 bg-indigo-50/30 p-5 shadow-sm transition hover:border-indigo-300 hover:shadow-md cursor-pointer"
                           >
                             <div className="flex items-start gap-4">
                               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 transition group-hover:bg-indigo-600 group-hover:text-white">
@@ -338,13 +342,18 @@ export default function SiswaRuangBelajar() {
                                 </svg>
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h3 className="text-base font-bold text-[#0F172A] mb-1">{rpp.judul}</h3>
+                                <div className="flex items-center justify-between mb-1">
+                                  <h3 className="text-base font-bold text-[#0F172A]">{rpp.judul}</h3>
+                                  <svg className={`h-5 w-5 text-slate-400 transition-transform ${isExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                  </svg>
+                                </div>
                                 {rpp.deskripsi && (
                                   <p className="text-sm text-slate-500 mb-3">{rpp.deskripsi}</p>
                                 )}
                                 
-                                {rpp.files && rpp.files.length > 0 && (
-                                  <div className="mt-2 flex flex-wrap gap-2">
+                                {isExpanded && rpp.files && rpp.files.length > 0 && (
+                                  <div className="mt-4 pt-4 border-t border-indigo-100 flex flex-wrap gap-2">
                                     {rpp.files.map((file) => (
                                       <a
                                         key={file.id}
@@ -363,7 +372,8 @@ export default function SiswaRuangBelajar() {
                               </div>
                             </div>
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}

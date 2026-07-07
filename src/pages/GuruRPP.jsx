@@ -46,8 +46,10 @@ export default function GuruRPP() {
       if (resRpp.status === "fulfilled") {
         setRppList(resRpp.value.data?.data || resRpp.value.data || []);
       } else {
-        console.error("Gagal getRpp:", resRpp.reason);
-        setError("Gagal memuat daftar RPP.");
+        const err = resRpp.reason;
+        const errMsg = err?.response?.data?.message || err?.message || "Gagal memuat daftar RPP";
+        console.error("Gagal getRpp:", err);
+        setError(`Error memuat RPP: ${errMsg}`);
       }
 
       if (resMapel.status === "fulfilled") {
