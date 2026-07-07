@@ -83,7 +83,7 @@ export default function KelasDetail() {
   const [rppFormModal, setRppFormModal] = useState(null);
   const [rppFormLoading, setRppFormLoading] = useState(false);
   const [rppFormError, setRppFormError] = useState("");
-  const [rppForm, setRppForm] = useState({ judul: "", deskripsi: "", semester: "", tahun_ajaran: "", kelas: "" });
+  const [rppForm, setRppForm] = useState({ judul: "", deskripsi: "", semester: "", tahun_ajaran: "", kelas: "", is_published: false });
   const [rppNewFiles, setRppNewFiles] = useState([]);
   const [rppExistingFiles, setRppExistingFiles] = useState([]);
 
@@ -430,7 +430,7 @@ export default function KelasDetail() {
                 {activeTab === "RPP" && (
                   <button
                     onClick={() => {
-                      setRppForm({ judul: "", deskripsi: "", semester: "", tahun_ajaran: "", kelas: "" });
+                      setRppForm({ judul: "", deskripsi: "", semester: "", tahun_ajaran: "", kelas: "", is_published: false });
                       setRppNewFiles([]);
                       setRppExistingFiles([]);
                       setRppFormError("");
@@ -595,6 +595,11 @@ export default function KelasDetail() {
                                     {rpp.semester && <span className="text-[10px] font-semibold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">Semester {rpp.semester}</span>}
                                     {rpp.tahun_ajaran && <span className="text-[10px] font-semibold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{rpp.tahun_ajaran}</span>}
                                     {rpp.kelas && <span className="text-[10px] font-semibold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">{rpp.kelas}</span>}
+                                    {rpp.is_published ? (
+                                      <span className="text-[10px] font-semibold bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full">Publik</span>
+                                    ) : (
+                                      <span className="text-[10px] font-semibold bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full">Draf</span>
+                                    )}
                                   </div>
                                   {files.length > 0 && (
                                     <p className="mt-1.5 text-xs text-slate-400">{files.length} file lampiran</p>
@@ -621,6 +626,7 @@ export default function KelasDetail() {
                                       semester: rpp.semester?.toString() || "",
                                       tahun_ajaran: rpp.tahun_ajaran || "",
                                       kelas: rpp.kelas || "",
+                                      is_published: rpp.is_published ? true : false
                                     });
                                     setRppExistingFiles(rpp.files || []);
                                     setRppNewFiles([]);
@@ -1126,6 +1132,7 @@ export default function KelasDetail() {
             fd.append("tahun_ajaran", rppForm.tahun_ajaran);
             fd.append("kelas", rppForm.kelas);
             fd.append("mapel_id", actualMapelId);
+            fd.append("is_published", rppForm.is_published ? 1 : 0);
             rppNewFiles.forEach(f => fd.append("files[]", f));
             if (isBuat) {
               const res = await createRpp(fd);
@@ -1205,6 +1212,20 @@ export default function KelasDetail() {
                       placeholder="Tuliskan tujuan pembelajaran, kompetensi dasar, dll..."
                       rows={4}
                       className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 placeholder-slate-400 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 resize-none transition" />
+                  </div>
+                  {/* Status Publikasi */}
+                  <div>
+                    <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">Status RPP</label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="is_published" checked={!rppForm.is_published} onChange={() => setRppForm({ ...rppForm, is_published: false })} className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300" />
+                        <span className="text-sm font-medium text-slate-700">Simpan sebagai Draf</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="is_published" checked={rppForm.is_published} onChange={() => setRppForm({ ...rppForm, is_published: true })} className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-gray-300" />
+                        <span className="text-sm font-medium text-slate-700">Publikasikan ke Siswa</span>
+                      </label>
+                    </div>
                   </div>
                   {/* File existing (mode edit) */}
                   {!isBuat && rppExistingFiles.length > 0 && (
