@@ -37,7 +37,7 @@ export default function SiswaLayout({ children, title }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#F0F4FF]">
 
       {/* ── Desktop Sidebar ──────────────────────────────── */}
       <aside className="fixed left-0 top-0 hidden h-full w-56 flex-col bg-white border-r border-slate-100 shadow-sm z-20 lg:flex">
@@ -90,7 +90,7 @@ export default function SiswaLayout({ children, title }) {
       </header>
 
       {/* ── Main Content ──────────────────────────────────── */}
-      <main className="lg:ml-56 pt-16 lg:pt-0 pb-20 lg:pb-0 min-h-screen bg-slate-50">
+      <main className="lg:ml-56 pt-16 lg:pt-0 pb-20 lg:pb-0 min-h-screen bg-[#F0F4FF]">
         {children}
       </main>
 

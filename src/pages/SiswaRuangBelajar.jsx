@@ -213,7 +213,7 @@ export default function SiswaRuangBelajar() {
   }
   if (!Array.isArray(materiList)) materiList = [];
 
-  const tahunAjaran = data?.tahun_ajaran || "";
+  const tahunAjaran = data?.tahun_ajaran || data?.kelas?.tahun_ajaran || data?.rombel?.tahun_ajaran || data?.mata_pelajaran?.tahun_ajaran || "2025/2026";
 
   return (
     <SiswaLayout title={mapelName}>
@@ -308,10 +308,11 @@ export default function SiswaRuangBelajar() {
             </div>
 
             {/* Tab Content */}
-            {activeTab === "Materi" && (
-              <div>
-                <h2 className="text-lg font-bold text-[#0F172A] mb-4">Materi Pembelajaran</h2>
-                {materiList.length === 0 ? (
+            <div className="mt-6">
+              {activeTab === "Materi" && (
+                <div>
+                  <h2 className="text-lg font-bold text-[#0F172A] mb-4">Materi Pembelajaran</h2>
+                  {materiList.length === 0 ? (
                   <div className="rounded-[20px] border border-slate-200 bg-white p-10 text-center">
                     <p className="text-slate-500 font-medium">Belum ada materi pembelajaran.</p>
                   </div>
@@ -534,6 +535,7 @@ export default function SiswaRuangBelajar() {
                 )}
               </div>
             )}
+            </div>
           </>
         )}
       </div>
