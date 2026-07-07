@@ -21,11 +21,10 @@ export default function GuruRPP() {
   const [rppForm, setRppForm] = useState({
     judul: "",
     deskripsi: "",
-    semester: "",
-    tahun_ajaran: "",
     kelas: "",
     mapel_id: "",
     is_published: false,
+    pertemuans: [],
   });
   const [rppNewFiles, setRppNewFiles] = useState([]);
   const [rppExistingFiles, setRppExistingFiles] = useState([]);
@@ -98,11 +97,10 @@ export default function GuruRPP() {
               setRppForm({
                 judul: "",
                 deskripsi: "",
-                semester: "",
-                tahun_ajaran: "",
                 kelas: "",
                 mapel_id: mapelList[0]?.id || "",
-                is_published: false
+                is_published: false,
+                pertemuans: [],
               });
               setRppNewFiles([]);
               setRppExistingFiles([]);
@@ -172,15 +170,13 @@ export default function GuruRPP() {
                     )}
 
                     <div className="flex flex-wrap gap-1.5 mb-4">
-                      {rpp.semester && <span className="text-[11px] font-medium bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg">Semester {rpp.semester}</span>}
-                      {rpp.tahun_ajaran && <span className="text-[11px] font-medium bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg">{rpp.tahun_ajaran}</span>}
                       {rpp.kelas && <span className="text-[11px] font-medium bg-blue-50 text-blue-600 px-2.5 py-1 rounded-lg">{rpp.kelas}</span>}
                     </div>
                   </div>
 
                   <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
                     <span className="text-xs text-slate-400 font-medium">
-                      {files.length > 0 ? `${files.length} file lampiran` : "Tanpa lampiran"}
+                      {(rpp.pertemuans?.length > 0) ? `${rpp.pertemuans.length} pertemuan` : files.length > 0 ? `${files.length} lampiran` : "Tanpa lampiran"}
                     </span>
                     <div className="flex items-center gap-1">
                       <button
@@ -198,11 +194,10 @@ export default function GuruRPP() {
                           setRppForm({
                             judul: rpp.judul || "",
                             deskripsi: rpp.deskripsi || "",
-                            semester: rpp.semester?.toString() || "",
-                            tahun_ajaran: rpp.tahun_ajaran || "",
                             kelas: rpp.kelas || "",
                             mapel_id: rpp.mapel_id || "",
-                            is_published: rpp.is_published ? true : false
+                            is_published: rpp.is_published ? true : false,
+                            pertemuans: rpp.pertemuans || [],
                           });
                           setRppExistingFiles(rpp.files || []);
                           setRppNewFiles([]);
@@ -282,8 +277,8 @@ export default function GuruRPP() {
               <div className="px-6 py-5 space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    { label: "Semester", value: rppDetailModal.semester ? `Semester ${rppDetailModal.semester}` : "—" },
-                    { label: "Tahun Ajaran", value: rppDetailModal.tahun_ajaran || "—" },
+                    
+                    
                     { label: "Kelas", value: rppDetailModal.kelas || "—" },
                     { label: "Mata Pelajaran", value: rppDetailModal.mata_pelajaran?.nama_mapel || "—" },
                     { label: "Status RPP", value: rppDetailModal.is_published ? "Publik" : "Draf" },
@@ -300,6 +295,30 @@ export default function GuruRPP() {
                     <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line bg-slate-50 rounded-xl p-4">{rppDetailModal.deskripsi}</p>
                   </div>
                 )}
+
+                {/* ── Daftar Pertemuan ──────────────────────────────── */}
+                {(rppDetailModal.pertemuans || []).length > 0 && (
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-3">Daftar Pertemuan ({rppDetailModal.pertemuans.length})</p>
+                    <div className="space-y-3">
+                      {rppDetailModal.pertemuans.map((pt, i) => (
+                        <div key={i} className="flex gap-3 bg-indigo-50 border border-indigo-100 rounded-2xl p-4">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">
+                            {i + 1}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-slate-800 leading-snug">{pt.judul || `Pertemuan ${i + 1}`}</p>
+                            {pt.deskripsi && (
+                              <p className="mt-1 text-sm text-slate-600 leading-relaxed whitespace-pre-line">{pt.deskripsi}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── File Lampiran ─────────────────────────────────── */}
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-3">File Lampiran ({(rppDetailModal.files || []).length})</p>
                   {(rppDetailModal.files || []).length > 0 ? (
@@ -338,17 +357,10 @@ export default function GuruRPP() {
         {/* ── Modal Buat / Edit RPP ────────────────────────────────────────── */}
         {rppFormModal && (() => {
           const isBuat = rppFormModal.mode === "buat";
-          const currentYear = new Date().getFullYear();
-          const tahunOptions = [
-            `${currentYear - 1}/${currentYear}`,
-            `${currentYear}/${currentYear + 1}`,
-            `${currentYear + 1}/${currentYear + 2}`,
-          ];
-
           const handleRppSubmit = async (e) => {
             e.preventDefault();
             if (!rppForm.judul.trim()) { setRppFormError("Judul RPP wajib diisi."); return; }
-            if (!rppForm.semester) { setRppFormError("Semester wajib dipilih."); return; }
+            
             if (!rppForm.mapel_id) { setRppFormError("Mata pelajaran wajib dipilih."); return; }
 
             setRppFormLoading(true);
@@ -358,11 +370,10 @@ export default function GuruRPP() {
               const fd = new FormData();
               fd.append("judul", rppForm.judul);
               fd.append("deskripsi", rppForm.deskripsi);
-              fd.append("semester", rppForm.semester);
-              fd.append("tahun_ajaran", rppForm.tahun_ajaran);
               fd.append("kelas", rppForm.kelas);
               fd.append("mapel_id", rppForm.mapel_id);
               fd.append("is_published", rppForm.is_published ? 1 : 0);
+              fd.append("pertemuans", JSON.stringify(rppForm.pertemuans || []));
               rppNewFiles.forEach(f => fd.append("files[]", f));
 
               if (isBuat) {
@@ -439,31 +450,77 @@ export default function GuruRPP() {
                       />
                     </div>
 
-                    {/* Semester + Tahun */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">Semester <span className="text-red-400">*</span></label>
-                        <select
-                          value={rppForm.semester}
-                          onChange={e => setRppForm({ ...rppForm, semester: e.target.value })}
-                          className="w-full rounded-xl border-0 bg-[#E8F0FE] px-3 py-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-300 transition"
+                    
+
+                    {/* ── Daftar Pertemuan (Dinamis) ─────────────────── */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Daftar Pertemuan</label>
+                        <button
+                          type="button"
+                          onClick={() => setRppForm(prev => ({
+                            ...prev,
+                            pertemuans: [...(prev.pertemuans || []), { judul: "", deskripsi: "" }]
+                          }))}
+                          className="flex items-center gap-1.5 rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-600 hover:bg-indigo-100 transition"
                         >
-                          <option value="">-- Pilih --</option>
-                          <option value="1">Semester 1</option>
-                          <option value="2">Semester 2</option>
-                        </select>
+                          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                          </svg>
+                          Tambah Pertemuan
+                        </button>
                       </div>
-                      <div>
-                        <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">Tahun Ajaran</label>
-                        <select
-                          value={rppForm.tahun_ajaran}
-                          onChange={e => setRppForm({ ...rppForm, tahun_ajaran: e.target.value })}
-                          className="w-full rounded-xl border-0 bg-[#E8F0FE] px-3 py-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-300 transition"
-                        >
-                          <option value="">-- Pilih --</option>
-                          {tahunOptions.map(t => <option key={t} value={t}>{t}</option>)}
-                        </select>
-                      </div>
+
+                      {(rppForm.pertemuans || []).length === 0 ? (
+                        <div className="rounded-xl border border-dashed border-slate-200 py-6 text-center text-slate-400 text-xs">
+                          Belum ada pertemuan. Klik "Tambah Pertemuan" untuk mulai mengisi.
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {(rppForm.pertemuans || []).map((pt, i) => (
+                            <div key={i} className="relative rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4">
+                              <div className="flex items-center justify-between mb-3">
+                                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white">{i + 1}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setRppForm(prev => ({
+                                    ...prev,
+                                    pertemuans: prev.pertemuans.filter((_, idx) => idx !== i)
+                                  }))}
+                                  className="flex h-7 w-7 items-center justify-center rounded-full text-rose-400 hover:bg-rose-50 hover:text-rose-600 transition"
+                                  title="Hapus pertemuan ini"
+                                >
+                                  <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+                              <div className="space-y-2">
+                                <input
+                                  type="text"
+                                  value={pt.judul}
+                                  onChange={e => setRppForm(prev => ({
+                                    ...prev,
+                                    pertemuans: prev.pertemuans.map((p, idx) => idx === i ? { ...p, judul: e.target.value } : p)
+                                  }))}
+                                  placeholder={`Judul Pertemuan ${i + 1} (contoh: Pengenalan HTML)`}
+                                  className="w-full rounded-xl border-0 bg-white px-3.5 py-2.5 text-sm text-slate-700 placeholder-slate-400 outline-none focus:ring-2 focus:ring-indigo-300 shadow-sm transition"
+                                />
+                                <textarea
+                                  value={pt.deskripsi}
+                                  onChange={e => setRppForm(prev => ({
+                                    ...prev,
+                                    pertemuans: prev.pertemuans.map((p, idx) => idx === i ? { ...p, deskripsi: e.target.value } : p)
+                                  }))}
+                                  placeholder="Materi / kegiatan yang dilakukan pada pertemuan ini..."
+                                  rows={3}
+                                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700 placeholder-slate-400 outline-none focus:border-indigo-300 focus:ring-1 focus:ring-indigo-300 resize-none transition"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     {/* Kelas */}
