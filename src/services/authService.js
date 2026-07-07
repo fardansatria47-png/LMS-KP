@@ -407,3 +407,32 @@ export const graduateRombel = async (rombelId, action) => {
     action: action,
   });
 };
+
+// ── RPP (Rencana Pelaksanaan Pembelajaran) ──────────────────────────
+export const getRpp = async (params = {}) => {
+  return await API.get("/rpp", { params });
+};
+export const getRppById = async (id) => {
+  return await API.get(`/rpp/${id}`);
+};
+export const createRpp = async (data) => {
+  return await API.post("/rpp", data, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+};
+export const updateRpp = async (id, data) => {
+  // Laravel tidak mendukung PUT dengan FormData, gunakan POST + _method=PUT
+  if (data instanceof FormData) {
+    data.append("_method", "PUT");
+    return await API.post(`/rpp/${id}`, data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  }
+  return await API.put(`/rpp/${id}`, data);
+};
+export const deleteRpp = async (id) => {
+  return await API.delete(`/rpp/${id}`);
+};
+export const deleteRppFile = async (fileId) => {
+  return await API.delete(`/rpp/files/${fileId}`);
+};
