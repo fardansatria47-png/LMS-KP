@@ -7,8 +7,8 @@ import { toast } from "../utils/notify";
 export default function GuruRPP() {
   const [rppList, setRppList] = useState([]);
   const [mapelList, setMapelList] = useState([]);
+  const [kelasList, setKelasList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMapel, setLoadingMapel] = useState(false);
   const [error, setError] = useState("");
 
   const [deleteRppConfirm, setDeleteRppConfirm] = useState(null);
@@ -37,31 +37,39 @@ export default function GuruRPP() {
     setLoading(true);
     setError("");
     try {
-      // Parallel fetch RPPs and mapel list for dropdowns
-      const [resRpp, resMapel] = await Promise.all([
+      const [resRpp, resKelas] = await Promise.all([
         getRpp(),
         getKelasGuru()
       ]);
       setRppList(resRpp.data?.data || resRpp.data || []);
       
-      const rawMapel = resMapel.data?.data || resMapel.data || [];
-      // Normalize mapel list to avoid duplicates
-      const uniqueMapel = [];
-      const mapelIds = new Set();
-      if (Array.isArray(rawMapel)) {
-        rawMapel.forEach(m => {
-          const mapelId = m.mapel_id || m.mata_pelajaran_id || m.id;
-          if (mapelId && !mapelIds.has(mapelId)) {
-            mapelIds.add(mapelId);
-            uniqueMapel.push({
-              id: mapelId,
-              nama: m.nama_mapel || m.mata_pelajaran?.nama_mapel || "Mata Pelajaran",
-              rombel: m.nama_rombel || m.rombel?.nama_rombel || ""
-            });
-          }
-        });
-      }
-      setMapelList(uniqueMapel);
+      const rawKelas = resKelas.data?.data || resKelas.data || [];
+      const kelasArr = Array.isArray(rawKelas) ? rawKelas : [];
+
+      // Build unique mapel list
+      const mapelMap = new Map();
+      kelasArr.forEach(item => {
+        const mapelId = item.mapel_id || item.mata_pelajaran_id || item.id;
+        const mapelNama = item.nama_mapel || item.mata_pelajaran?.nama_mapel || item.mata_pelajaran || "Mata Pelajaran";
+        if (mapelId && !mapelMap.has(mapelId)) {
+          mapelMap.set(mapelId, { id: mapelId, nama: mapelNama });
+        }
+      });
+      setMapelList(Array.from(mapelMap.values()));
+
+      // Build unique kelas list
+      const kelasSet = new Set();
+      kelasArr.forEach(item => {
+        const kelasName = item.nama_kelas || item.tingkat || "";
+        const jurusanName = item.jurusan?.nama_jurusan || item.nama_jurusan || "";
+        const rombelName = item.nama_rombel || item.rombel?.nama_rombel || "";
+        // Build full kelas label: e.g. "X RPL 1" or "X Akuntansi"
+        const parts = [kelasName, jurusanName, rombelName].filter(Boolean);
+        const fullLabel = parts.join(" ").trim();
+        if (fullLabel) kelasSet.add(fullLabel);
+      });
+      setKelasList(Array.from(kelasSet).sort());
+
     } catch (err) {
       setError("Gagal memuat data RPP.");
       console.error(err);
@@ -433,7 +441,7 @@ export default function GuruRPP() {
                       >
                         <option value="">-- Pilih Mata Pelajaran --</option>
                         {mapelList.map(m => (
-                          <option key={m.id} value={m.id}>{m.nama} {m.rombel && `(${m.rombel})`}</option>
+                          <option key={m.id} value={m.id}>{m.nama}</option>
                         ))}
                       </select>
                     </div>
@@ -526,13 +534,16 @@ export default function GuruRPP() {
                     {/* Kelas */}
                     <div>
                       <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">Kelas (Opsional)</label>
-                      <input
-                        type="text"
+                      <select
                         value={rppForm.kelas}
                         onChange={e => setRppForm({ ...rppForm, kelas: e.target.value })}
-                        placeholder="Contoh: XI RPL 1"
-                        className="w-full rounded-xl border-0 bg-[#E8F0FE] px-4 py-3 text-sm text-slate-700 placeholder-slate-400 outline-none focus:ring-2 focus:ring-blue-300 transition"
-                      />
+                        className="w-full rounded-xl border-0 bg-[#E8F0FE] px-3 py-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-300 transition"
+                      >
+                        <option value="">-- Pilih Kelas --</option>
+                        {kelasList.map(k => (
+                          <option key={k} value={k}>{k}</option>
+                        ))}
+                      </select>
                     </div>
 
                     {/* Deskripsi */}
