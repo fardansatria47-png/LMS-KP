@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { getMataPelajaranSiswaDetail, getTugasSiswa, getTugasSusulanSiswa, getPengumuman, logoutUser } from "../services/authService";
+import { getMataPelajaranSiswaDetail, getTugasSiswa, getTugasSusulanSiswa, getPengumuman, logoutUser, getRpp } from "../services/authService";
 import { getErrorMessage } from "../utils/translateError";
 import DiskusiMapel from "../components/DiskusiMapel";
 import SiswaLayout from "../components/SiswaLayout";
@@ -21,6 +21,7 @@ export default function SiswaRuangBelajar() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   
+  const [rppList, setRppList] = useState([]);
   const [tugasList, setTugasList] = useState([]);
   const [loadingTugas, setLoadingTugas] = useState(false);
   const [hasFetchedTugas, setHasFetchedTugas] = useState(false);
@@ -42,6 +43,16 @@ export default function SiswaRuangBelajar() {
         setLoading(true);
         const res = await getMataPelajaranSiswaDetail(id);
         setData(res.data?.data || res.data);
+        const mapelId = res.data?.data?.mapel_id || res.data?.data?.mata_pelajaran_id || id;
+        try {
+          const rppRes = await getRpp({ mapel_id: mapelId });
+          const rawRpp = rppRes.data?.data || rppRes.data || [];
+          const publishedRpp = (Array.isArray(rawRpp) ? rawRpp : []).filter(r => r.is_published);
+          setRppList(publishedRpp);
+        } catch (e) {
+          console.error("Gagal memuat RPP siswa:", e);
+        }
+
       } catch (err) {
         setError(getErrorMessage(err, "Gagal memuat detail kelas."));
       } finally {
@@ -311,6 +322,52 @@ export default function SiswaRuangBelajar() {
             <div className="mt-6">
               {activeTab === "Materi" && (
                 <div>
+                  {rppList.length > 0 && (
+                    <div className="mb-8">
+                      <h2 className="text-lg font-bold text-[#0F172A] mb-4">RPP (Rencana Pelaksanaan Pembelajaran)</h2>
+                      <div className="flex flex-col gap-4">
+                        {rppList.map((rpp) => (
+                          <div
+                            key={rpp.id}
+                            className="group flex flex-col rounded-[20px] border border-indigo-100 bg-indigo-50/30 p-5 shadow-sm transition hover:border-indigo-300 hover:shadow-md"
+                          >
+                            <div className="flex items-start gap-4">
+                              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 transition group-hover:bg-indigo-600 group-hover:text-white">
+                                <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                                </svg>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-base font-bold text-[#0F172A] mb-1">{rpp.judul}</h3>
+                                {rpp.deskripsi && (
+                                  <p className="text-sm text-slate-500 mb-3">{rpp.deskripsi}</p>
+                                )}
+                                
+                                {rpp.files && rpp.files.length > 0 && (
+                                  <div className="mt-2 flex flex-wrap gap-2">
+                                    {rpp.files.map((file) => (
+                                      <a
+                                        key={file.id}
+                                        href={fixFileUrl(file.url)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 transition"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                                        {file.nama_file}
+                                      </a>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <h2 className="text-lg font-bold text-[#0F172A] mb-4">Materi Pembelajaran</h2>
                   {materiList.length === 0 ? (
                   <div className="rounded-[20px] border border-slate-200 bg-white p-10 text-center">

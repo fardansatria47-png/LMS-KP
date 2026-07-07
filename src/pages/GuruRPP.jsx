@@ -386,17 +386,14 @@ export default function GuruRPP() {
               rppNewFiles.forEach(f => fd.append("files[]", f));
 
               if (isBuat) {
-                const res = await createRpp(fd);
-                const newRpp = res.data?.data || res.data;
-                setRppList(prev => [newRpp, ...prev]);
+                await createRpp(fd);
                 toast("RPP baru berhasil dibuat!", "success");
               } else {
-                const res = await updateRpp(rppFormModal.id, fd);
-                const updated = res.data?.data || res.data;
-                setRppList(prev => prev.map(r => r.id === rppFormModal.id ? { ...r, ...updated } : r));
+                await updateRpp(rppFormModal.id, fd);
                 toast("RPP berhasil diubah!", "success");
               }
               setRppFormModal(null);
+              fetchData(); // Reload from server to get accurate data
             } catch (err) {
               setRppFormError(err?.response?.data?.message || "Gagal menyimpan RPP.");
             } finally {
