@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getRpp, createRpp, updateRpp, deleteRpp, deleteRppFile, getMapelFormData, getRombelFormData } from "../services/authService";
+import { getRpp, createRpp, updateRpp, deleteRpp, deleteRppFile, getKelasGuru } from "../services/authService";
 import { fixFileUrl } from "../api/api";
 import GuruLayout from "../components/GuruLayout";
 import { toast } from "../utils/notify";
@@ -37,28 +37,24 @@ export default function GuruRPP() {
     setLoading(true);
     setError("");
     try {
-      const [resRpp, resMapel, resRombel] = await Promise.all([
+      const [resRpp, resMapel] = await Promise.all([
         getRpp(),
-        getMapelFormData(),
-        getRombelFormData()
+        getKelasGuru()
       ]);
       setRppList(resRpp.data?.data || resRpp.data || []);
 
-      // Mata Pelajaran dropdown
       const rawMapel = resMapel.data?.data || resMapel.data || [];
       const mapelArr = Array.isArray(rawMapel) ? rawMapel : [];
-      setMapelList(mapelArr.map(m => ({
-        id: m.id,
-        nama: m.nama_mapel || m.nama || "Mata Pelajaran"
-      })));
-
-      // Rombel / Kelas dropdown
-      const rawRombel = resRombel.data?.data || resRombel.data || [];
-      const rombelArr = Array.isArray(rawRombel) ? rawRombel : [];
-      setKelasList(rombelArr.map(r => ({
-        id: r.id,
-        nama: r.nama_rombel || r.nama || "Kelas"
-      })));
+      setMapelList(mapelArr.map(m => {
+        const kelasName = m.nama_kelas || m.tingkat || "";
+        const jurusanName = m.jurusan?.nama_jurusan || m.nama_jurusan || "";
+        const rombel = `${kelasName} ${jurusanName}`.trim();
+        return {
+          id: m.id,
+          nama: `${m.nama_mapel || m.nama || "Mata Pelajaran"}${rombel ? ` - Kelas ${rombel}` : ""}`,
+          kelasAsli: rombel
+        };
+      }));
 
     } catch (err) {
       setError("Gagal memuat data RPP.");
@@ -364,7 +360,10 @@ export default function GuruRPP() {
               const fd = new FormData();
               fd.append("judul", rppForm.judul);
               fd.append("deskripsi", rppForm.deskripsi);
-              fd.append("kelas", rppForm.kelas);
+              
+              const selectedMapel = mapelList.find(m => String(m.id) === String(rppForm.mapel_id));
+              fd.append("kelas", selectedMapel ? selectedMapel.kelasAsli : (rppForm.kelas || ""));
+              
               fd.append("mapel_id", rppForm.mapel_id);
               fd.append("is_published", rppForm.is_published ? 1 : 0);
               fd.append("pertemuans", JSON.stringify(rppForm.pertemuans || []));
@@ -513,21 +512,6 @@ export default function GuruRPP() {
                           ))}
                         </div>
                       )}
-                    </div>
-
-                    {/* Kelas */}
-                    <div>
-                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">Kelas (Opsional)</label>
-                      <select
-                        value={rppForm.kelas}
-                        onChange={e => setRppForm({ ...rppForm, kelas: e.target.value })}
-                        className="w-full rounded-xl border-0 bg-[#E8F0FE] px-3 py-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-300 transition"
-                      >
-                        <option value="">-- Pilih Kelas --</option>
-                        {kelasList.map(k => (
-                          <option key={k.id} value={k.nama}>{k.nama}</option>
-                        ))}
-                      </select>
                     </div>
 
                     {/* Deskripsi */}
