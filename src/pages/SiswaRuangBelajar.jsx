@@ -213,84 +213,98 @@ export default function SiswaRuangBelajar() {
   }
   if (!Array.isArray(materiList)) materiList = [];
 
+  const tahunAjaran = data?.tahun_ajaran || "";
+
   return (
     <SiswaLayout title={mapelName}>
-      <div className="px-4 sm:px-6 lg:px-10 py-6 lg:py-8 max-w-4xl">
-        {/* Top bar — back button only */}
-        <div className="mb-5">
-          <button
-            onClick={() => navigate("/mata-pelajaran")}
-            className="flex items-center gap-2 text-[#1E293B] font-bold hover:text-blue-600 transition"
-          >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-            </svg>
-            Ruang Belajar
-          </button>
-        </div>
+      <div className="px-4 sm:px-6 lg:px-10 py-6 lg:py-10">
+        {/* Back */}
+        <button
+          onClick={() => navigate("/mata-pelajaran")}
+          className="mb-6 flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-blue-600 transition"
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          Kembali ke Halaman Utama
+        </button>
 
         {loading ? (
-          <div className="flex justify-center p-20">
-             <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"></div>
+          <div className="flex items-center justify-center py-32">
+            <svg className="animate-spin h-10 w-10 text-blue-600" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
           </div>
         ) : error ? (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
-            {error}
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 p-8 text-rose-700 max-w-lg">
+            <p className="font-semibold">{error}</p>
           </div>
         ) : (
-          <div className="max-w-4xl space-y-8">
-            {/* Header Banner */}
-            <div className="rounded-[24px] bg-gradient-to-br from-[#EEF2FF] to-[#E0E7FF] p-8 shadow-sm">
-              <span className="inline-block px-3 py-1 bg-[#F59E0B] text-white text-[10px] font-black uppercase tracking-widest rounded-full mb-4">
-                {kelasName}
-              </span>
-              <h1 className="text-3xl font-extrabold text-[#0F172A] tracking-tight mb-2">
-                {mapelName}
-              </h1>
-              {mapelDeskripsi && (
-                <p className="text-sm text-slate-600 mb-4 max-w-3xl leading-relaxed">
-                  {mapelDeskripsi}
-                </p>
-              )}
-              <div className="flex items-center gap-2 text-sm font-medium text-[#64748B]">
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                </svg>
-                {guruName}
+          <>
+            {/* Header */}
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <h1 className="text-4xl font-bold text-slate-900 tracking-tight">{mapelName}</h1>
+                <div className="mt-2 flex items-center gap-3 text-sm text-slate-500">
+                  <span className="flex items-center gap-1.5">
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                    </svg>
+                    {guruName}
+                  </span>
+                  {kelasName && (
+                    <>
+                      <span className="text-slate-300">•</span>
+                      <span className="font-medium text-slate-600">{kelasName}</span>
+                    </>
+                  )}
+                </div>
               </div>
+              {tahunAjaran && (
+                <span className="rounded-full bg-amber-400 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm">
+                  TAHUN AJARAN {tahunAjaran}
+                </span>
+              )}
             </div>
-            {/* Tabs — di bawah header banner */}
-            <div className="flex gap-1 border-b border-slate-200 overflow-x-auto scrollbar-hide -mx-1 px-1">
-              {TABS.map((tab) => {
-                let badgeCount = 0;
-                if (tab === "Tugas") {
-                  badgeCount = tugasTertunda;
-                } else if (tab === "Tugas Susulan") {
-                  badgeCount = tugasSusulanList.filter((t) => {
-                    const s = (t.status || t.status_pengumpulan || "").toLowerCase();
-                    return !s || s.includes("belum");
-                  }).length;
-                }
 
-                return (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-bold transition border-b-2 -mb-px whitespace-nowrap ${
-                      activeTab === tab
-                        ? "border-blue-600 text-blue-600"
-                        : "border-transparent text-slate-500 hover:text-slate-800"
-                    }`}
-                  >
-                    {tab}
-                    {badgeCount > 0 && (
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white leading-none">
-                        {badgeCount > 9 ? "9+" : badgeCount}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+            {/* Tabs bar */}
+            <div className="mt-6 border-b border-slate-200">
+              <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
+                {TABS.map((tab) => {
+                  let badgeCount = 0;
+                  if (tab === "Tugas") {
+                    badgeCount = tugasTertunda;
+                  } else if (tab === "Tugas Susulan") {
+                    badgeCount = tugasSusulanList.filter((t) => {
+                      const s = (t.status || t.status_pengumpulan || "").toLowerCase();
+                      return !s || s.includes("belum");
+                    }).length;
+                  }
+
+                  return (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`relative flex items-center gap-1.5 whitespace-nowrap px-4 py-3 text-sm font-bold transition-colors ${
+                        activeTab === tab
+                          ? "text-blue-600"
+                          : "text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-t-xl"
+                      }`}
+                    >
+                      {tab}
+                      {badgeCount > 0 && (
+                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white leading-none">
+                          {badgeCount > 9 ? "9+" : badgeCount}
+                        </span>
+                      )}
+                      {activeTab === tab && (
+                        <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-t-full" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Tab Content */}
@@ -520,7 +534,7 @@ export default function SiswaRuangBelajar() {
                 )}
               </div>
             )}
-          </div>
+          </>
         )}
       </div>
     </SiswaLayout>
