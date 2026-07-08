@@ -61,11 +61,13 @@ export default function GuruRPP() {
           const kelasName = m.nama_kelas || m.tingkat || "";
           const jurusanName = m.jurusan?.nama_jurusan || m.nama_jurusan || "";
           const rombel = `${kelasName} ${jurusanName}`.trim();
-          // Fallback to mapel_id if m.id is pivot id
-          const id = m.mapel_id || m.mata_pelajaran_id || m.id;
+          const mapelId = m.mapel_id || m.mata_pelajaran_id || m.id;
           const rombelId = m.rombel_id || m.kelas_id || m.rombel?.id || null;
+          // Gunakan key komposit agar bisa membedakan mapel yang sama di kelas berbeda
+          const compositeValue = `${mapelId}|${rombelId || ""}`;
           return {
-            id: id,
+            value: compositeValue,   // <-- key unik untuk dropdown
+            id: mapelId,             // mapel_id asli
             rombel_id: rombelId,
             nama: `${m.nama_mapel || m.nama || m.mata_pelajaran?.nama_mapel || "Mata Pelajaran"}${rombel ? ` - Kelas ${rombel}` : ""}`,
             kelasAsli: rombel
@@ -106,11 +108,14 @@ export default function GuruRPP() {
           </div>
           <button
             onClick={() => {
+              const firstMapel = mapelList[0];
               setRppForm({
                 judul: "",
                 deskripsi: "",
-                kelas: "",
-                mapel_id: mapelList[0]?.id || "",
+                kelas: firstMapel?.kelasAsli || "",
+                mapel_id: firstMapel?.id || "",
+                rombel_id: firstMapel?.rombel_id || "",
+                mapelValue: firstMapel?.value || "",
                 is_published: false,
                 pertemuans: [],
               });
@@ -204,11 +209,19 @@ export default function GuruRPP() {
                       </button>
                       <button
                         onClick={() => {
+                          // Temukan entri mapelList yang cocok berdasarkan mapel_id DAN rombel_id
+                          const existingRombelId = rpp.rombel_id || "";
+                          const matchedMapel = mapelList.find(m =>
+                            String(m.id) === String(rpp.mapel_id) &&
+                            String(m.rombel_id || "") === String(existingRombelId)
+                          ) || mapelList.find(m => String(m.id) === String(rpp.mapel_id));
                           setRppForm({
                             judul: rpp.judul || "",
                             deskripsi: rpp.deskripsi || "",
-                            kelas: rpp.kelas || "",
+                            kelas: rpp.kelas || matchedMapel?.kelasAsli || "",
                             mapel_id: rpp.mapel_id || "",
+                            rombel_id: rpp.rombel_id || matchedMapel?.rombel_id || "",
+                            mapelValue: matchedMapel?.value || `${rpp.mapel_id}|${rpp.rombel_id || ""}`,
                             is_published: rpp.is_published ? true : false,
                             pertemuans: rpp.pertemuans || [],
                           });
@@ -386,11 +399,13 @@ export default function GuruRPP() {
               fd.append("judul", rppForm.judul);
               fd.append("deskripsi", rppForm.deskripsi);
               
-              const selectedMapel = mapelList.find(m => String(m.id) === String(rppForm.mapel_id));
-              fd.append("kelas", selectedMapel ? selectedMapel.kelasAsli : (rppForm.kelas || ""));
+              const selectedMapel = mapelList.find(m => m.value === rppForm.mapelValue)
+                || mapelList.find(m => String(m.id) === String(rppForm.mapel_id) && String(m.rombel_id || "") === String(rppForm.rombel_id || ""))
+                || mapelList.find(m => String(m.id) === String(rppForm.mapel_id));
+              fd.append("kelas", selectedMapel?.kelasAsli || rppForm.kelas || "");
               fd.append("mapel_id", rppForm.mapel_id);
-              if (rppForm.rombel_id) fd.append("rombel_id", rppForm.rombel_id);
-              // Kirim is_published dan status sesuai spesifikasi backend
+              const finalRombelId = rppForm.rombel_id || selectedMapel?.rombel_id || "";
+              if (finalRombelId) fd.append("rombel_id", finalRombelId);
               fd.append("is_published", rppForm.is_published ? 1 : 0);
               fd.append("status", rppForm.is_published ? "approved" : "draft");
               fd.append("pertemuans", JSON.stringify(rppForm.pertemuans || []));
@@ -444,12 +459,14 @@ export default function GuruRPP() {
                     <div>
                       <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">Mata Pelajaran <span className="text-red-400">*</span></label>
                       <select
-                        value={rppForm.mapel_id}
+                        value={rppForm.mapelValue || ""}
                         onChange={e => {
-                          const selected = mapelList.find(m => String(m.id) === String(e.target.value));
+                          // Parse composite value untuk mendapatkan mapel_id dan rombel_id yang tepat
+                          const selected = mapelList.find(m => m.value === e.target.value);
                           setRppForm({ 
                             ...rppForm, 
-                            mapel_id: e.target.value,
+                            mapelValue: e.target.value,
+                            mapel_id: selected?.id || "",
                             rombel_id: selected?.rombel_id || "",
                             kelas: selected?.kelasAsli || ""
                           });
@@ -458,7 +475,7 @@ export default function GuruRPP() {
                       >
                         <option value="">-- Pilih Mata Pelajaran --</option>
                         {mapelList.map(m => (
-                          <option key={m.id} value={m.id}>{m.nama}</option>
+                          <option key={m.value} value={m.value}>{m.nama}</option>
                         ))}
                       </select>
                     </div>
