@@ -173,7 +173,7 @@ export default function GuruRPP() {
                     <h3 className="font-bold text-slate-800 group-hover:text-blue-600 transition text-base leading-snug line-clamp-2 mb-2">{rpp.judul}</h3>
                     
                     <p className="text-xs font-semibold text-indigo-600 mb-4 uppercase tracking-wider">
-                      {rpp.mata_pelajaran?.nama_mapel || "Mata Pelajaran"}
+                      {rpp.mata_pelajaran?.nama_mapel || rpp.mapel?.nama_mapel || rpp.mapel?.nama || "Mata Pelajaran"}
                     </p>
 
                     {rpp.deskripsi && (
@@ -181,7 +181,7 @@ export default function GuruRPP() {
                     )}
 
                     <div className="flex flex-wrap gap-1.5 mb-4">
-                      {rpp.kelas && <span className="text-[11px] font-medium bg-blue-50 text-blue-600 px-2.5 py-1 rounded-lg">{rpp.kelas}</span>}
+                      {(rpp.kelas || rpp.rombel?.nama_kelas || rpp.rombel?.nama) && <span className="text-[11px] font-medium bg-blue-50 text-blue-600 px-2.5 py-1 rounded-lg">{rpp.kelas || rpp.rombel?.nama_kelas || rpp.rombel?.nama}</span>}
                     </div>
                   </div>
 
@@ -288,8 +288,8 @@ export default function GuruRPP() {
               <div className="px-6 py-5 space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    { label: "Kelas", value: rppDetailModal.kelas || "—" },
-                    { label: "Mata Pelajaran", value: rppDetailModal.mata_pelajaran?.nama_mapel || "—" },
+                    { label: "Kelas", value: rppDetailModal.kelas || rppDetailModal.rombel?.nama_kelas || rppDetailModal.rombel?.nama || "—" },
+                    { label: "Mata Pelajaran", value: rppDetailModal.mata_pelajaran?.nama_mapel || rppDetailModal.mapel?.nama_mapel || rppDetailModal.mapel?.nama || "—" },
                     { label: "Status RPP", value: rppDetailModal.is_published ? "Publik" : "Draf" },
                   ].map(item => (
                     <div key={item.label} className="bg-slate-50 rounded-xl p-3">
