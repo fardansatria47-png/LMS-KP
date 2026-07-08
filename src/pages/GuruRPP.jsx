@@ -390,7 +390,9 @@ export default function GuruRPP() {
               fd.append("kelas", selectedMapel ? selectedMapel.kelasAsli : (rppForm.kelas || ""));
               fd.append("mapel_id", rppForm.mapel_id);
               if (rppForm.rombel_id) fd.append("rombel_id", rppForm.rombel_id);
+              // Kirim is_published dan status sesuai spesifikasi backend
               fd.append("is_published", rppForm.is_published ? 1 : 0);
+              fd.append("status", rppForm.is_published ? "approved" : "draft");
               fd.append("pertemuans", JSON.stringify(rppForm.pertemuans || []));
               rppNewFiles.forEach(f => fd.append("files[]", f));
 

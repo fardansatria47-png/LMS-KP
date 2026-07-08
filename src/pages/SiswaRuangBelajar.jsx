@@ -43,15 +43,30 @@ export default function SiswaRuangBelajar() {
       try {
         setLoading(true);
         const res = await getMataPelajaranSiswaDetail(id);
-        setData(res.data?.data || res.data);
-        const mapelId = res.data?.data?.mapel_id || res.data?.data?.mata_pelajaran_id || id;
-        try {
-          const rppRes = await getRpp({ mapel_id: mapelId });
-          const rawRpp = rppRes.data?.data || rppRes.data || [];
-          const publishedRpp = (Array.isArray(rawRpp) ? rawRpp : []).filter(r => r.is_published);
+        const resData = res.data?.data || res.data;
+        setData(resData);
+
+        // Coba ambil RPP dari response mata pelajaran detail (backend sudah embed di key "rpp")
+        const embeddedRpp = resData?.rpp;
+        if (embeddedRpp && Array.isArray(embeddedRpp) && embeddedRpp.length > 0) {
+          // Filter RPP yang sudah dipublikasikan (status approved atau is_published)
+          const publishedRpp = embeddedRpp.filter(r =>
+            r.status === "approved" || r.is_published === true || r.is_published === 1
+          );
           setRppList(publishedRpp);
-        } catch (e) {
-          console.error("Gagal memuat RPP siswa:", e);
+        } else {
+          // Fallback: fetch RPP terpisah
+          const mapelId = resData?.mapel_id || resData?.mata_pelajaran_id || id;
+          try {
+            const rppRes = await getRpp({ mapel_id: mapelId });
+            const rawRpp = rppRes.data?.data || rppRes.data || [];
+            const publishedRpp = (Array.isArray(rawRpp) ? rawRpp : []).filter(r =>
+              r.status === "approved" || r.is_published === true || r.is_published === 1
+            );
+            setRppList(publishedRpp);
+          } catch (e) {
+            console.error("Gagal memuat RPP siswa:", e);
+          }
         }
 
       } catch (err) {
