@@ -167,7 +167,7 @@ export default function GuruRPP() {
                         </svg>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        {rpp.is_published ? (
+                        {(rpp.is_published || rpp.status === "approved") ? (
                           <span className="text-[10px] font-bold bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-full uppercase tracking-wider">Publik</span>
                         ) : (
                           <span className="text-[10px] font-bold bg-amber-50 text-amber-600 px-2.5 py-1 rounded-full uppercase tracking-wider">Draf</span>
@@ -310,7 +310,7 @@ export default function GuruRPP() {
                         const baseKelasName = rppDetailModal.kelas || rppDetailModal.rombel?.nama_kelas || rppDetailModal.rombel?.nama || "";
                         return baseMapelName + (baseKelasName ? ` - Kelas ${baseKelasName}` : "");
                       })() },
-                    { label: "Status RPP", value: rppDetailModal.is_published ? "Publik" : "Draf" },
+                    { label: "Status RPP", value: (rppDetailModal.is_published || rppDetailModal.status === "approved") ? "Publik" : "Draf" },
                   ].map(item => (
                     <div key={item.label} className="bg-slate-50 rounded-xl p-3">
                       <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">{item.label}</p>
