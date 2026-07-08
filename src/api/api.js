@@ -29,7 +29,12 @@ export const fixFileUrl = (url) => {
     return url;
   }
   // Jika path relatif (biasanya dari storage Laravel)
-  const path = url.startsWith("/") ? url : `/${url}`;
+  // Pastikan path mengarah ke /storage/ jika tidak diawali dengan /storage atau storage
+  let cleanPath = url;
+  if (!cleanPath.startsWith("storage/") && !cleanPath.startsWith("/storage/")) {
+    cleanPath = `storage/${cleanPath.startsWith("/") ? cleanPath.substring(1) : cleanPath}`;
+  }
+  const path = cleanPath.startsWith("/") ? cleanPath : `/${cleanPath}`;
   return `${BASE_URL}${path}`;
 };
 

@@ -517,7 +517,7 @@ export default function KelasDetail() {
                                   {rpp.files.map((file) => (
                                     <a
                                       key={file.id}
-                                      href={fixFileUrl(file.url)}
+                                      href={fixFileUrl(file.url || file.path)}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 transition"

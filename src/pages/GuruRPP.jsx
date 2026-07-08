@@ -357,7 +357,7 @@ export default function GuruRPP() {
                         const extColors = { pdf: "bg-red-50 text-red-500", docx: "bg-blue-50 text-blue-500", doc: "bg-blue-50 text-blue-500", pptx: "bg-orange-50 text-orange-500" };
                         const extColor = extColors[ext.toLowerCase()] || "bg-slate-100 text-slate-500";
                         return (
-                          <a key={i} href={fixFileUrl(f.path)} target="_blank" rel="noreferrer"
+                          <a key={i} href={fixFileUrl(f.url || f.path)} target="_blank" rel="noreferrer"
                             className="flex items-center gap-3 p-3 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl transition group">
                             <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-[10px] font-bold uppercase ${extColor}`}>{ext || "—"}</span>
                             <p className="flex-1 text-sm font-semibold text-slate-700 group-hover:text-indigo-700 truncate">{f.nama_file}</p>
@@ -531,7 +531,7 @@ export default function GuruRPP() {
                             return (
                               <div key={f.id} className="flex items-center gap-1.5 border border-slate-200 bg-slate-50 rounded-lg px-2.5 py-1.5">
                                 <span className="text-[10px] font-bold text-slate-500 uppercase">{ext}</span>
-                                <a href={fixFileUrl(f.path)} target="_blank" rel="noreferrer" className="text-xs font-medium text-slate-600 hover:text-blue-600 truncate max-w-[120px]">{f.nama_file}</a>
+                                <a href={fixFileUrl(f.url || f.path)} target="_blank" rel="noreferrer" className="text-xs font-medium text-slate-600 hover:text-blue-600 truncate max-w-[120px]">{f.nama_file}</a>
                                 <button type="button" onClick={() => handleDeleteExistingFile(f)} className="text-rose-400 hover:text-rose-600 ml-1">
                                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
