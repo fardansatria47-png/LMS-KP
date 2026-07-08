@@ -498,7 +498,7 @@ export default function KelasDetail() {
                               <div className="flex items-center justify-between mb-1">
                                 <div className="flex items-center gap-2">
                                   <h3 className="text-base font-bold text-slate-800">{rpp.judul}</h3>
-                                  {rpp.is_published ? (
+                                  {(rpp.is_published || rpp.status === "approved") ? (
                                     <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md">Publik</span>
                                   ) : (
                                     <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md">Draf</span>
