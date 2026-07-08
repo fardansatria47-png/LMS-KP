@@ -480,7 +480,7 @@ export default function KelasDetail() {
                   <h2 className="mb-4 text-lg font-bold text-slate-800">RPP (Rencana Pelaksanaan Pembelajaran)</h2>
                   {rppList.length > 0 ? (
                     <div className="mb-8 flex flex-col gap-4">
-                      {rppList.map((rpp) => {
+                      {[...rppList].sort((a, b) => b.id - a.id).map((rpp) => {
                         const isExpanded = expandedRppId === rpp.id;
                         return (
                         <div
@@ -513,8 +513,8 @@ export default function KelasDetail() {
                               )}
                               
                               {isExpanded && rpp.files && rpp.files.length > 0 && (
-                                <div className="mt-4 pt-4 border-t border-indigo-100 flex flex-wrap gap-2">
-                                  {rpp.files.map((file) => (
+                                <div className="mt-4 pt-4 border-t border-indigo-100 flex flex-col gap-2">
+                                  {[...(rpp.files || [])].sort((a, b) => b.id - a.id).map((file) => (
                                     <a
                                       key={file.id}
                                       href={fixFileUrl(file.url || file.path)}
@@ -523,7 +523,6 @@ export default function KelasDetail() {
                                       className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 transition"
                                       onClick={(e) => e.stopPropagation()}
                                     >
-                                      <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
                                       {file.nama_file}
                                     </a>
                                   ))}
