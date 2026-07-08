@@ -138,7 +138,7 @@ export default function Kelas() {
                         {jumlah_siswa} Siswa
                       </div>
                       <span className="text-slate-300">•</span>
-                      <div className="font-semibold text-[#059669]">
+                      <div className="font-semibold text-blue-600">
                         {fullKelasName}
                       </div>
                     </div>
