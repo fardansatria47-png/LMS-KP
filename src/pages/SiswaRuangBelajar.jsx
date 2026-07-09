@@ -515,7 +515,6 @@ export default function SiswaRuangBelajar() {
                                 </svg>
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-500">RPP</p>
                                 <p className="text-base font-bold text-[#0F172A] leading-tight truncate">{rppJudul}</p>
                               </div>
                               <span className="shrink-0 rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-600">

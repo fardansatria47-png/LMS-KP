@@ -692,7 +692,6 @@ export default function KelasDetail() {
                                   </svg>
                                 </div>
                                 <div>
-                                  <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-500">RPP</p>
                                   <p className="text-sm font-bold text-slate-700 leading-tight">{rppJudul}</p>
                                 </div>
                                 <span className="ml-auto rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-bold text-indigo-600">{grouped[rppId].tugas.length} tugas</span>
