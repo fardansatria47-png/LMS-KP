@@ -90,9 +90,7 @@ export default function EditTugas() {
       fd.append("deskripsi", form.deskripsi);
       fd.append("deadline", form.deadline);
       fd.append("mapel_id", actualMapelId || id);
-      if (form.rpp_id) {
-        fd.append("rpp_id", form.rpp_id);
-      }
+      fd.append("rpp_id", form.rpp_id || "");
       if (rombelId) {
         fd.append("rombel_id", rombelId);
       }
