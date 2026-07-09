@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { updateTugas, getTugasById } from "../services/authService";
+import { updateTugas, getTugasById, getRpp } from "../services/authService";
 import GuruLayout from "../components/GuruLayout";
 import { getErrorMessage } from "../utils/translateError";
 
@@ -17,11 +17,13 @@ export default function EditTugas() {
   const { id, tugasId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const [form, setForm] = useState({ judul: "", deskripsi: "", deadline: "" });
+  const [form, setForm] = useState({ judul: "", deskripsi: "", deadline: "", rpp_id: "" });
   const [rombelId, setRombelId] = useState(location.state?.tugas?.rombel_id || null);
+  const [actualMapelId, setActualMapelId] = useState(location.state?.tugas?.mapel_id || id);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState("");
+  const [rppList, setRppList] = useState([]);
 
   useEffect(() => {
     const fetchTugas = async () => {
@@ -32,8 +34,10 @@ export default function EditTugas() {
             judul: t.judul || "",
             deskripsi: t.deskripsi || "",
             deadline: t.deadline ? t.deadline.slice(0, 16) : "", // Format for datetime-local
+            rpp_id: t.rpp_id ? String(t.rpp_id) : "",
           });
           setRombelId(t.rombel_id || null);
+          setActualMapelId(t.mapel_id || id);
           setFetching(false);
         } else {
           const res = await getTugasById(tugasId);
@@ -42,8 +46,10 @@ export default function EditTugas() {
             judul: t.judul || "",
             deskripsi: t.deskripsi || "",
             deadline: t.deadline ? t.deadline.slice(0, 16) : "",
+            rpp_id: t.rpp_id ? String(t.rpp_id) : "",
           });
           setRombelId(t.rombel_id || null);
+          setActualMapelId(t.mapel_id || id);
           setFetching(false);
         }
       } catch (err) {
@@ -53,6 +59,21 @@ export default function EditTugas() {
     };
     fetchTugas();
   }, [tugasId, location.state]);
+
+  // Fetch RPP list for this mapel
+  useEffect(() => {
+    if (!actualMapelId) return;
+    const fetchRpp = async () => {
+      try {
+        const rppRes = await getRpp({ mapel_id: actualMapelId });
+        const rawRpp = rppRes.data?.data || rppRes.data || [];
+        setRppList(Array.isArray(rawRpp) ? rawRpp : []);
+      } catch (err) {
+        console.error("Gagal memuat RPP:", err);
+      }
+    };
+    fetchRpp();
+  }, [actualMapelId]);
 
 
 
@@ -68,7 +89,10 @@ export default function EditTugas() {
       fd.append("judul", form.judul);
       fd.append("deskripsi", form.deskripsi);
       fd.append("deadline", form.deadline);
-      fd.append("mapel_id", id);
+      fd.append("mapel_id", actualMapelId || id);
+      if (form.rpp_id) {
+        fd.append("rpp_id", form.rpp_id);
+      }
       if (rombelId) {
         fd.append("rombel_id", rombelId);
       }
@@ -143,6 +167,25 @@ export default function EditTugas() {
                   rows={6}
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-[15px] text-slate-700 placeholder-slate-400 outline-none transition focus:border-blue-400 focus:ring-1 focus:ring-blue-400 resize-none"
                 />
+              </div>
+
+              {/* RPP (Opsional) */}
+              <div>
+                <label className="mb-2 block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Pilih RPP (Opsional)
+                </label>
+                <select
+                  value={form.rpp_id}
+                  onChange={(e) => setForm({ ...form, rpp_id: e.target.value })}
+                  className="w-full rounded-xl border-0 bg-[#E8F0FE] px-4 py-3.5 text-[15px] text-slate-700 outline-none transition focus:ring-2 focus:ring-blue-300"
+                >
+                  <option value="">-- Tanpa RPP --</option>
+                  {rppList.map((rpp) => (
+                    <option key={rpp.id} value={String(rpp.id)}>
+                      {rpp.judul}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Deadline */}

@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { createTugas } from "../services/authService";
+import { createTugas, getRpp } from "../services/authService";
 import GuruLayout from "../components/GuruLayout";
 import { getErrorMessage } from "../utils/translateError";
 
@@ -19,9 +19,24 @@ export default function BuatTugas() {
   const actualMapelId = location.state?.actualMapelId || id;
   const rombelId = location.state?.rombelId || null;
 
-  const [form, setForm] = useState({ judul: "", deskripsi: "", deadline: "" });
+  const [form, setForm] = useState({ judul: "", deskripsi: "", deadline: "", rpp_id: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [rppList, setRppList] = useState([]);
+
+
+  useEffect(() => {
+    const fetchRpp = async () => {
+      try {
+        const rppRes = await getRpp({ mapel_id: actualMapelId });
+        const rawRpp = rppRes.data?.data || rppRes.data || [];
+        setRppList(Array.isArray(rawRpp) ? rawRpp : []);
+      } catch (err) {
+        console.error("Gagal memuat RPP:", err);
+      }
+    };
+    fetchRpp();
+  }, [actualMapelId]);
 
 
   const handleSubmit = async (e) => {
@@ -37,6 +52,9 @@ export default function BuatTugas() {
       fd.append("deskripsi", form.deskripsi);
       fd.append("deadline", form.deadline);
       fd.append("mapel_id", actualMapelId);
+      if (form.rpp_id) {
+        fd.append("rpp_id", form.rpp_id);
+      }
       if (rombelId) {
         fd.append("rombel_id", rombelId);
       }
@@ -103,6 +121,25 @@ export default function BuatTugas() {
                 rows={6}
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-[15px] text-slate-700 placeholder-slate-400 outline-none transition focus:border-blue-400 focus:ring-1 focus:ring-blue-400 resize-none"
               />
+            </div>
+
+            {/* RPP (Opsional) */}
+            <div>
+              <label className="mb-2 block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Pilih RPP (Opsional)
+              </label>
+              <select
+                value={form.rpp_id}
+                onChange={(e) => setForm({ ...form, rpp_id: e.target.value })}
+                className="w-full rounded-xl border-0 bg-[#E8F0FE] px-4 py-3 text-[15px] text-slate-700 outline-none transition focus:ring-2 focus:ring-blue-300"
+              >
+                <option value="">-- Tanpa RPP --</option>
+                {rppList.map((rpp) => (
+                  <option key={rpp.id} value={rpp.id}>
+                    {rpp.judul}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Deadline */}
