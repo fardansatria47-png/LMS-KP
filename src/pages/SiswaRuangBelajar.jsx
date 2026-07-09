@@ -458,16 +458,16 @@ export default function SiswaRuangBelajar() {
                   }).replace(/\./g, ":");
                 }
                 return (
-                  <div key={tugas.id || idx} className="rounded-[20px] bg-white p-6 shadow-sm border border-slate-100 flex items-center justify-between transition hover:shadow-md">
-                    <div className="flex-1 pr-6">
-                      <h3 className="text-[17px] font-bold text-[#0F172A] leading-snug mb-1">
+                  <div key={tugas.id || idx} className="rounded-2xl bg-white p-4 shadow-sm border border-slate-100 flex items-center justify-between transition hover:shadow-md">
+                    <div className="flex-1 pr-4">
+                      <h3 className="text-[15px] font-bold text-[#0F172A] leading-snug mb-0.5">
                         {tugas.judul_tugas || tugas.judul}
                       </h3>
-                      <p className="text-[13px] text-[#64748B] leading-relaxed mb-3 line-clamp-2">
+                      <p className="text-[12px] text-[#64748B] leading-relaxed mb-2 line-clamp-2">
                         {tugas.deskripsi_tugas || tugas.deskripsi}
                       </p>
-                      <div className="flex items-center gap-1.5 text-[12px] font-bold text-[#D97706]">
-                        <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#D97706]">
+                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         {deadlineStr}
@@ -475,7 +475,7 @@ export default function SiswaRuangBelajar() {
                     </div>
                     <button
                       onClick={() => navigate(`/ruang-belajar/${id}/tugas/${tugas.id}`, { state: { tugas, mapelName, guruName, kelasName } })}
-                      className="shrink-0 flex items-center justify-center rounded-lg bg-[#0B57D0] px-6 py-2.5 text-[13px] font-bold text-white transition hover:bg-blue-800"
+                      className="shrink-0 flex items-center justify-center rounded-lg bg-[#0B57D0] px-4 py-2 text-[12px] font-bold text-white transition hover:bg-blue-800"
                     >
                       Lihat Tugas
                     </button>
