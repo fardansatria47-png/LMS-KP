@@ -455,6 +455,18 @@ export default function GuruRPP() {
                 <form onSubmit={handleRppSubmit}>
                   <div className="px-6 py-5 space-y-4">
                     
+                    {/* Judul RPP */}
+                    <div>
+                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">Judul RPP <span className="text-red-400">*</span></label>
+                      <input
+                        type="text"
+                        value={rppForm.judul}
+                        onChange={e => setRppForm({ ...rppForm, judul: e.target.value })}
+                        placeholder="Contoh: RPP Pemrograman Web Kelas XI"
+                        className="w-full rounded-xl border-0 bg-[#E8F0FE] px-4 py-3 text-sm text-slate-700 placeholder-slate-400 outline-none focus:ring-2 focus:ring-blue-300 transition"
+                      />
+                    </div>
+
                     {/* Mata Pelajaran */}
                     <div>
                       <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">Mata Pelajaran <span className="text-red-400">*</span></label>
@@ -478,18 +490,6 @@ export default function GuruRPP() {
                           <option key={m.value} value={m.value}>{m.nama}</option>
                         ))}
                       </select>
-                    </div>
-
-                    {/* Judul RPP */}
-                    <div>
-                      <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">Judul RPP <span className="text-red-400">*</span></label>
-                      <input
-                        type="text"
-                        value={rppForm.judul}
-                        onChange={e => setRppForm({ ...rppForm, judul: e.target.value })}
-                        placeholder="Contoh: RPP Pemrograman Web Kelas XI"
-                        className="w-full rounded-xl border-0 bg-[#E8F0FE] px-4 py-3 text-sm text-slate-700 placeholder-slate-400 outline-none focus:ring-2 focus:ring-blue-300 transition"
-                      />
                     </div>
 
 

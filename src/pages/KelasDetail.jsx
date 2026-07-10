@@ -402,22 +402,6 @@ export default function KelasDetail() {
               </div>
               {/* Action button — below tabs on mobile, right-aligned on desktop */}
               <div className="flex justify-end py-2 gap-2">
-                {activeTab === "Materi" && (
-                  <button
-                    onClick={() => navigate(`/kelas/${id}/upload-materi`, {
-                      state: {
-                        actualMapelId: kelasInfo?.mapel_id || kelasInfo?.mata_pelajaran_id || id,
-                        rombelId: kelasInfo?.rombel_id || kelasInfo?.kelas_id || kelasInfo?.rombel?.id || null,
-                      }
-                    })}
-                    className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-blue-700 transition"
-                  >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                    </svg>
-                    Upload Materi
-                  </button>
-                )}
                 {activeTab === "Tugas" && (
                   <>
                     <button
@@ -536,57 +520,6 @@ export default function KelasDetail() {
                     </div>
                   )}
 
-                  <h2 className="mb-4 text-lg font-bold text-slate-800">Materi Pembelajaran</h2>
-
-                  {materiList.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-slate-300 bg-white py-20 text-center">
-                      <svg className="mx-auto h-12 w-12 text-slate-300 mb-3" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                      </svg>
-                      <p className="font-semibold text-slate-500">Belum ada materi</p>
-                      <p className="mt-1 text-sm text-slate-400">Klik "+ Upload Materi" untuk menambahkan materi baru.</p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-4">
-                      {materiList.map((m) => (
-                        <div
-                          key={m.id}
-                          onClick={() => navigate(`/kelas/${id}/materi/${m.id}`, { state: { materi: m, mapelName: kelasInfo?.mapel?.nama_pelajaran, className: kelasInfo?.tingkat ? `${kelasInfo.tingkat} ${kelasInfo.jurusan}` : '' } })}
-                          className="group flex cursor-pointer items-center justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md"
-                        >
-                          <div className="flex items-center gap-5">
-                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600 transition group-hover:bg-blue-600 group-hover:text-white">
-                              <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z" />
-                              </svg>
-                            </div>
-                            <div>
-                              <h3 className="text-base font-bold text-slate-800 group-hover:text-blue-600 transition">{m.judul}</h3>
-                              {m.deskripsi && (
-                                <p className="mt-1 text-xs text-slate-500 truncate max-w-sm">{m.deskripsi}</p>
-                              )}
-                              <p className="mt-1 text-xs text-slate-400">{formatDate(m.created_at || m.tanggal)}</p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDeleteConfirm(m);
-                              }}
-                              className="flex h-9 w-9 items-center justify-center rounded-full text-rose-500 transition hover:bg-rose-50 hover:text-rose-700"
-                              title="Hapus"
-                            >
-                              <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
               )}
 
