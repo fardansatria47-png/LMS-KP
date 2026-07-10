@@ -387,53 +387,8 @@ export default function SiswaRuangBelajar() {
                     </div>
                   )}
 
-                  <h2 className="text-lg font-bold text-[#0F172A] mb-4">Materi Pembelajaran</h2>
-                  {materiList.length === 0 ? (
-                  <div className="rounded-[20px] border border-slate-200 bg-white p-10 text-center">
-                    <p className="text-slate-500 font-medium">Belum ada materi pembelajaran.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {materiList.map((materi, idx) => {
-                      const dateStr = materi.created_at ? new Date(materi.created_at).toLocaleDateString("id-ID", {
-                        day: "numeric", month: "short", year: "numeric"
-                      }).toUpperCase() : "BARU SAJA";
 
-                      // Tentukan file utama (untuk menentukan ikon)
-                      const hasVideo = materi.files?.some(f => f.tipe?.toLowerCase() === "youtube" || f.tipe?.toLowerCase() === "video");
-                      const firstFileUrl = fixFileUrl(materi.files?.[0]?.url);
 
-                      return (
-                        <div 
-                          key={materi.id || idx} 
-                          onClick={() => navigate(`/ruang-belajar/${id}/materi/${materi.id}`, { state: { materi, mapelName, guruName } })}
-                          className="rounded-[20px] bg-white p-6 shadow-sm border border-slate-100 flex items-start gap-5 transition hover:shadow-md cursor-pointer hover:border-blue-200"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-start mb-1">
-                              <h3 className="text-[17px] font-bold text-[#0F172A] leading-snug truncate pr-4">
-                                {materi.judul}
-                              </h3>
-                              <span className="text-[10px] font-bold tracking-widest text-slate-400 shrink-0">
-                                {dateStr}
-                              </span>
-                            </div>
-                            <p className="text-[13px] text-[#64748B] leading-relaxed mb-4">
-                              {materi.deskripsi}
-                            </p>
-                            <div className="flex justify-end">
-                              <button className="rounded-lg bg-[#0B57D0] px-5 py-2.5 text-[13px] font-bold text-white transition hover:bg-blue-800">
-                                Lihat Materi
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
 
             {activeTab === "Tugas" && (() => {
               // Group tasks by rpp_id
