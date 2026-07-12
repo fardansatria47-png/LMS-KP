@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import GuruLayout from "../components/GuruLayout";
+import { fixFileUrl } from "../api/api";
 
 
 
@@ -106,7 +107,7 @@ export default function MateriDetail() {
                     return (
                       <a
                         key={file.id}
-                        href={file.url}
+                        href={fixFileUrl(file.url)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="group flex items-center gap-4 overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md"
